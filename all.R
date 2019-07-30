@@ -122,7 +122,7 @@ as_tibble <- function(.data) if ("tbl_df" %in% class(.data)) .data else dplyr::a
   else .IGoR$newTable(input,output,t)
   output[[paste0(.page,".preview")]] <- renderPrint(d %>% as_tibble() %>% print())
   output[[paste0(.page,".comment")]] <- renderText(
-    sprintf("NOTE : La table '%s' comporte %d lignes et %d colonnes.", t, nrow(d), ncol(d))
+    sprintf("NOTE : La table '%s' comporte %d ligne(s) et %d colonne(s).", t, nrow(d), ncol(d))
   )
   shinyjs::disable(paste0(.page,".load"))
 }
@@ -354,13 +354,13 @@ NL <- ' %>%\n   '
 
 ## *** Builds the auxiliary input field for column selection
 .IGoR$select.what <- function(input,output,page,
-                              buttons.class=TRUE)
+                              columns.all=FALSE, buttons.class=TRUE)
   ._(output,page,columns.what) <- renderUI(
     if (length(._(input,page,type))>0)
       if (._(input,page,type)==1) {
         .IGoR$test$meta
         selectizeInput(paste0(page,".columns"),"",
-                       multiple = TRUE,  options = list(placeholder = '<colonnes>'),
+                       multiple = TRUE,  options = list(placeholder = if (columns.all) '<toutes>' else '<colonnes>'),
                        choice = .columns(input$main.data))
         
       }
