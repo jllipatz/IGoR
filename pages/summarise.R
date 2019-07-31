@@ -1,6 +1,7 @@
 
-### 06/06/2019 v1.01.0 Harmonisation de la selection de variables
-### 15/07/2019 v1.02.1 Corrections (na.rm, noms en clairs), ajout des dénombrements 
+### 06/06/2019 v1.01.0: Harmonisation de la selection de variables
+### 15/07/2019 v1.02.1: Corrections (na.rm, noms en clairs), ajout des dénombrements
+### 31/07/2019 v1.03.1: AJout du comptage d'une modalité
 
 .IGoR$page$summarise$ui <- function()
   div(id = "bloc_summarise",
@@ -25,9 +26,18 @@
   
   .IGoR$vServer(input,output,"summarise")
   
-  statsv <- c("Nombre"="n",.IGoR$STATSV)
+  statsv <- c("Nombre"="n","Comptage"="v",.IGoR$STATSV)
   
   stat <- function (i,w,has.na,na.rm,wtd) {
+    value <- 
+      if (.isNotEmpty(input$summarise.value)) 
+         if (input$summarise.value=="TRUE") "."
+         else 
+         if (input$summarise.value=="FALSE") "!."
+         else
+           if (w=='') paste0(".==",input$summarise.value)
+           else      paste0("(.==",input$summarise.value,")")
+       else "is.na(.)"
     na0 <- if (wtd)
          if (na.rm) "" else ", na.rm=FALSE"
     else if (na.rm) ", na.rm=TRUE" else ""
@@ -35,6 +45,7 @@
     na2 <- if (has.na) glue("(.{na0})") else ""
     if (w=='')
       c(n="{n()}",
+        v=glue("sum({value})"),
         sum=glue("sum{na2}"),
         mean=glue("mean{na2}"),
         median=glue("median{na2}"),
@@ -50,6 +61,7 @@
         last="last")[i]
     else 
       c(n=glue("sum({w})"),
+        v=glue("sum({w}*{value})"),
         sum=glue("sum({w})*wtd.mean(.,w={w}{na1})"),
         mean=glue("wtd.mean(.,w={w}{na1})"),
         median=glue("wtd.quantile(.,p=.5,w={w}{na1})"),
@@ -64,6 +76,8 @@
         first="first",
         last="last")[i]
   }
+  
+  suffix <- function() if (.isNotEmpty(input$summarise.value)) paste0("_",input$summarise.value) else "_NA"
   
   output$summarise.control <- renderUI(
     if ((length(input$main.data)>0)&&.IGoR$test$meta)
@@ -80,26 +94,45 @@
         column(width=6,
           .IGoR$loadBox("summarise","summarise.out"),
           box(width='100%', title="Calculer :",
-            selectizeInput("summarise.funs", label=NULL,
+            fluidRow(
+              column(width=6,
+                selectizeInput("summarise.funs", label=NULL,
                            multiple=TRUE, options = list(placeholder = .IGoR$STATS),
-                           choices=statsv),
+                           choices=statsv)),
+              column(width=6, uiOutput("summarise.value"))
+            ),
             fluidRow(
               column(width=6, checkboxInput("summarise.names","Intitulés en clair",TRUE)),
               column(width=6, checkboxInput("summarise.na.rm","Ignorer les valeurs manquantes",TRUE))
       ) ) ) )
   )
+
+  output$summarise.value <- renderUI(
+    if ("v" %in% input$summarise.funs)
+      tagList(
+        tags$head(
+          tags$style(type="text/css",
+                    "#summarise_value label{ display: table-cell; text-align: center; vertical-align: middle; } 
+                     #summarise_value .form-group { display: table-row;}")
+          ),
+        tags$div(id = "summarise_value", textInput("summarise.value","Valeur",""))
+  )   )
   
   output$summarise.command2 <- renderUI(
     .IGoR$textarea("summarise", "summarise...(...)", 3,
       if ((length(input$main.data)>0)&&(length(input$summarise.funs)>0)) {          g <- if (length(input$summarise.group)>0) glue("\n  group_by({paste(input$summarise.group,collapse=',')})") else ""
-        na <- if (length(intersect(c("n","first","last"),input$summarise.funs))>0) "" ## na.rm n'a pas de sens
+        na <- if (length(intersect(c("n","v","first","last"),input$summarise.funs))>0) "" ## na.rm n'a pas de sens
           else if (.isNotEmpty(input$summarise.W))
                     if (input$summarise.na.rm) "" else ", na.rm=FALSE"  # Dans HMisc le défaut est à TRUE
                else if (input$summarise.na.rm) ", na.rm=TRUE" else ""   # En R de base le défaut est à FALSE
         f1 <- stat(input$summarise.funs,input$summarise.W,nchar(na)==0,input$summarise.na.rm,.isNotEmpty(input$summarise.W))
-        nm <- if (.isTRUE(input$summarise.names))
-              names(statsv)[Vectorize(function (x) which(x==statsv))(input$summarise.funs)] %>% str_replace_all(" ","_")
-        else input$summarise.funs
+        nm <- (if (.isTRUE(input$summarise.names))
+                    names(statsv)[Vectorize(function (x) which(x==statsv))(input$summarise.funs)] %>%
+                      ifelse(.=="Comptage",paste0("Comptage",suffix()),.)
+               else input$summarise.funs %>%
+                      ifelse(.=="v",paste0("v",suffix()),.)) %>%
+               str_replace_all(" ","_") %>%
+               str_replace_all("[^a-zA-Z0-9_]",".")
         fn <- .collapse(
                 if (.isTRUE(input$summarise.names))
                      paste0('\"',nm,'\"=',f1)
