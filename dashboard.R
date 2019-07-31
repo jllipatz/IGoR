@@ -151,7 +151,7 @@
   ##        et que shinyFiles interprete le '~' de cette manière
   session$onSessionEnded(
     function() {
-      if (isTRUE(.IGoR$save)) save(list=tables(), file=paste0(.IGoR$volumes["home"],"/IGoR.RData"))
+      if (isTRUE(.IGoR$save)) save(list=.tables(), file=paste0(.IGoR$volumes["home"],"/IGoR.RData"))
       stopApp()
   }) 
   
