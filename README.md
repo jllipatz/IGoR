@@ -11,12 +11,12 @@ A deux exceptions près (`wtd.percent` et `gf_lorenz` qui sont définies dans *i
 
 IGoR est livré avec petites tables de test, mais n'est pas restreint aux données de celles-ci et IGoR peut en pratique travailler sur tout fichier qui puisse être chargé dans la mémoire de RStudio. Néanmoins IGoR travaille dans l'optique du "tidy data" et ne connaît que les types de données de base.
 
-Le code généré par IGoR peut être incorrect si les éléments fournis par l'utilisateur sont inadéquats ou si la structure des données sort d'un cadre strictement "tidy". Dans la mesure du possible les erreurs qui en sont la conséquence sont interceptées et n'interrompent pas le fonctionnement d'IGoR (sauf bugs). Mais les messages d'erreur proviennent le plus souvent de R lui même et ne sont traduits que dans les cas les plus évidents de fausse manipulation. Ceci est le lot commun des programmeurs en R et ne sera pas amélioré.
+Le code généré par IGoR peut être incorrect si les éléments fournis par l'utilisateur sont inadéquats ou si la structure des données sort d'un cadre strictement "tidy". Dans la mesure du possible les erreurs qui en sont la conséquence sont interceptées et n'interrompent pas le fonctionnement d'IGoR (sauf bugs). Mais les messages d'erreur proviennent le plus souvent de R lui même, ne sont pas toujours faciles à décrypter et ne sont traduits que dans les cas les plus évidents de fausse manipulation. Ceci est le lot commun des programmeurs en R et ne sera pas amélioré.
 
 ## Installation
 L'installation d'IGoR est simple : il suffit de recopier l'ensemble des fichiers dans la hierarchie fournie ici et de s'assurer que les packages nécessaires sont disponibles.
 Le fichier *init.R* contient tous les élements qui ont trait à la configuration :<br>
-- le chargement des packages necssaires,<br>
+- le chargement des packages nécessaires,<br>
 - la liste des emplacements des fichiers.<br>
 Cette dernière a été construite dans un contexte d'installation système particulier et devra être modifiée manuellement,
 soit pour l'adapter aux disques Windows accessibles, soit pour l'adapter aux chemins UNIX.
