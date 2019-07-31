@@ -13,7 +13,9 @@
       column(width=8, 
         p("Les fonctions de la famille ", code("summarise"), " du package ", strong("dplyr"),
           " prennent un ensemble d'observations et construisent une statistique synthétique ou un ensemble de statistiques synthétiques, ",
-          "sur une variable ou une famille de variables quantitatives.", br(),
+          "sur une variable ou une famille de variabless. ",
+          "Ces variables doivent êtres de type quantitatif, sauf pour deux cas offerts ici : ",
+          "le dénombrement d'observations et le dénombrement d'observations dont les variables sélectionnées prennent une valeur précise.", br(),
           "Le résultat est une table comportant une seule ligne, sauf si on traite la table courante par groupe d'observations, ",
           "auquel cas le résultat aura autant de lignes que de groupes."
      ) ) ),
@@ -115,7 +117,7 @@
                     "#summarise_value label{ display: table-cell; text-align: center; vertical-align: middle; } 
                      #summarise_value .form-group { display: table-row;}")
           ),
-        tags$div(id = "summarise_value", textInput("summarise.value","Valeur",""))
+        tags$div(id = "summarise_value", textInput("summarise.value","Valeur : ",""))
   )   )
   
   output$summarise.command2 <- renderUI(

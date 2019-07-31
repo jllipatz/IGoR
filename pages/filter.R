@@ -109,6 +109,8 @@
       if (length(input$filter.type)>0)
         .IGoR$command2(
           .IGoR$group_by(input,"filter"),
+          if ((input$filter.type==1)&&.isNotEmpty(input$filter.where)&&(nchar(msg<-.IGoR$look(input$filter.where))>0))
+            paste0(str_sub(msg,2),"\n   "),
           "filter(",
           {
             drop <- .isTRUE(input$filter.drop)
@@ -147,14 +149,13 @@
                            list(drop,TRUE,glue("{input$filter.arg1} {f} {q[1]}{arg2}{q[2]}"))
                       else list(FALSE,NA, glue("{input$filter.arg1} {g} {q[1]}{arg2}{q[2]}"))
                   } }
-              }
+                }
             if (length(e)>0)                                           # negate result if required  ----------------
               if (e[[1]])
                 if (e[[2]]) glue("!({e[[3]]})") else glue("!{e[[3]]}")
               else e[[3]]
           },
           ')',
-          if ((input$filter.type==1)&&.isNotEmpty(input$filter.where)) .IGoR$look(input$filter.where),
           .IGoR$ungroup(input,"filter")
   ) )   )
 
