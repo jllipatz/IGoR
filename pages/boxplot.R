@@ -1,6 +1,12 @@
 ### 17/06/2019 1.01.1: Ajout des libellés de variable
 
-.IGoR$page$boxplot$ui <- function() .IGoR$gUI("boxplot", "'gf_boxplot' : Distributions d'une variable quantitative")
+.IGoR$page$boxplot$ui <- function() 
+  .IGoR$gUI("boxplot", " Distributions d'une variable quantitative",
+   p("La fonction ", code("gf_boxplot"), " du package ", strong("ggformula"), "permet de construire des représentations en",
+    span("boites à moustaches", style="color:blue"), "résumant les caractéristiques essentielles de la distribution d'une variable qualitative.", br(),
+   "Cette représentation est particulièrement utile pour comparer plusieurs sous-populations qui peuvent ici être déterminées ",
+   "par les valeurs des modalités d'une seconde variable qui sera, elle, de type qualitatif."
+) )
 
 
 .IGoR$page$boxplot$sv <- function(input, output, session) {
