@@ -2,6 +2,7 @@
 .IGoR$page$spplot$ui <- function()
   .IGoR$gUI("spplot","Expérimentations cartographiques",
     p("La fonction", code("spplot"), "du package", strong("sp"), "produit des cartographie thématiques simples.", br(),
+      "Les fonds de carte nécessaires peuvent être restaurés à partir du fichier", em("data/geo_GADMxxxx.RData"), ".",br(), 
       em("NOTE : Les fonctionnalités présentées ici ne le sont qu'à titre démonstratif.")
 ) )
 
