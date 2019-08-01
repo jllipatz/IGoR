@@ -5,7 +5,7 @@
   
   header = dashboardHeader(
     title = "I Go R"
-    ,tags$li(class = "dropdown", p(em("version 1.03.1")))
+    ,tags$li(class = "dropdown", p(em("version 1.03.2")))
     ,tags$li(a(href = 'http://www.insee.fr',
                img(src = 'images/logo_insee.png',
                    title = "insee.fr", height = "46px"),
@@ -74,7 +74,8 @@
                          menuSubItem("Diagramme en camembert",         tabName="pie"),
                          menuSubItem("Nuage de points",	               tabName="points"),
                          menuSubItem("Carte de densité",               tabName="bin2d"),
-                         menuSubItem("Courbe de Lorenz",               tabName="lorenz")
+                         menuSubItem("Courbe de Lorenz",               tabName="lorenz"),
+                         menuSubItem("Cartographie",                   tabName="spplot")
                 ),
                 menuItem(
                   actionButton("main.quit", label = "Quitter",

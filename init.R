@@ -6,21 +6,23 @@ library(shinyFiles)
 library(purrr)
 library(tidyr)
 library(dplyr)
-library(fuzzyjoin)
 library(stringr)
 library(glue)
 
-library(ggformula)
-library(gglorenz)
-library(tables)
-library(skimr)
-
 library(rio)
-library(fst)
-library(feather)
 
 library(lubridate)
 library(zoo)
+
+library(fst)          # pages 'import', 'export'
+library(feather)      # pages 'import', 'export'
+library(fuzzyjoin)    # page 'fuzzyjoin'
+library(tables)       # page 'tabular'
+library(skimr)        # page 'skim'
+library(ggformula)
+library(gglorenz)     # page 'lorenz'
+library(sp)           # page 'spplot'
+library(latticeExtra) # page 'spplot'
 
 `%not in%` <- Negate(`%in%`)
 
@@ -64,3 +66,16 @@ nanopop <- data.frame(age=c( 20, 30, 40, 50, 60, 20, 30, 40, 50, 60, NA),
 
 ## désactivation des histogrammes de skimr qui ne s'affichent pas correctement
 skim_with(numeric=list(hist=NULL), integer=list(hist=NULL))
+
+## Import des fonds de carte (https://gadm.org/data.html, version juin 2018)
+## ces fonds ne contiennent que la métropole
+## ATTENTION : le package raster masque 'select'!
+# library(raster)
+# com2018.sp <- getData(name="GADM", country="FRA", level=5)
+# can2018.sp <- getData(name="GADM", country="FRA", level=4) # anciens cantons
+# dep2018.sp <- getData(name="GADM", country="FRA", level=2)
+# reg2018.sp <- getData(name="GADM", country="FRA", level=1) # nouvelles régions
+# fra2018.sp <- getData(name="GADM", country="FRA", level=0)
+# save(com2018.sp,can2018.sp,dep2018.sp,reg2018.sp,fra2018.sp,file="data/geo_GADM2018.RData")
+# detach("package:raster")
+

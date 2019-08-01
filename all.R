@@ -222,7 +222,7 @@ as_tibble <- function(.data) if ("tbl_df" %in% class(.data)) .data else dplyr::a
 .IGoR$GSAVE0   = "Sauvegarder le graphique"
 .IGoR$GSAVE    = "Sauvegarder le graphique sous :"
 .IGoR$TSAVE0   = "Sauvegarder le tableau"
-.IGoR$COLORS = c("black","red","green","blue")
+.IGoR$COLORS = c("black","red","green","blue","white","yellow","pink")
 .IGoR$STATS  = '<fonctions>'
 .IGoR$STATSV = c("Somme"="sum",
                  "Moyenne"="mean",
