@@ -19,7 +19,7 @@
       fluidRow(
         column(width=6,
           box(width='100%',
-            column(width=6, selectizeInput("histogram.X", label=.IGoR$NUMVAR1,
+            column(width=6, selectizeInput("histogram.X", label=.IGoR$s1(.IGoR$NUMVAR1),
                                            choices=c(.IGoR$NUMCOLV,.columns(input$main.data,"numeric")))),
             column(width=6, uiOutput("histogram.X.label"))
           ),
@@ -28,12 +28,12 @@
         column(width=6,
           box(width='100%',
 		        fluidRow(
-			        column(width=6, radioButtons("histogram.bins.control","Découpage en tranches...",
+			        column(width=6, radioButtons("histogram.bins.control",.IGoR$s2("Découpage en tranches..."),
 										   c("de nombre donné"=1,"de taille fixe"=2))),
               column(width=6, uiOutput("histogram.bins"))
 			      ),
 			      fluidRow(
-			        column(width=6, checkboxInput("histogram.kde","Superposer l'estimation non paramétrique de densité",TRUE)),
+			        column(width=6, checkboxInput("histogram.kde",.IGoR$s2("Superposer l'estimation non paramétrique de densité"),TRUE)),
 			        column(width=6, uiOutput("histogram.kde.bwm"))
 			      ),
 			      hr(),
@@ -44,7 +44,7 @@
 			          tags$style(type="text/css", "#histogram_Y_label label{ display: table-cell; text-align: center; vertical-align: middle; } 
 			                                       #histogram_Y_label .form-group { display: table-row;}")
 			        ),
-			        tags$div(id = "histogram_Y_label", textInput("histogram.Y.label","Titre :","density"))
+			        tags$div(id = "histogram_Y_label", textInput("histogram.Y.label",.IGoR$s2("Titre :"),"density"))
   )   ) ) ) )
   
   .IGoR$gVarLabelUI(input,output,"histogram","X")
@@ -55,7 +55,7 @@
 	  
   output$histogram.kde.bwm <- renderUI(
     if (.isTRUE(input$histogram.kde))
-	  numericInput("histogram.kde.bwm","Multiplicateur de fenêtre d'estimation",1)
+	  numericInput("histogram.kde.bwm",.IGoR$s2("Multiplicateur de fenêtre d'estimation"),1)
   )
 
   output$histogram.command2 <- renderUI(

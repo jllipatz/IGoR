@@ -59,25 +59,26 @@
       fluidRow(
         column(width=6,
           box(width='100%',
+            .IGoR$s1(.IGoR$QALVARS),
             fluidRow(
-              column(width=6, selectizeInput("tabular.X", label="Variables qualitatives en colonne", 
+              column(width=6, selectizeInput("tabular.X", "...en colonne", 
                            multiple = TRUE, options = list(placeholder = .IGoR$FCTCOLS),
                            choices = .columns(input$main.data,"factor"))),
               column(width=6, uiOutput("tabular.mixX"))
             ),
             fluidRow(
-              column(width=6, selectizeInput("tabular.Y", label="Variables qualitatives en ligne", 
+              column(width=6, selectizeInput("tabular.Y", "...en ligne", 
                            multiple = TRUE, options = list(placeholder = .IGoR$FCTCOLS),
                            choices = .columns(input$main.data,"factor"))),
               column(width=6, uiOutput("tabular.mixY"))
             ),
             fluidRow(
-              column(width=6, selectizeInput("tabular.W", label="Pondération (optionnelle)", 
+              column(width=6, selectizeInput("tabular.W", .IGoR$s3("Pondération"), 
                             choices=c(.IGoR$NUMCOLV,.columns(input$main.data,c("numeric","integer"))))
         )))),
         column(width=6,
           box(width='100%',
-            column(width=6,radioButtons("tabular.type","Type de tabulation",
+            column(width=6,radioButtons("tabular.type",.IGoR$s2("Type de tabulation"),
                             c("Comptage"="count",
                               "Pourcentage"="all",
                               "Pourcentage ligne"="row",
@@ -91,21 +92,21 @@
 
   output$tabular.mixX <- renderUI(
     if (length(input$tabular.X)>1)
-      checkboxInput("tabular.mixX","Croiser les modalités des variables",TRUE)
+      checkboxInput("tabular.mixX",.IGoR$s2("Croiser les modalités des variables"),TRUE)
   )
   
   output$tabular.mixY <- renderUI(
     if (length(input$tabular.Y)>1)
-      checkboxInput("tabular.mixY","Croiser les modalités des variables",TRUE)
+      checkboxInput("tabular.mixY",.IGoR$s2("Croiser les modalités des variables"),TRUE)
   )
   
   output$tabular.args <- renderUI(
     if (.isEQ(input$tabular.type,'var')&&(length(input$tabular.W)>0))
       tagList(
-        selectizeInput("tabular.Z", label="Statistiques sur",
+        selectizeInput("tabular.Z", .IGoR$s1("Statistiques sur"),
                   choices=c(.IGoR$NUMCOLV,.columns(input$main.data,"numeric"))),
-        selectizeInput("tabular.funZ", label="", 
-                  multiple=TRUE, options = list(placeholder = 'Fonctions statistiques'),
+        selectizeInput("tabular.funZ", .IGoR$s1("Fonction statistique"), 
+                  multiple=TRUE, options = list(placeholder = '<fonctions>'),
                   choices=c("Moyenne"=stat("mean",input$tabular.W),
                             "Médiane"=stat("median",input$tabular.W),
                    "Premier quartile"=stat("q1",input$tabular.W),
@@ -117,10 +118,10 @@
         )
     else
     if (.isIn(input$tabular.type,c("col","row","all")))
-      radioButtons("tabular.digits","Décimales :",choices=c("deux"=2,"une"=1,"aucune"=0))
+      radioButtons("tabular.digits",.IGoR$s2("Décimales :"),choices=c("deux"=2,"une"=1,"aucune"=0))
     else
     if (.isEQ(input$tabular.type,"count"))
-      checkboxInput("tabular.sep","Séparer les milliers",FALSE)
+      checkboxInput("tabular.sep",.IGoR$s2("Séparer les milliers"),FALSE)
   )
   
   output$tabular.save.control <- renderUI(if (.isNotEmpty(input$tabular.X)) .IGoR$save.ui("tabular",.title=.IGoR$TSAVE0))

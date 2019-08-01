@@ -1,4 +1,7 @@
 
+### 01/08/2019 1.03.2
+### TODO : subtitle, source
+
 .IGoR$page$spplot$ui <- function()
   .IGoR$gUI("spplot","Expérimentations cartographiques",
     p("La fonction", code("spplot"), "du package", strong("sp"), "produit des cartographie thématiques simples.", br(),
@@ -44,14 +47,14 @@
       fluidRow(
         column(width=8,
           box(width='100%',
-            column(width=6, selectizeInput("spplot.Z", label=.IGoR$NUMVAR1,
+            column(width=6, selectizeInput("spplot.Z", .IGoR$s1("Variable quantitative"),
                                            choices=c(.IGoR$NUMCOLV,.columns(input$main.data,c("numeric","integer"))))),
-            column(width=6, selectizeInput("spplot.zone", "Identifiant de zone",
+            column(width=6, selectizeInput("spplot.zone", .IGoR$s1("Identifiant de zone"),
                                            choices=c(.IGoR$CHRCOLV,.columns(input$main.data,"character"))))
           ),
           box(width='100%',
             fluidRow(
-              column(width=6, selectizeInput("spplot.sp", "Fond  de carte",
+              column(width=6, selectizeInput("spplot.sp", .IGoR$s1("Fond  de carte"),
                                              choices=c("<SpatialPolygonsDataFrame>"="",list.sp()))),
               column(width=6, uiOutput("spplot.sp.zone"))
             ),
@@ -60,30 +63,30 @@
               column(width=6, uiOutput("spplot.sp.zone2.ids")) 
             ),
             fluidRow(
-             column(width=6, selectizeInput("spplot.sp2","Superposer le fond de carte",
+             column(width=6, selectizeInput("spplot.sp2",.IGoR$s3("Superposer le fond de carte"),
                                             choices=c("<SpatialPolygonsDataFrame>"="",list.sp())))
           ) )
         ),
         column(width=4,
           box(width='100%',
             fluidRow(
-              column(width=6, selectizeInput("spplot.fill","Couleur des zones sans donnée",
-                                             choices=c("<aucune>"="<none>",.IGoR$COLORS), selected='black'))
+              column(width=6, selectizeInput("spplot.fill",.IGoR$s2("Couleur des zones sans donnée"),
+                                             choices=c("(aucune)"="<none>",.IGoR$COLORS), selected='black'))
             ),
             fluidRow(
-              column(width=6, selectizeInput("spplot.fill.start","Couleur de départ", choices=.IGoR$COLORS, selected='yellow')),
-              column(width=6, selectizeInput("spplot.fill.end",  "Couleur darrivée",  choices=.IGoR$COLORS, selected='red'))
+              column(width=6, selectizeInput("spplot.fill.start",.IGoR$s2("Couleur de départ"), choices=.IGoR$COLORS, selected='yellow')),
+              column(width=6, selectizeInput("spplot.fill.end",  .IGoR$s2("Couleur d'arrivée"), choices=.IGoR$COLORS, selected='red'))
   )   ) ) ) )
   
   output$spplot.sp.zone <- renderUI(
     if (.isNotEmpty(input$spplot.sp))
-      selectizeInput("spplot.sp.zone","Identifiant de zone",
+      selectizeInput("spplot.sp.zone", .IGoR$s1("Identifiant de zone"),
                      choices=c("<colonne>"="",list.sp.columns(input$spplot.sp,TRUE)))
   )
   
   output$spplot.sp.zone2 <- renderUI(
     if (.isNotEmpty(input$spplot.sp))
-      selectizeInput("spplot.sp.zone2","Restreindre aux zones...",
+      selectizeInput("spplot.sp.zone2",.IGoR$s3("Restreindre aux zones..."),
                      choices=c("<zonage>"="",list.sp.columns(input$spplot.sp,FALSE)))
               
   )
@@ -91,7 +94,7 @@
   output$spplot.sp.zone2.ids <- renderUI(
     if (.isNotEmpty(input$spplot.sp)&&.isNotEmpty(input$spplot.sp.zone2)) {
       l <- list.sp.column.ids(input$spplot.sp,input$spplot.sp.zone2)
-      selectizeInput("spplot.sp.zone2.ids","...de codes", 
+      selectizeInput("spplot.sp.zone2.ids",.IGoR$s3("...de codes"), 
                      multiple = TRUE, options=list(placeholder = glue("<codes ({length(l)})>")), choices = l)
     }
   )
@@ -108,6 +111,7 @@
                  if (input$spplot.sp2==input$spplot.sp) col <- ""
                  else paste0(" +\n       ",glue("layer(sp.polygons({input$spplot.sp2}))"))
                else ""
+        main <- if (.isNotEmpty(input$spplot.title)) paste0(", main=",shQuote(input$spplot.title)) else ""
         if (.isNotEmpty(input$spplot.sp.zone2)&&.isNotEmpty(input$spplot.sp.zone2.ids)) sp <- eval(parse(text=s),envir=.GlobalEnv)
         if (length(unique(df[[input$spplot.zone]]))!=nrow(df))
           {output$spplot.comment <- renderText("ERREUR : Il y a plusieurs observations pour une même zone!"); NULL}
@@ -124,7 +128,7 @@
             glue("idx <- match(tmp.sp@data${input$spplot.sp.zone}, .${input$spplot.zone})"),'\n     ',
             glue("tmp.sp@data$tmp <- .${input$spplot.Z}[idx]"),'\n     ',
             "tmp.sp %>%\n       ",
-            glue("spplot('tmp', col.regions=colorRampPalette(c('{input$spplot.fill.start}','{input$spplot.fill.end}'))(100){col})"),
+            glue("spplot('tmp', col.regions=colorRampPalette(c('{input$spplot.fill.start}','{input$spplot.fill.end}'))(100){col}{main})"),
             if (.isNE(input$spplot.fill,"<none>"))
               paste0(' +\n     ',glue("  layer_(sp.polygons({input$spplot.sp}, fill='{input$spplot.fill}', col=NA))")),
             add,

@@ -18,10 +18,10 @@
         column(width=6,
           box(width='100%',
 		    column(width=6,
-				selectizeInput("col.X", label=.IGoR$QALVARX1,
+				selectizeInput("col.X", label=.IGoR$s1(.IGoR$QALVARX1),
                            choices=c(.IGoR$QALCOLV,.columns(input$main.data,c("factor","character","integer"))))),
 			column(width=6,
-				selectizeInput("col.reorder", "Trier par : (optionnel)",
+				selectizeInput("col.reorder", .IGoR$s3("Trier par :"),
                            choices=c(.IGoR$NUMCOLV,.columns(input$main.data,"numeric"))))
           ),
           uiOutput("col.save.control")
@@ -30,22 +30,22 @@
           box(width='100%',
             fluidRow(
               column(width=6,
-                selectizeInput("col.N", "Données cumulées (*)",
+                selectizeInput("col.N", .IGoR$s1("Données cumulées"),
                            choices=c(.IGoR$NUMCOLV,.columns(input$main.data,"numeric")))),
-              column(width=6, selectizeInput("col.N.color","Couleur",choices=.IGoR$COLORS))
+              column(width=6, selectizeInput("col.N.color",.IGoR$s2("Couleur"),choices=.IGoR$COLORS))
             ),
             fluidRow(
               column(width=6,
-                selectizeInput("col.M", "Données cumulées en vis à vis (optionnel)",
+                selectizeInput("col.M", .IGoR$s3("Données cumulées en vis à vis"),
                            choices=c(.IGoR$NUMCOLV,.columns(input$main.data,"numeric")))),
               column(width=6, uiOutput("col.M.color"))
             ),
-            checkboxInput("col.coordflip","Barres horizontales",FALSE)
-        ))
-  ))
+            checkboxInput("col.coordflip",.IGoR$s2("Barres horizontales"),FALSE)
+        ) )
+  ) )
   
   output$col.M.color <- renderUI(
-    if (.isNotEmpty(input$col.M)) selectizeInput("col.M.color","Couleur",.IGoR$COLORS)
+    if (.isNotEmpty(input$col.M)) selectizeInput("col.M.color",.IGoR$s2("Couleur"),.IGoR$COLORS)
   )
   
   output$col.command2 <- renderUI(

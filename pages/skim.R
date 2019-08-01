@@ -25,8 +25,8 @@
   
   output$skim.control <- renderUI(
     if ((length(input$main.data)>0)&&.IGoR$test$meta)
-      .IGoR$select.ui("skim", NULL,
-                      buttons.title="Analyser les variables...", buttons.all=FALSE, buttons.class=FALSE,
+      .IGoR$select.ui("skim", "Analyser les variables...",
+                      buttons.all=FALSE, buttons.class=FALSE,
                       drop=FALSE)
   )
   

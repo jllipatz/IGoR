@@ -1,3 +1,4 @@
+
 ### 14/06/2019 1.01.1: Ajout d'une pondération optionnelle
 
 .IGoR$page$pie$ui <- function()
@@ -13,7 +14,7 @@
   
   .IGoR$gServer(input,output,"pie")
   
-  output$pie.save.control <- renderUI(if (.isNotEmpty(input$pie.X)) .IGoR$save.ui("pie"))
+  output$pie.save.control <- renderUI(if (.isNotEmpty(input$pie.Y)) .IGoR$save.ui("pie"))
   
   output$pie.control<- renderUI(
     if ((length(input$main.data)>0)&&.IGoR$test$meta)
@@ -21,14 +22,14 @@
         column(width=6,
           box(width='100%',
             fluidRow(
-              column(width=6, selectizeInput("pie.Y", label=.IGoR$QALVAR1,
+              column(width=6, selectizeInput("pie.Y", label=.IGoR$s1(.IGoR$QALVAR1),
                                              choices=c(.IGoR$QALCOLV,.columns(input$main.data,c("factor","character","integer"))))),
               column(width=6, uiOutput("pie.Y.label"))
             ),
             fluidRow(
-              column(width=6, selectizeInput("pie.W", label=.IGoR$WEIGHT,
+              column(width=6, selectizeInput("pie.W", label=.IGoR$s3(.IGoR$WEIGHT),
                                              choices=c(.IGoR$NUMCOLV,.columns(input$main.data,c("numeric","integer"))))),
-              column(width=6, selectizeInput("pie.X", label=.IGoR$GROUP,
+              column(width=6, selectizeInput("pie.X", label=.IGoR$s3(.IGoR$GROUP),
                            choices=c(.IGoR$QALCOLV,.columns(input$main.data,c("factor","character","integer")))))
           )),               
           uiOutput("pie.save.control")

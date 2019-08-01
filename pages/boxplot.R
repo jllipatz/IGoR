@@ -20,7 +20,7 @@
       fluidRow(
         column(width=6,
           box(width='100%',
-            column(width=6, selectizeInput("boxplot.Y", label=.IGoR$NUMVARY1,
+            column(width=6, selectizeInput("boxplot.Y", label=.IGoR$s1(.IGoR$NUMVARY1),
                                            choices=c(.IGoR$NUMCOLV,.columns(input$main.data,"numeric")))),
             column(width=6, uiOutput("boxplot.Y.label"))
           ),
@@ -29,11 +29,11 @@
         column(width=6,
           box(width='100%',
             fluidRow(
-              column(width=6, selectizeInput("boxplot.X", label="Variable qualitative en abscisse (optionnelle)",
+              column(width=6, selectizeInput("boxplot.X", label=.IGoR$s3(.IGoR$QALVARX1),
                                            choices=c(.IGoR$QALCOLV,.columns(input$main.data,c("factor","character"))))),
               column(width=6, uiOutput("boxplot.X.label"))
             ),
-            checkboxInput("boxplot.coordflip","Graphique horizontal",FALSE)
+            checkboxInput("boxplot.coordflip",.IGoR$s2("Graphique horizontal"),FALSE)
         ))
   ))
   

@@ -31,7 +31,7 @@
         column(width=6,
           box(width='100%',
             fluidRow(
-              column(width=6, selectizeInput("bar.X", label=.IGoR$QALVARX1,
+              column(width=6, selectizeInput("bar.X", label=.IGoR$s1(.IGoR$QALVARX1),
                                            choices=c(.IGoR$QALCOLV, .columns(input$main.data,c("factor","character","integer"))))),
               column(width=6, uiOutput("bar.X.label"))
           ) ),
@@ -40,7 +40,7 @@
         column(width=6,
           box(width='100%',
             fluidRow(
-              column(width=6, radioButtons("bar.color.control", "Couleur de remplissage des barres",
+              column(width=6, radioButtons("bar.color.control", .IGoR$s2("Couleur de remplissage des barres"),
                                           c("En fonction de la variable..."=1,
                                            "Uniforme..."=2))),
               column(width=6,
@@ -48,18 +48,18 @@
                 uiOutput("bar.color.position")
             )),
             fluidRow(
-              column(width=6, checkboxInput("bar.coordflip","Barres horizontales",FALSE)),
-              column(width=6, checkboxInput("bar.reorder","Trier les barres",FALSE))
+              column(width=6, checkboxInput("bar.coordflip",.IGoR$s2("Barres horizontales"),FALSE)),
+              column(width=6, checkboxInput("bar.reorder",.IGoR$s2("Trier les barres"),FALSE))
             ),
             hr(),
             tags$b("Ordonnées"),
             fluidRow(
-              column(width=6, checkboxInput("bar.breaks","Graduations entières",FALSE)),
-                tags$head(
-                  tags$style(type="text/css", "#bar_Y_label label{ display: table-cell; text-align: center; vertical-align: middle; } 
-                                               #bar_Y_label .form-group { display: table-row;}")
-                ),
-              tags$div(id = "bar_Y_label", textInput("bar.Y.label","Titre :","count"))
+              column(width=6, checkboxInput("bar.breaks",.IGoR$s2("Graduations entières"),FALSE)),
+              tags$head(
+                tags$style(type="text/css", "#bar_Y_label label{ display: table-cell; text-align: center; vertical-align: middle; } 
+                                             #bar_Y_label .form-group { display: table-row;}")
+              ),
+              tags$div(id = "bar_Y_label", textInput("bar.Y.label",.IGoR$s2("Titre :"),"count"))
             )
         ))
   ))

@@ -19,28 +19,18 @@
   
   output$points.save.control <- renderUI(if (.isNotEmpty(input$points.Y)&&.isNotEmpty(input$points.X)) .IGoR$save.ui("points"))
 
-  output$points.color <- renderUI(
-    if (.IGoR$test$meta&&(length(input$points.color.control)>0))
-      selectizeInput("points.color",
-                     if  (input$points.color.control==1) .IGoR$QALVAR else "", 
-                     choices=
-                       if (input$points.color.control==1)
-                         c("(aucune)",.columns(input$main.data,c("factor","character")))
-                     else .IGoR$COLORS
-      ))
-
   output$points.control <- renderUI(
     if ((length(input$main.data)>0)&&.IGoR$test$meta)
       fluidRow(
         column(width=6,
           box(width='100%',
             fluidRow(
-              column(width=6, selectizeInput("points.X", label="Variable quantitative en abscisse (*)",
+              column(width=6, selectizeInput("points.X", label=.IGoR$s1(.IGoR$NUMVARX1),
                                              choices=c(.IGoR$NUMCOLV,.columns(input$main.data,"numeric")))),
               column(width=6, uiOutput("points.X.label"))
             ),
             fluidRow(
-              column(width=6, selectizeInput("points.Y", label=.IGoR$NUMVARY1, 
+              column(width=6, selectizeInput("points.Y", label=.IGoR$s1(.IGoR$NUMVARY1), 
                                              choices=c(.IGoR$NUMCOLV,.columns(input$main.data,"numeric")))),
               column(width=6, uiOutput("points.Y.label"))
           ) ),
@@ -57,13 +47,13 @@
             ),
             hr(),
             fluidRow(
-              column(width=6, radioButtons("points.size.control", "Taille des points",
+              column(width=6, radioButtons("points.size.control", .IGoR$s2("Taille des points"),
                                           c("En fonction de la variable..."=1,
                                             "Uniforme..."=2))),
               column(width=6, uiOutput("points.size"))
               ),
             fluidRow(
-              column(width=6, radioButtons("points.color.control", "Couleur des points",
+              column(width=6, radioButtons("points.color.control", .IGoR$s2("Couleur des points"),
                                            c("En fonction de la variable..."=1,
                                              "Uniforme..."=2))),
               column(width=6, uiOutput("points.color"))
@@ -78,24 +68,34 @@
   
   output$points.scale <- renderUI(
     if (.IGoR$test$meta)
-      numericInput("points.scale","Intervalle des graduations",NA)
+      numericInput("points.scale",.IGoR$s3("Intervalle des graduations"),NA)
   )
   
   output$points.size <- renderUI(
     if (.IGoR$test$meta&&(length(input$points.size.control)>0))
       if (input$points.size.control==1)
-        selectizeInput("points.size.column", .IGoR$NUMERIC, 
+        selectizeInput("points.size.column", .IGoR$s3(.IGoR$NUMVAR1), 
                        choices=c("(aucune)",.columns(input$main.data,"numeric")))
       else
         sliderInput("points.size.value", "", 1,10,1)
   )
   
   output$points.shape <- renderUI(
-    if (.IGoR$test$meta&&(isFALSE(input$points.line)))
-      selectizeInput("points.shape", "Forme des points en fonction de la variable qualitative", 
+    if (.IGoR$test$meta&&.isNE(input$points.type,2))
+      selectizeInput("points.shape", .IGoR$s3("Forme des points en fonction de la variable qualitative"), 
                      choices=c("(aucune)",.columns(input$main.data,c("factor","character"))))
   )
-
+  
+  output$points.color <- renderUI(
+    if (.IGoR$test$meta&&(length(input$points.color.control)>0))
+      selectizeInput("points.color",
+                     if  (input$points.color.control==1) .IGoR$s3(.IGoR$QALVAR1) else "", 
+                     choices=
+                       if (input$points.color.control==1)
+                         c("(aucune)",.columns(input$main.data,c("factor","character")))
+                     else .IGoR$COLORS
+  )   )
+  
   output$points.command2 <- renderUI(
     .IGoR$textarea("points", "gf_point(y~x)", 4,
       if ((length(input$points.type)>0)&&(.isNotEmpty(input$points.Y)&&.isNotEmpty(input$points.X))) {
