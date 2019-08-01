@@ -1,11 +1,12 @@
 ###
-### Fonctions partagée 
+### Fonctions partagées
 ###
 
 ### 28/06/2019 1.01.2: Protection contre les noms de table incorrects
 ### 10/07/2019 1.02.0: Conversion en UTF-8 pour le champ command2
 ### 18/07/2019 1.02.2: Paramétrage de la hauteur des graphiques
 ### 25/07/2019 1.03.0: Desactivation du correcteur orthographique avec .IGoR$textarea
+### 01/08/2019 1.03.2: Introduction des styles pour les titres des champs
 
 .tables <- function () {
   f <- Vectorize(function(x) is.data.frame(get(x,envir=.GlobalEnv)))
@@ -196,11 +197,12 @@ as_tibble <- function(.data) if ("tbl_df" %in% class(.data)) .data else dplyr::a
 .IGoR$INVAR    = "Variable en entrée"
 .IGoR$OLDVAR   = "Variable à convertir"
 .IGoR$NUMERIC  = "Variable quantitative"
-.IGoR$NUMVAR1  = "Variable quantitative (*)"
-.IGoR$NUMVARY1 = "Variable quantitative en ordonnée (*)"
+.IGoR$NUMVAR1  = "Variable quantitative"
+.IGoR$NUMVARX1 = "Variable quantitative en abscisse"
+.IGoR$NUMVARY1 = "Variable quantitative en ordonnée"
 .IGoR$QALVAR   = "Variable qualitative"
-.IGoR$QALVAR1  = "Variable qualitative (*)"
-.IGoR$QALVARX1 = "Variable qualitative en abscisse (*)"
+.IGoR$QALVAR1  = "Variable qualitative"
+.IGoR$QALVARX1 = "Variable qualitative en abscisse"
 .IGoR$QALVARS  = "Variables qualitatives"
 .IGoR$VARS     = "Variables"
 .IGoR$ALL      = "<toutes>"
@@ -280,6 +282,11 @@ NL <- ' %>%\n   '
     writeClipboard(text)
   })
 }
+
+.IGoR$s1 <- function(s) strong(span(s, style='color:red')) # mandatory field without default setting
+.IGoR$s2 <- function(s) span(s, style='color:blue')        # mandatory field with default setting
+.IGoR$s3 <- function(s) em(s)                              # control field with default setting
+.IGoR$s4 <- function(s) em(span(s, style='color:blue'))    # optional field without default setting
 
 ## Fonctions pour les pages créant une nouvelle table
 .IGoR$aServer <- function(input,output,.page,.signal=TRUE) {
@@ -508,11 +515,11 @@ NL <- ' %>%\n   '
       ),
     box(width='100%', collapsible=TRUE, collapsed=TRUE,
 	    fluidRow(
-	      column(width=4, textInput(paste0(page,".title"),"Titre ","")),
-	      column(width=4, textInput(paste0(page,".subtitle"),"Sous-titre","")),
-	      column(width=4, textInput(paste0(page,".source"),"Source",""))
+	      column(width=4, textInput(paste0(page,".title"),.IGoR$s4("Titre"),"")),
+	      column(width=4, textInput(paste0(page,".subtitle"),.IGoR$s4("Sous-titre"),"")),
+	      column(width=4, textInput(paste0(page,".source"),.IGoR$s4("Source"),""))
 	    ),
-	    column(width=4, numericInput(paste0(page,".height"),"Hauteur du graphique (x100 pixels)",4))
+	    column(width=4, numericInput(paste0(page,".height"),.IGoR$s2("Hauteur du graphique (x100 pixels)"),4))
 	  ),
     uiOutput(paste0(page,".control")),
     .IGoR$commandBox(page),
@@ -523,7 +530,7 @@ NL <- ' %>%\n   '
   output[[paste0(page,".",var,".label")]] <- renderUI({
     v <- input[[paste0(page,".",var)]]
     if (.isNotEmpty(v))
-      textInput(paste0(page,".",var,".label"),"Titre",{
+      textInput(paste0(page,".",var,".label"),.IGoR$s2("Titre"),{
         d <- get(input$main.data,envir=.GlobalEnv)
         l <- attr(d[[v]],'label')
         if (is.null(l)) v else l
