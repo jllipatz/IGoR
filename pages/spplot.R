@@ -1,6 +1,6 @@
 
 ### 01/08/2019 1.03.2
-### TODO : subtitle, source
+### TODO : subtitle
 
 .IGoR$page$spplot$ui <- function()
   .IGoR$gUI("spplot","Expérimentations cartographiques",
@@ -114,6 +114,8 @@
                else ""
         main <- if (!.isNotEmpty(input$spplot.title)) ""
                 else paste0(", main=",shQuote(input$spplot.title))
+        sub <- if (!.isNotEmpty(input$spplot.source)) ""
+               else paste0(", sub=",shQuote(paste0("Source : ",input$spplot.source)))
         labels <- if (!.isTRUE(input$spplot.labels)) ""
                   else paste0(',\n         ',glue("sp.layout=make.labels(tmp.sp,'{input$spplot.sp.zone}')"))
         if (.isNotEmpty(input$spplot.sp.zone2)&&.isNotEmpty(input$spplot.sp.zone2.ids)) sp <- eval(parse(text=s),envir=.GlobalEnv)
@@ -136,7 +138,7 @@
             glue("idx <- match(tmp.sp@data${input$spplot.sp.zone}, .${input$spplot.zone})"),'\n     ',
             glue("tmp.sp@data$tmp <- .${input$spplot.Z}[idx]"),'\n     ',
             "tmp.sp %>%\n       ",
-            glue("spplot('tmp', col.regions=colorRampPalette(c('{input$spplot.fill.start}','{input$spplot.fill.end}'))(100){col}{main}{labels})"),
+            glue("spplot('tmp', col.regions=colorRampPalette(c('{input$spplot.fill.start}','{input$spplot.fill.end}'))(100){col}{main}{sub}{labels})"),
             if (.isNE(input$spplot.fill,"<none>"))
               paste0(' +\n     ',glue("  layer_(sp.polygons({input$spplot.sp}, fill='{input$spplot.fill}', col=NA))")),
             add,
