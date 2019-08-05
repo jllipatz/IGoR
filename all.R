@@ -224,6 +224,7 @@ as_tibble <- function(.data) if ("tbl_df" %in% class(.data)) .data else dplyr::a
 .IGoR$GSAVE0   = "Sauvegarder le graphique"
 .IGoR$GSAVE    = "Sauvegarder le graphique sous :"
 .IGoR$TSAVE0   = "Sauvegarder le tableau"
+.IGoR$FILTER   = "Restreindre aux observations vérifiant la condition"
 .IGoR$COLORS = c("black","red","green","blue","white","yellow","pink")
 .IGoR$STATS  = '<fonctions>'
 .IGoR$STATSV = c("Somme"="sum",
@@ -258,11 +259,14 @@ NL <- ' %>%\n   '
    verbatimTextOutput(paste0(page,".preview"))
  )
 
-.IGoR$loadBox <- function(page, out=paste0(page,".out"))
-  box(width='100%', title=.IGoR$OUT,
-    column(width=8, textInput(paste0(page,".out"),NULL,out)),
+.IGoR$loadBox <- function(page, out=paste0(page,".out"), title=.IGoR$OUT, text.title=NULL)
+  box(width='100%', title=title,
+    column(width=8, textInput(paste0(page,".out"), text.title, out)),
     column(width=4, uiOutput(paste0(page,".load")))
 )
+
+.IGoR$load.ui <- function(page, out=paste0(page,".out"))
+  .IGoR$loadBox(page, out, NULL, .IGoR$s2(.IGoR$OUT))
 
 .IGoR$rLogo <- function(input,output,.page) {
   
@@ -283,10 +287,11 @@ NL <- ' %>%\n   '
   })
 }
 
-.IGoR$s1 <- function(s) strong(span(s, style='color:red')) # mandatory field without default setting
-.IGoR$s2 <- function(s) span(s, style='color:blue')        # mandatory field with default setting
-.IGoR$s3 <- function(s) em(s)                              # control field with default setting
-.IGoR$s4 <- function(s) em(span(s, style='color:blue'))    # optional field without default setting
+.IGoR$s1 <- function(s) strong(span(s, style='color:red'))  # mandatory field without default setting
+.IGoR$s2 <- function(s) strong(span(s, style='color:blue')) # mandatory field with default setting
+.IGoR$s3 <- function(s) em(s)                               # control field with default setting
+.IGoR$s4 <- function(s) em(span(s, style='color:blue'))     # optional field without default setting
+.IGoR$s5 <- function(s) span(s, style='color:blue')         # optional field with default setting
 
 ## Fonctions pour les pages créant une nouvelle table
 .IGoR$aServer <- function(input,output,.page,.signal=TRUE) {
@@ -331,7 +336,7 @@ NL <- ' %>%\n   '
 ## Used by 'browse', 'factor', 'gather', 'skim', 'mutate2', 'rename', 'select', "summarise'
 .IGoR$select.ui <- function(page,title=NULL,box=TRUE,
                             buttons.title=NULL,selected=1,
-                            buttons.all=TRUE, buttons.class=TRUE,
+                            buttons.all=TRUE, buttons.class=TRUE, buttons.range=FALSE,
                             drop=TRUE) {
   f <- function ()
     tagList(
@@ -344,11 +349,12 @@ NL <- ' %>%\n   '
                      "dont le nom débute par..."=4,
                      "dont le nom finit par..."=5,
                      "dont le nom contient..."=6,
-                     "dont le nom contient l'expression régulière..."=7),
+                     "dont le nom contient l'expression régulière..."=7,
+                     if (buttons.range) c("entre les positions..."=0)),
                    selected=selected)),
         column(width=6,
           if (drop) 
-               checkboxInput(paste0(page,".drop"),"Inverser la sélection",FALSE)
+               checkboxInput(paste0(page,".drop"),.IGoR$s4("Inverser la sélection"),FALSE)
           else uiOutput(paste0(page,".drop")),
           uiOutput(paste0(page,".columns.what")),
           uiOutput(paste0(page,".columns.more"))
@@ -361,9 +367,15 @@ NL <- ' %>%\n   '
 
 ## *** Builds the auxiliary input field for column selection
 .IGoR$select.what <- function(input,output,page,
-                              columns.all=FALSE, buttons.class=TRUE)
+                              columns.all=FALSE, buttons.class=TRUE, buttons.range=FALSE)
   ._(output,page,columns.what) <- renderUI(
     if (length(._(input,page,type))>0)
+      if (._(input,page,type)==0)
+        fluidRow(
+          column(width=6, numericInput(paste0(page,".start"),.IGoR$s2("Première colonne"),1)),
+                 column(width=6, numericInput(paste0(page,".end"),.IGoR$s2("Dernière colonne"),ncol(get(input$main.data,envir=.GlobalEnv))))
+        )
+      else
       if (._(input,page,type)==1) {
         .IGoR$test$meta
         selectizeInput(paste0(page,".columns"),"",
@@ -381,7 +393,7 @@ NL <- ' %>%\n   '
                                  "caractère"="character",
                                  "booléen"="logical"))
       else
-      if (._(input,page,type)!=3)
+      if (._(input,page,type)>3)
         textInput(paste0(page,".pattern"),"")
   )
 
@@ -392,7 +404,7 @@ NL <- ' %>%\n   '
       if (((._(input,page,type)==1)&&(length(._(input,page,columns))>0))
           ||((._(input,page,type)>=4)&&(.isNotEmpty(._(input,page,pattern))))
       ) 
-        checkboxInput(paste0(page,".drop"),"Inverser la selection",FALSE)
+        checkboxInput(paste0(page,".drop"),.IGoR$s4("Inverser la selection"),FALSE)
   )
 
 ## >>> command2 helpers (return strings)
@@ -479,20 +491,28 @@ NL <- ' %>%\n   '
   tagList(
     box(width='100%',
       fluidRow(
-        column(width=8, radioButtons(paste0(page,".type"),buttons.title,
-          c("Expression non assistée"=1,
-            "Mode assisté sur une variable"=2,
-            "Mode assisté entre deux variables"=3))
-        ),
+        column(width=8, .IGoR$expr.type.ui(page,buttons.title)),
         column(width=4, uiOutput(paste0(page,".expr.more")))
       ),
       uiOutput(paste0(page,".expr.what"))
     ),
-    box(width='100%',
-      selectizeInput(paste0(page,".group"), label=.IGoR$GROUPS,
-        multiple = TRUE, options = list(placeholder = .IGoR$DISCOLS),
-        choices = .columns(input$main.data,c("factor","character","integer","logical"))
-  ) ) )
+    .IGoR$group.ui(input,page)
+  )
+
+.IGoR$expr.type.ui <- function (page,title)
+  radioButtons(paste0(page,".type"),title,
+               c("Expression non assistée"=1,
+                 "Mode assisté sur une variable"=2,
+                 "Mode assisté entre deux variables"=3)
+  )
+
+.IGoR$group.ui <- function (input,page)
+  box(width='100%',
+    selectizeInput(paste0(page,".group"), label=.IGoR$s3(.IGoR$GROUPS),
+                   multiple = TRUE, options = list(placeholder = .IGoR$DISCOLS),
+                   choices = .columns(input$main.data,c("factor","character","integer","logical")))
+  )
+                     
 
 .IGoR$save.ui <- function (page,.title=.IGoR$GSAVE0)
   box(width='100%',
@@ -500,6 +520,38 @@ NL <- ' %>%\n   '
       column(width=6, uiOutput(paste0(page,".save")))
   )
 
+## Functions for 'join' and 'fuzzy join'
+.IGoR$jServer <- function (input,output,page) {
+
+  .IGoR$aServer(input,output,page)
+  
+  output[[paste0(page,".data")]]<- renderUI({
+    .IGoR$test$list
+    fluidRow(
+      column(width=6, selectizeInput(paste0(page,".data"), .IGoR$s1("Seconde table en entrée"),
+                                     choices = c("<table>"="",.tables()))),
+      column(width=6, uiOutput(paste0(page,".columns2")))
+    )
+  })
+
+  output[[paste0(page,".columns2")]]<- renderUI(
+    if (.isNotEmpty(._(input,page,data))&&.IGoR$test$join)
+      selectizeInput(paste0(page,".columns2"), .IGoR$s1("Clés de jointure"),
+                     multiple = TRUE, options = list(placeholder = .IGoR$DISCOLS),
+                     choices = .columns(._(input,page,data),c("factor","character","integer", "logical"))
+  )    )
+ 
+  output[[paste0(page,".columns")]]<- renderUI(
+   if ((length(input$main.data)>0)&&.IGoR$test$meta)
+     fluidRow(
+       column(width=6, .IGoR$s2("Table courante")),
+       column(width=6, selectizeInput(paste0(page,".columns"), .IGoR$s1("Clés de jointure"),
+                                      multiple = TRUE, options = list(placeholder = .IGoR$DISCOLS),
+                                      choices = .columns(input$main.data,c("factor","character","integer", "logical")))
+ )   ) ) 
+ 
+ 
+}
 
 ## Fonctions pour les pages graphiques
 .IGoR$gUI <- function(page,.title,.text)
