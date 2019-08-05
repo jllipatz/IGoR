@@ -14,7 +14,7 @@
     ) ) ),
     fluidRow(
       column(width=6, uiOutput("skim.control")),
-      column(width=6, .IGoR$loadBox("skim","skim.out"))
+      column(width=6, .IGoR$loadBox("skim","skim.out",NULL,.IGoR$s2(.IGoR$OUT)))
     ),
     .IGoR$commandBox("skim")
   )
@@ -25,7 +25,7 @@
   
   output$skim.control <- renderUI(
     if ((length(input$main.data)>0)&&.IGoR$test$meta)
-      .IGoR$select.ui("skim", "Analyser les variables...",
+      .IGoR$select.ui("skim", buttons.title=.IGoR$s2("Analyser les variables..."),
                       buttons.all=FALSE, buttons.class=FALSE,
                       drop=FALSE)
   )

@@ -70,6 +70,7 @@
         column(width=4,
           box(width='100%',
             fluidRow(
+              column(width=6, checkboxInput("spplot.labels",.IGoR$s4("Etiquettes"),FALSE)),
               column(width=6, selectizeInput("spplot.fill",.IGoR$s2("Couleur des zones sans donnée"),
                                              choices=c("(aucune)"="<none>",.IGoR$COLORS), selected='black'))
             ),
@@ -111,7 +112,10 @@
                  if (input$spplot.sp2==input$spplot.sp) col <- ""
                  else paste0(" +\n       ",glue("layer(sp.polygons({input$spplot.sp2}))"))
                else ""
-        main <- if (.isNotEmpty(input$spplot.title)) paste0(", main=",shQuote(input$spplot.title)) else ""
+        main <- if (!.isNotEmpty(input$spplot.title)) ""
+                else paste0(", main=",shQuote(input$spplot.title))
+        labels <- if (!.isTRUE(input$spplot.labels)) ""
+                  else paste0(',\n         ',glue("sp.layout=make.labels(tmp.sp,'{input$spplot.sp.zone}')"))
         if (.isNotEmpty(input$spplot.sp.zone2)&&.isNotEmpty(input$spplot.sp.zone2.ids)) sp <- eval(parse(text=s),envir=.GlobalEnv)
         if (length(unique(df[[input$spplot.zone]]))!=nrow(df))
           {output$spplot.comment <- renderText("ERREUR : Il y a plusieurs observations pour une même zone!"); NULL}
@@ -121,6 +125,10 @@
         else
           .IGoR$command2(
             "{",'\n     ',
+            if (.isTRUE(input$spplot.labels))
+              paste0(
+                glue("make.labels <- function(x,y) do.call(list, list('sp.text', coordinates(x), x@data[[y]]))"),'\n     '
+              ),
             paste0("tmp.sp <- ",
               if (.isNotEmpty(input$spplot.sp.zone2)&&.isNotEmpty(input$spplot.sp.zone2.ids)) s else input$spplot.sp,
               '\n     '
@@ -128,7 +136,7 @@
             glue("idx <- match(tmp.sp@data${input$spplot.sp.zone}, .${input$spplot.zone})"),'\n     ',
             glue("tmp.sp@data$tmp <- .${input$spplot.Z}[idx]"),'\n     ',
             "tmp.sp %>%\n       ",
-            glue("spplot('tmp', col.regions=colorRampPalette(c('{input$spplot.fill.start}','{input$spplot.fill.end}'))(100){col}{main})"),
+            glue("spplot('tmp', col.regions=colorRampPalette(c('{input$spplot.fill.start}','{input$spplot.fill.end}'))(100){col}{main}{labels})"),
             if (.isNE(input$spplot.fill,"<none>"))
               paste0(' +\n     ',glue("  layer_(sp.polygons({input$spplot.sp}, fill='{input$spplot.fill}', col=NA))")),
             add,

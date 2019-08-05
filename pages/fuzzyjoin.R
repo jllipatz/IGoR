@@ -10,7 +10,8 @@
       ),
      column(width=8, 
        p("Les fonctions du package ", strong("fuzzyjoin")," permettent de compléter les fonctions d'appariement de deux tables, ",
-         "en offrant la possibilité de conditionner la correspondance entre observations provenant de chacune des tables par autre chose qu'une égalité de clés. ", 
+         "en offrant la possibilité de conditionner la",
+         span("correspondance entre observations provenant de chacune des tables par autre chose qu'une égalité de clés. ", style='color:blue'),
          "La fonction ", code("fuzzy_join"), "permet d'exprimer le fait qu'il y a correspondance entre deux observations de deux façons :",br(),
          "- soit parce que l'application d'une ",strong("fonction à deux variables"), ", une dans chaque table, renvoie 'TRUE',", br(),
          "- soit parce que le calcul d'une ", strong("expression impliquant un nombre de variables quelconque"), " renvoie 'TRUE'", br(),
@@ -21,13 +22,12 @@
       column(width=6,
         box(width='100%',
           uiOutput("fuzzyjoin.columns"),
-          hr(),
           uiOutput("fuzzyjoin.data"),
           uiOutput("fuzzyjoin.fun")
       )),
       column(width=6,
         box(width='100%',
-          radioButtons("fuzzyjoin.type", "Type de jointure :",
+          radioButtons("fuzzyjoin.type", .IGoR$s2("Type de jointure :"),
             c("Uniquement les lignes ayant un echo dans les deux tables" = "inner",
               "Les lignes de la table en entrée complétées ou non par celles de la seconde table" = "left",
               "Les lignes de la seconde table complétées ou non par celles de la table en entrée" = "right",
@@ -35,7 +35,7 @@
               "Les lignes de la table en entrée n'ayant aucun écho dans la seconde table" = "anti",
               "Les lignes de la table en entrée ayant un écho dans la seconde table" = "semi"))
         ),
-       .IGoR$loadBox("fuzzyjoin","fuzzyjoin.out")
+       .IGoR$loadBox("fuzzyjoin","fuzzyjoin.out",NULL,.IGoR$s2(.IGoR$OUT))
     )),
     .IGoR$commandBox("fuzzyjoin")
   )
@@ -43,41 +43,19 @@
 
 .IGoR$page$fuzzyjoin$sv <- function(input, output, session) {
   
-  .IGoR$aServer(input,output,"fuzzyjoin")
-  
-  output$fuzzyjoin.data<- renderUI({
-    .IGoR$test$list
-    tagList(
-      selectizeInput("fuzzyjoin.data", label = "Seconde table en entrée", choices = .tables()),
-      uiOutput("fuzzyjoin.columns2")
-    )
-  })
-  
-  output$fuzzyjoin.columns <- renderUI(
-    if ((length(input$main.data)>0)&&.IGoR$test$meta)
-      selectizeInput("fuzzyjoin.columns", label = "Clés de jointure de la table courante", multiple = TRUE,
-                     options = list(placeholder = .IGoR$DISCOLS),
-                     choices = .columns(input$main.data,c("factor","character","integer", "logical"))
-      )   )
-  
-  output$fuzzyjoin.columns2 <- renderUI(
-    if ((length(input$fuzzyjoin.data>0))&&.IGoR$test$join)
-      selectizeInput("fuzzyjoin.columns2", label = "Clés de jointure", multiple = TRUE,
-                     options = list(placeholder = .IGoR$DISCOLS),
-                     choices = .columns(input$fuzzyjoin.data,c("factor","character","integer", "logical"))
-      )   )
-  
+  .IGoR$jServer(input,output,"fuzzyjoin")
+
   output$fuzzyjoin.fun <- renderUI(
     if ((length(input$fuzzyjoin.columns)==1)&&(length(input$fuzzyjoin.columns2)==1))
-      textInput("fuzzyjoin.fun","Fonction de comparaison des clés")
+      textInput("fuzzyjoin.fun",.IGoR$s1("Fonction de comparaison des clés"))
     else
     if ((length(input$fuzzyjoin.columns)>0)&&(length(input$fuzzyjoin.columns2)>0))
       textInput("fuzzyjoin.fun",
-                paste0("Condition sur ",
+                .IGoR$s1(paste0("Condition sur ",
                        .collapse(vars("x",input$fuzzyjoin.columns,input$fuzzyjoin.columns2)),
                        " et ",
                        .collapse(vars("y",input$fuzzyjoin.columns2,input$fuzzyjoin.columns)),
-                       "."))
+                       ".")))
   )
   
   vars <- function(t,l,l2) ifelse(l %in% l2,paste0(l,".",t),l)
@@ -104,7 +82,8 @@
   
   output$fuzzyjoin.command2 <- renderUI(
     .IGoR$textarea("fuzzyjoin", "fuzzy_join(table,mode,columns,function)", 4,
-      if ((length(input$fuzzyjoin.columns)>0)
+      if (.isNotEmpty(input$fuzzyjoin.data)
+        &&(length(input$fuzzyjoin.columns)>0)
         &&(length(input$fuzzyjoin.columns2)>0)
         &&(length(input$fuzzyjoin.type)>0)
         &&.isNotEmpty(input$fuzzyjoin.fun)) {
@@ -116,9 +95,10 @@
           fun <- glue("multi_match_fun=function (x,y) {expr(input$fuzzyjoin.fun,input$fuzzyjoin.columns,input$fuzzyjoin.columns2)})")
         }
         .IGoR$command2(
+          if (nchar(msg<-.IGoR$look(input$fuzzyjoin.fun))>0) paste0(str_sub(msg,2),"\n   "),
           glue("fuzzy_join({input$fuzzyjoin.data}, mode=\"{input$fuzzyjoin.type}\","),
             '\n     ', by,
-            '\n     ', fun, .IGoR$look(input$fuzzyjoin.fun)
+            '\n     ', fun
         )
       }
   ) )

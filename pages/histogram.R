@@ -33,7 +33,7 @@
               column(width=6, uiOutput("histogram.bins"))
 			      ),
 			      fluidRow(
-			        column(width=6, checkboxInput("histogram.kde",.IGoR$s2("Superposer l'estimation non paramétrique de densité"),TRUE)),
+			        column(width=6, checkboxInput("histogram.kde",.IGoR$s5("Superposer l'estimation non paramétrique de densité"),TRUE)),
 			        column(width=6, uiOutput("histogram.kde.bwm"))
 			      ),
 			      hr(),

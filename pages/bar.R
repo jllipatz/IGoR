@@ -48,13 +48,13 @@
                 uiOutput("bar.color.position")
             )),
             fluidRow(
-              column(width=6, checkboxInput("bar.coordflip",.IGoR$s2("Barres horizontales"),FALSE)),
-              column(width=6, checkboxInput("bar.reorder",.IGoR$s2("Trier les barres"),FALSE))
+              column(width=6, checkboxInput("bar.coordflip",.IGoR$s4("Barres horizontales"),FALSE)),
+              column(width=6, checkboxInput("bar.reorder",.IGoR$s4("Trier les barres"),FALSE))
             ),
             hr(),
             tags$b("Ordonnées"),
             fluidRow(
-              column(width=6, checkboxInput("bar.breaks",.IGoR$s2("Graduations entières"),FALSE)),
+              column(width=6, checkboxInput("bar.breaks",.IGoR$s4("Graduations entières"),FALSE)),
               tags$head(
                 tags$style(type="text/css", "#bar_Y_label label{ display: table-cell; text-align: center; vertical-align: middle; } 
                                              #bar_Y_label .form-group { display: table-row;}")

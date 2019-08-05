@@ -26,24 +26,27 @@
   output$select.control <- renderUI(
     if ((length(input$main.data)>0)&&.IGoR$test$meta)
       fluidRow(
-        column(width=6, .IGoR$select.ui("select","Conserver les variables...")),
-        column(width=6, .IGoR$loadBox("select"))
+        column(width=6, .IGoR$select.ui("select", buttons.title=.IGoR$s2("Conserver les variables..."),
+                                        buttons.all=FALSE, drop=FALSE)),
+        column(width=6, .IGoR$load.ui("select"))
   ))
+  
+  .IGoR$select.drop(input,output,"select")
   
   output$select.columns.more <- renderUI(
     if ((length(input$select.type)>0)
       &&(((input$select.type==1)&&(length(input$select.columns)>0))
        ||(input$select.type>3)))
-      checkboxInput("select.everything","Compléter avec toutes les autres",FALSE)
+      checkboxInput("select.everything",.IGoR$s4("Compléter avec toutes les autres"),FALSE)
   )
 
   output$select.command2 <- renderUI(
     .IGoR$textarea("select", "select(columns)", 3,
-      if ((length(input$select.type)>0)&&(length(input$select.drop)>0))
+      if (length(input$select.type)>0)
         .IGoR$command2(
           "select",
           if ((input$select.type==2)&&.isNotEmpty(input$select.class))
-             if (input$select.drop)
+             if (.isTRUE(input$select.drop))
                   glue("_if(Negate(is.{input$select.class})")
              else glue("_if(is.{input$select.class}")
             else paste0("(",.IGoR$select(input,"select")),

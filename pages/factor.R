@@ -29,20 +29,22 @@
     output$factor.comment <- renderText("")
     if ((length(input$main.data)>0)&&.IGoR$test$meta)
       fluidRow(
-        column(width=6, .IGoR$select.ui("factor","Changer le type des variables...")),
+        column(width=6, .IGoR$select.ui("factor",buttons.title=.IGoR$s2("Changer le type des variables..."))),
         column(width=6,
-          .IGoR$loadBox("factor",input$main.data),
-           box(width='100%',
-              selectizeInput("factor.class.out","vers le type :",
+          .IGoR$load.ui("factor",input$main.data),
+          box(width='100%',
+            column(width=6, 
+              selectizeInput("factor.class.out",.IGoR$s2("vers le type :"),
                              choices=c("énumération (facteur)"="factor",
                                        "caractère"="as.character",
                                        "numérique double précision"="as.double",
                                        "numérique entier"="as.integer",
                                        "booléen"="as.logical",
-                                       "date"="as.Date")),
-            checkboxInput("factor.short","Réutiliser les noms",TRUE),
-            uiOutput("factor.empty")
-          )))
+                                       "date"="as.Date"))),
+            column(width=6,
+              checkboxInput("factor.short",.IGoR$s5("Réutiliser les noms"),TRUE),
+              uiOutput("factor.empty")
+      ) ) ) )
   })
  
   output$factor.empty <- renderUI(
@@ -52,7 +54,7 @@
        ||((input$factor.type==2)
         &&((.isEQ(input$factor.class,"character")&&!input$factor.drop)
          ||(.isNE(input$factor.class,"character")&&input$factor.drop)))))
-      checkboxInput("factor.empty","Mettre 'valeur manquante' pour les chaînes vides",TRUE)
+      checkboxInput("factor.empty",.IGoR$s5("Mettre 'valeur manquante' pour les chaînes vides"),TRUE)
   )
 
   output$factor.command2 <- renderUI(

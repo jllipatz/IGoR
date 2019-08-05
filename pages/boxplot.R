@@ -33,7 +33,7 @@
                                            choices=c(.IGoR$QALCOLV,.columns(input$main.data,c("factor","character"))))),
               column(width=6, uiOutput("boxplot.X.label"))
             ),
-            checkboxInput("boxplot.coordflip",.IGoR$s2("Graphique horizontal"),FALSE)
+            checkboxInput("boxplot.coordflip",.IGoR$s4("Graphique horizontal"),FALSE)
         ))
   ))
   

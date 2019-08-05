@@ -40,7 +40,7 @@
                            choices=c(.IGoR$NUMCOLV,.columns(input$main.data,"numeric")))),
               column(width=6, uiOutput("col.M.color"))
             ),
-            checkboxInput("col.coordflip",.IGoR$s2("Barres horizontales"),FALSE)
+            checkboxInput("col.coordflip",.IGoR$s4("Barres horizontales"),FALSE)
         ) )
   ) )
   

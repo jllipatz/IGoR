@@ -17,11 +17,11 @@
     fluidRow(
       column(width=6,
         box(width='100%',
-          textInput("create.columns","Nom des colonnes (séparés par des espaces)"),
-          checkboxInput("create.factors","Convertir les chaînes de caractères en facteurs",FALSE),
-          textInput("create.na.strings","Marqueur pour les valeurs manquantes de type caractère","NA")
+          textInput("create.columns",.IGoR$s1("Nom des colonnes (séparés par des espaces)")),
+          checkboxInput("create.factors",.IGoR$s4("Convertir les chaînes de caractères en facteurs"),FALSE),
+          textInput("create.na.strings",.IGoR$s2("Marqueur pour les valeurs manquantes de type caractère"),"NA")
       )),
-      column(width=6,.IGoR$loadBox("create","create.out"))
+      column(width=6,.IGoR$load.ui("create"))
     ),
     .IGoR$commandBox("create")
   )

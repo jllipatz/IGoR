@@ -3,7 +3,7 @@
   div(id = "bloc_slice",
     fluidRow(
       column(width=4, 
-        img(src="images/slice.png", height = "46px"),
+        img(src="images/slice.png", height = "48px"),
         h3(span("Sélectionner une plage d'observations", style="color: blue"))
       ),
       column(width=8, 
@@ -13,15 +13,15 @@
           "L'usage de ce type de sélection d'observations est généralement lié à un besoin d'extraire un jeu de test limité."
     ) ) ),
     fluidRow(
-      column(width=8,
+      column(width=6,
         box(width='100%',
           fluidRow(
-            column(width=6, numericInput("slice.top","Numéro de la première observation",1)),
+            column(width=6, numericInput("slice.top",.IGoR$s2("Numéro de la première observation"),1)),
             column(width=6, uiOutput("slice.end"))
           ),
-          checkboxInput("slice.drop","Inverser la sélection",FALSE)
+          checkboxInput("slice.drop",.IGoR$s4("Inverser la sélection"),FALSE)
       )),
-      column(width=4, .IGoR$loadBox("slice","slice.out"))
+      column(width=6, .IGoR$load.ui("slice"))
     ),
     .IGoR$commandBox("slice")
   )
@@ -33,7 +33,7 @@
   
   output$slice.end <- renderUI(
     if ((length(input$main.data)>0)&&.IGoR$test$meta)
-      numericInput("slice.end","Numéro de la dernière observation",nrow(get(input$main.data,envir=.GlobalEnv)))
+      numericInput("slice.end",.IGoR$s2("Numéro de la dernière observation"),nrow(get(input$main.data,envir=.GlobalEnv)))
   )
   
   output$slice.command2 <- renderUI(

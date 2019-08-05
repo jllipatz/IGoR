@@ -19,14 +19,13 @@
       column(width=6,
         box(width='100%',
           uiOutput("join.columns"),
-          hr(),
           uiOutput("join.data")
       )),
       column(width=6,
         box(width='100%',
           uiOutput("join.type")
         ),
-        .IGoR$loadBox("join","join.out")
+        .IGoR$loadBox("join","join.out",NULL,.IGoR$s2(.IGoR$OUT))
     )),
     .IGoR$commandBox("join")
   )
@@ -34,34 +33,12 @@
 
 .IGoR$page$join$sv <- function(input, output, session) {
   
-  .IGoR$aServer(input,output,"join")
-  
-  output$join.data<- renderUI({
-    .IGoR$test$list
-    tagList(
-      selectizeInput("join.data", label = "Seconde table en entrée",
-                     choices = .tables()),
-      uiOutput("join.columns2")
-    )
-  })
-  
-  output$join.columns <- renderUI(
-    if ((length(input$main.data)>0)&&.IGoR$test$meta)
-      selectizeInput("join.columns", label = "Clés de jointure de la table courante", multiple = TRUE,
-                     options = list(placeholder = .IGoR$DISCOLS),
-                     choices = .columns(input$main.data,c("factor","character","integer", "logical"))
-  )   )
-  
-  output$join.columns2 <- renderUI(
-    if ((length(input$join.data>0))&&.IGoR$test$join)
-      selectizeInput("join.columns2", label = "Clés de jointure", multiple = TRUE,
-                     options = list(placeholder = .IGoR$DISCOLS),
-                     choices = .columns(input$join.data,c("factor","character","integer", "logical"))
-  )   )
+  .IGoR$jServer(input,output,"join")
   
   output$join.type <- renderUI(
-    if ((length(input$join.columns2)==length(input$join.columns)))
-      radioButtons("join.type", "Type de jointure :",
+    if (.isNotEmpty(input$join.data)&&
+        (length(input$join.columns2)==length(input$join.columns)))
+      radioButtons("join.type", .IGoR$s2("Type de jointure :"),
         if (length(input$join.columns)>0)
           c(                         "Uniquement les lignes ayant un echo dans les deux tables" = "inner_join",
             "Les lignes de la table en entrée complétées ou non par celles de la seconde table" = "left_join",
@@ -75,7 +52,8 @@
 
   output$join.command2 <- renderUI(
     .IGoR$textarea("join", "...join(table,columns)", 4,
-      if (length(input$join.columns2)==length(input$join.columns))
+      if (.isNotEmpty(input$join.data)
+          &&(length(input$join.columns2)==length(input$join.columns)))
         .IGoR$command2(
           if (length(input$join.columns)>0) {
             by <- .collapse(

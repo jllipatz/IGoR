@@ -3,12 +3,13 @@
 
 ### 03/06/2019 1.01.0: Formattage des pourcentages
 ### 14/06/2019 1.01.1: Justification des comptages avec séparateurs des milliers
+### 04/08/2019 1.03.3: Transformation optionnelle en facteurs
 
 .IGoR$page$tabular$ui <- function()
   div(id = "bloc_tabular",
     fluidRow(
       column(width=4, 
-        img(src="images/tabular.png", height = "46px"),
+        img(src="images/tabular.png", height = "48px"),
         h3(span("Tableaux de statistiques multivariées", style="color: blue"))
       ),
       column(width=8, 
@@ -59,19 +60,19 @@
       fluidRow(
         column(width=6,
           box(width='100%',
-            .IGoR$s1(.IGoR$QALVARS),
             fluidRow(
-              column(width=6, selectizeInput("tabular.X", "...en colonne", 
-                           multiple = TRUE, options = list(placeholder = .IGoR$FCTCOLS),
-                           choices = .columns(input$main.data,"factor"))),
+              column(width=6, .IGoR$s1(.IGoR$QALVARS)),
+              column(width=6, checkboxInput("tabular.factor",.IGoR$s4("Forcer la conversion en facteurs"),FALSE))
+            ),
+            fluidRow(
+              column(width=6, uiOutput("tabular.X")),
               column(width=6, uiOutput("tabular.mixX"))
             ),
             fluidRow(
-              column(width=6, selectizeInput("tabular.Y", "...en ligne", 
-                           multiple = TRUE, options = list(placeholder = .IGoR$FCTCOLS),
-                           choices = .columns(input$main.data,"factor"))),
+              column(width=6, uiOutput("tabular.Y")),
               column(width=6, uiOutput("tabular.mixY"))
-            ),
+            ), 
+            hr(),
             fluidRow(
               column(width=6, selectizeInput("tabular.W", .IGoR$s3("Pondération"), 
                             choices=c(.IGoR$NUMCOLV,.columns(input$main.data,c("numeric","integer"))))
@@ -89,15 +90,31 @@
           uiOutput("tabular.save.control")
         )
   ))
+  
+  output$tabular.X <- renderUI(
+    selectizeInput("tabular.X", "en colonne", 
+                   multiple = TRUE, 
+                   options = list(placeholder = if (.isTRUE(input$tabular.factor)) .IGoR$DISCOLS else .IGoR$FCTCOLS),
+                   choices = .columns(input$main.data,
+                                      if (.isTRUE(input$tabular.factor)) "discrete" else "factor")
+  ) )
 
   output$tabular.mixX <- renderUI(
     if (length(input$tabular.X)>1)
-      checkboxInput("tabular.mixX",.IGoR$s2("Croiser les modalités des variables"),TRUE)
+      checkboxInput("tabular.mixX",.IGoR$s5("Croiser les modalités des variables"),TRUE)
   )
+  
+  output$tabular.Y <- renderUI(
+    selectizeInput("tabular.Y", "en ligne", 
+                   multiple = TRUE, 
+                   options = list(placeholder =  if (.isTRUE(input$tabular.factor)) .IGoR$DISCOLS else .IGoR$FCTCOLS),
+                   choices = .columns(input$main.data,
+                                      if (.isTRUE(input$tabular.factor)) "discrete" else "factor")
+  ) )
   
   output$tabular.mixY <- renderUI(
     if (length(input$tabular.Y)>1)
-      checkboxInput("tabular.mixY",.IGoR$s2("Croiser les modalités des variables"),TRUE)
+      checkboxInput("tabular.mixY",.IGoR$s5("Croiser les modalités des variables"),TRUE)
   )
   
   output$tabular.args <- renderUI(
@@ -121,7 +138,7 @@
       radioButtons("tabular.digits",.IGoR$s2("Décimales :"),choices=c("deux"=2,"une"=1,"aucune"=0))
     else
     if (.isEQ(input$tabular.type,"count"))
-      checkboxInput("tabular.sep",.IGoR$s2("Séparer les milliers"),FALSE)
+      checkboxInput("tabular.sep",.IGoR$s4("Séparer les milliers"),FALSE)
   )
   
   output$tabular.save.control <- renderUI(if (.isNotEmpty(input$tabular.X)) .IGoR$save.ui("tabular",.title=.IGoR$TSAVE0))
@@ -170,6 +187,12 @@
         if ((input$tabular.type=='count')&&.isTRUE(input$tabular.sep))
           x <- paste0(if (x=="1") x else glue("({x})"),"*Format(partial(format,big.mark=' ')())*Justify(r)")
         .IGoR$command2(
+          if (.isTRUE(input$tabular.factor)) {
+            df <- get(input$main.data,envir=.GlobalEnv)
+            l <- c(input$tabular.X,input$tabular.Y)
+            l <- l[map_lgl(l,function(x) !is.factor(df[[x]]))]
+            if (length(l)>0) paste0(glue("mutate_at({.collapse2(l)}, as.factor)"), NL)
+          },
           glue("tabular({y} ~ {x}, . )"),
           if (.isTRUE(input$tabular.save)) {
             f  <- parseSavePath(.IGoR$volumes,input$tabular)$datapath

@@ -52,10 +52,10 @@
     if (input$export.type>1)
      tagList(
        selectizeInput("export.tables",
-                     if (input$export.type==2) "Tables à exporter" else "Tables à sauvegarder",
+                     .IGoR$s1(if (input$export.type==2) "Tables à exporter" else "Tables à sauvegarder"),
                      multiple=TRUE,  options = list(placeholder = '<toutes>'),
                      choices=.IGoR$tables),
-       if (input$export.type==2) checkboxInput("export.names","Préciser le nom des feuilles",FALSE)
+       if (input$export.type==2) checkboxInput("export.names",.IGoR$s4("Préciser le nom des feuilles"),FALSE)
   ))
     
   output$export.files <- renderUI(
@@ -80,10 +80,9 @@
   
   output$export.parms <- renderUI(
     if (.isFile(input$export.file)) 
-      box(width='100%',
-        switch(get_ext(input$export.file),
-          "fst" = sliderInput("export.fst.compress", "Niveau de compression", 0, 100, 50)
-  )   ) )
+      switch(get_ext(input$export.file),
+        "fst" = box(width='100%', sliderInput("export.fst.compress", .IGoR$s2("Niveau de compression"), 0, 100, 50))
+  )   )
   
   observe({
     volumes <- .IGoR$volumes
@@ -91,7 +90,7 @@
     fileinfo <- parseSavePath(volumes, input$export)
   
     output$export.file <- renderUI(
-      textInput("export.file","Chemin d'accès au fichier :",fileinfo$datapath))
+      textInput("export.file",.IGoR$s1("Chemin d'accès au fichier :"),fileinfo$datapath))
   })
   
   output$export.command1 <- renderText(
@@ -101,7 +100,7 @@
           glue("{input$main.data} %>%")
         else {
           l <- if (length(input$export.tables)==0) .IGoR$tables else input$export.tables
-          glue("c({collapse1(l)}) %>%")
+          glue("c({.collapse1(l)}) %>%")
         }
   )
   

@@ -68,7 +68,7 @@
     fileinfo <- parseFilePaths(.IGoR$volumes, input$import)
     
     output$import.file <- renderUI(
-      textInput("import.file","Chemin d'accès au fichier :",fileinfo$datapath))
+      textInput("import.file",.IGoR$s1("Chemin d'accès au fichier :"),fileinfo$datapath))
   })
 
   output$import.out <- renderUI(
@@ -80,14 +80,16 @@
           attach(input$import.file)
           l <- ls(pos=2)
           detach(2)
-          selectizeInput("import.out","Restaurer la table :",choices=l)
+          selectizeInput("import.out",.IGoR$s2("Restaurer la table :"),choices=l)
         }
         else  
-          textInput("import.out", label=.IGoR$OUT,
+          textInput("import.out", label=.IGoR$s2(.IGoR$OUT),
                     str_extract(input$import.file,"(?<=/)[^/]*(?=\\.[^.]+$)"))
       }),
       column(width=4, uiOutput("import.load"))
     ))
+  
+  encoding.ui <- function () selectizeInput("import.encoding",.IGoR$s3("Encodage :"), choices=c("","UTF-8"))
   
   output$import.parms <- renderUI(
     if (.isFile(input$import.file)) 
@@ -95,16 +97,15 @@
         type <- input$import.file %>% str_extract("(?<=\\.)[^.]+$") %>% str_to_lower()
         if (type=="csv")
           fluidRow(
-            column(width=4,
-                   selectizeInput("import.encoding",label = "Encodage :", choices=c("","UTF-8"))
-          ) )
+            column(width=4, encoding.ui())
+          )
         else 
         if (type=="dbf")
-          checkboxInput("import.dbf","Ne pas convertir les chaînes de caractères en facteurs",TRUE)
+          checkboxInput("import.dbf",.IGoR$s5("Ne pas convertir les chaînes de caractères en facteurs"),TRUE)
         else 
         if (type %in% c("xls","xlsx"))
           fluidRow(
-            column(width=6, numericInput("import.xls.sheet","Feuille :", 1)),
+            column(width=6, numericInput("import.xls.sheet",.IGoR$s2("Feuille :"), 1)),
             column(width=4, radioButtons("import.xls.type","",
                                         c("Sauter les premières lignes..."=1,
                                           "En tête format insee.fr (5 lignes)"=2)),
@@ -114,54 +115,53 @@
         else
         if (type=="ods")
           fluidRow(
-            column(width=6, numericInput("import.xls.sheet","Feuille :", 1)),
-            column(width=4, checkboxInput("import.xls.names","Importer le nom des colonnes", TRUE)),
-            column(width=2, numericInput("import.xls.skip","Sauter les premières lignes :", NA))
+            column(width=6, numericInput("import.xls.sheet",.IGoR$s2("Feuille :"), 1)),
+            column(width=4, checkboxInput("import.xls.names",.IGoR$s5("Importer le nom des colonnes"), TRUE)),
+            column(width=2, numericInput("import.xls.skip",.IGoR$s3("Sauter les premières lignes :"), NA))
           )
         else
         if (type=="fst")
           fluidRow(
             column(width=6,
-               selectizeInput("import.columns",label = "Variables à conserver :",
+               selectizeInput("import.columns", .IGoR$s3("Variables à conserver :"),
                              multiple = TRUE, options = list(placeholder = '<toutes>'),
-                             choices = metadata_fst(input$import.file)$columnNames)
+                             choices = metadata_fst(input$import.file)$columnNames),
+               uiOutput("import.fst.parms")
             ),
             column(width=6,
-              uiOutput("import.fst.parms"),
-              radioButtons("import.fst.filter","",
-                           c("Tout lire"=1,
-                             "Lire une plage de lignes"=2,
-                             "Filtrer les lignes sur une condition"=3))
+              radioButtons("import.fst.filter",.IGoR$s2(.IGoR$FILTER),
+                           c("toutes"=1,
+                             "une plage fixe"=2,
+                             "celles vérifiant une condition"=3))
           ) )
         else
         if (type=="feather")
           fluidRow(
             column(width=6,
-              selectizeInput("import.columns",label = "Variables à conserver :",
+              selectizeInput("import.columns", .IGoR$s3("Variables à conserver :"),
                              multiple = TRUE, options = list(placeholder = '<toutes>'),
                              choices = attr(feather_metadata(input$import.file)$types,'names'))
             ),
             column(width=6,
-               checkboxInput("import.feather.filter","Filtrer les lignes sur une condition",FALSE),
+               checkboxInput("import.feather.filter",.IGoR$s3("Filtrer les lignes sur une condition"),FALSE),
                uiOutput("import.feather.parms")
             ) )
 		    else
 		    if (type=="sas7bdat")
 		      fluidRow(
-		        column(width=4,
-		          selectizeInput("import.encoding",label = "Encodage :", choices=c("","UTF-8"))
-		      ) )
+		        column(width=4, encoding.ui())
+		      )
         else
         if (type=="funcamp") # --- This is a non standard extension for funcamp use only!
           fluidRow(          # funcamp files are just fst files with another file extension
             column(width=4,  # to disable any access not using the 'id' variable as record key
-              textInput("import.funcamp.id",label = "Clé :",0)
+              textInput("import.funcamp.id",.IGoR$s2("Clé :"),0)
           ) )
   }))
   
   output$import.xls.names <- renderUI(
     if (.isEQ(input$import.xls.type,1))
-      checkboxInput("import.xls.names","Importer le nom des colonnes", TRUE)
+      checkboxInput("import.xls.names",.IGoR$s5("Importer le nom des colonnes"), TRUE)
   )
   
   output$import.xls.skip <- renderUI(
@@ -176,17 +176,17 @@
     if (length(input$import.fst.filter)>0)
       if (input$import.fst.filter==2) 
         fluidRow(
-          column(width=6, numericInput("import.fst.from","Première ligne à conserver :",1)),
-          column(width=6, numericInput("import.fst.to","Dernière ligne à conserver :",metadata_fst(input$import.file)$nrOfRows))
+          column(width=6, numericInput("import.fst.from",.IGoR$s2("Première ligne à conserver :"),1)),
+          column(width=6, numericInput("import.fst.to",.IGoR$s2("Dernière ligne à conserver :"),metadata_fst(input$import.file)$nrOfRows))
         )
       else
       if (input$import.fst.filter==3)
-        textInput("import.expr","Lignes à conserver :")
+        textInput("import.expr",.IGoR$s3("Lignes à conserver :"))
   )
   
   output$import.feather.parms <- renderUI(
     if (.isTRUE(input$import.feather.filter))
-      textInput("import.expr","Lignes à conserver :")
+      textInput("import.expr",.IGoR$s3("Lignes à conserver :"))
   )
   
   output$import.command1 <- renderText(if (.isFile(input$import.file)) glue(.IGoR$import.command1))

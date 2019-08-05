@@ -28,9 +28,9 @@
   output$mutate2.control <- renderUI(
     if ((length(input$main.data)>0)&&.IGoR$test$meta)
       fluidRow(
-        column(width=6, .IGoR$select.ui("mutate2", "Modifier les variables...")),
+        column(width=6, .IGoR$select.ui("mutate2", buttons.title=.IGoR$s2("Modifier les variables..."))),
         column(width=6,
-          .IGoR$loadBox("mutate2",input$main.data),
+          .IGoR$load.ui("mutate2",input$main.data),
           uiOutput("mutate2.how")
         )))
 
@@ -81,17 +81,17 @@
     if ((length(input$mutate2.type)>0)&&(length(unique(classes(input,".mutate2")))==1))
        if ((length(input$mutate2.fun)>0)&&(substr(input$mutate2.fun,2,2)>0))
         if (substr(input$mutate2.fun,3,3)=="c")
-          textInput("mutate2.chr.arg1",
+          textInput("mutate2.chr.arg1", .IGoR$s2(
                     if (substr(input$mutate2.fun,4,4)==">") "de"
-                    else if (substr(input$mutate2.fun,4,4)=="=") "par" else "",
+                    else if (substr(input$mutate2.fun,4,4)=="=") "par" else ""),
                     switch(substring(input$mutate2.fun,5),
                            iconv="850",
                            sprintf="<%5d>"
                     ))
         else
-          numericInput("mutate2.num.arg1",
+          numericInput("mutate2.num.arg1", .IGoR$s2(
                    if (substr(input$mutate2.fun,4,4)=="-") "depuis"
-                   else if (substr(input$mutate2.fun,4,4)=="=") "par" else "",
+                   else if (substr(input$mutate2.fun,4,4)=="=") "par" else ""),
                    switch(substring(input$mutate2.fun,5),
                           quantile=.5,
                           coalesce=0
@@ -102,13 +102,13 @@
     if ((length(input$mutate2.type)>0)&&(length(unique(classes(input,".mutate2")))==1)) 
       if ((length(input$mutate2.fun)>0)&&(substr(input$mutate2.fun,2,2)>1))
         if (substr(input$mutate2.fun,3,3)=="c")
-          textInput("mutate2.chr.arg2",
-                    if (substr(input$mutate2.fun,4,4)==">") "vers" else "",
+          textInput("mutate2.chr.arg2", .IGoR$s2(
+                    if (substr(input$mutate2.fun,4,4)==">") "vers" else ""),
                     if (substring(input$mutate2.fun,5)=="iconv") "UTF-8"
           )
         else
-          numericInput("mutate2.num.arg2",
-                   if (substr(input$mutate2.fun,4,4)=="-") "jusqu'à" else "",
+          numericInput("mutate2.num.arg2", .IGoR$s2(
+                   if (substr(input$mutate2.fun,4,4)=="-") "jusqu'à" else ""),
                    NULL
            )
   })  

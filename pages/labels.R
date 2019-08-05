@@ -23,36 +23,38 @@
   
   output$labels.control <- renderUI(
     if ((length(input$main.data)>0)&&.IGoR$test$meta)
-      fluidRow(
-        column(width=6,
-          fluidRow(
-            column(width=6, 
-              box(width='100%',
-                selectizeInput("labels.old", .IGoR$OLDVAR,
+      tagList(
+        fluidRow(
+          column(width=3, 
+            box(width='100%',
+              selectizeInput("labels.old", .IGoR$s1(.IGoR$OLDVAR),
                              choices=c(.IGoR$DISCOLV,.columns(input$main.data,c("character","integer","logical"))))
-            ) ),
-            column(width=6, uiOutput("labels.new"))
-          ),
-          box(width='100%',
-            selectizeInput("labels.data", "Table de correspondance", choices=.tables()),
-            uiOutput("labels.data.columns")
-        ) ),
-        column(width=6, uiOutput("labels.out"))
-  )   )
+          ) ),
+          column(width=9, uiOutput("labels.new"))
+        ),
+        fluidRow(
+          column(width=6,
+            box(width='100%',
+              selectizeInput("labels.data", .IGoR$s1("Table de correspondance"),
+                             choices=c(c("<table>"=""),.tables())),
+              uiOutput("labels.data.columns")
+  )   ) ) ) )
   
   output$labels.new <- renderUI(
-    if (.isNotEmpty(input$labels.old))
-      box(width='100%', textInput("labels.new",.IGoR$NEWCOL,input$labels.old))
-  )
-  
-  output$labels.out <- renderUI(if (length(input$main.data)>0) .IGoR$loadBox("labels", input$main.data))
+    if ((length(input$main.data)>0)&&.isNotEmpty(input$labels.old))
+      box(width='100%',
+        column(width=3, textInput("labels.new",.IGoR$s2(.IGoR$NEWCOL),input$labels.old)),
+        column(width=6, textInput("labels.out",.IGoR$s2(.IGoR$OUT),"labels.out")),
+        column(width=3, uiOutput("labels.load"))
+  )   )
   
   output$labels.data.columns <- renderUI(
-    if ((length(input$labels.data)>0)&&.IGoR$test$meta)
+    if ((length(input$labels.data)>0)&&.IGoR$test$meta
+      &&.isNotEmpty(input$labels.data))
       fluidRow(
-        column(width=6, selectizeInput("labels.data.levels","Variable donnant les codes (levels)",
+        column(width=6, selectizeInput("labels.data.levels",.IGoR$s1("Variable donnant les codes (levels)"),
                        choices=c(.IGoR$DISCOLV,.columns(input$labels.data,c("character","integer","logical"))))),
-        column(width=6, selectizeInput("labels.data.labels","Variable donnant les libellés (labels)",
+        column(width=6, selectizeInput("labels.data.labels",.IGoR$s1("Variable donnant les libellés (labels)"),
                        choices=c(.IGoR$CHRCOLV,.columns(input$labels.data,"character"))))
       )
   )

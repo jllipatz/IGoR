@@ -4,7 +4,7 @@
   div(id = "bloc_browse",
     fluidRow(
       column(width=4, 
-        img(src="images/view.png", height = "46px"),
+        img(src="images/view.png", height = "48px"),
         h3(span("Visualisation d'une observation", style="color: blue"))
       ),
       column(width=8, 
@@ -24,20 +24,20 @@
     # ==> Github Rstudio/shinydashboard issue #234 
     box(width='100%', collapsible=TRUE, collapsed=TRUE,
       column(width=6, .IGoR$select.ui("browse", box=FALSE,
-                                      buttons.title="Afficher les variables...",selected=3)),
+                                      buttons.title=.IGoR$s2("Afficher les variables..."),selected=3)),
       column(width=6,
         tagList( 
           fluidRow(
-            column(width=4, radioButtons("browse.row.type","Afficher l'observation...", 
+            column(width=4, radioButtons("browse.row.type",.IGoR$s2("Afficher l'observation..."), 
                                          c("de numéro :"=1,"de nom :"=3,"de premier identifiant :"=2))),
             column(width=8, uiOutput("browse.row"))
           ),
           hr(),
           fluidRow(
-            column(width=6, sliderInput("browse.n","Nombre de colonnes",1,4,3)),
+            column(width=6, sliderInput("browse.n",.IGoR$s2("Nombre de colonnes"),1,4,3)),
             column(width=6,
-              checkboxInput("browse.label","Utiliser les libellés de variable",FALSE),
-              checkboxInput("browse.sort","Trier les variables par leur nom",FALSE)
+              checkboxInput("browse.label",.IGoR$s4("Utiliser les libellés de variable"),FALSE),
+              checkboxInput("browse.sort",.IGoR$s4("Trier les variables par leur nom"),FALSE)
     ) ) ) ) ),
     fluidRow( 
       column(width=12, htmlOutput("browse.html"))
@@ -145,7 +145,7 @@
   output$browse.where <- renderUI(
     if ((length(input$main.data)>0)&&.IGoR$test$meta)
       tagList(
-        textInput(width='100%',"browse.where","Restreindre aux observations vérifiant la condition"),
+        textInput(width='100%',"browse.where",.IGoR$s3(.IGoR$FILTER)),
         verbatimTextOutput("browse.comment")
   )   )
   
@@ -168,7 +168,7 @@
   
   output$browse.ids <- renderUI(
     if ((length(input$main.data)>0)&&.IGoR$test$meta) 
-      selectizeInput("browse.ids","Variables d'identification",
+      selectizeInput("browse.ids",.IGoR$s3("Variables d'identification"),
                    multiple=TRUE,  options = list(placeholder = '<colonnes de type caractère>'),
                    choices=.columns(input$main.data,"character"))
   )

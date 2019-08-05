@@ -10,7 +10,7 @@
   div(id = "bloc_view", 
     fluidRow(
       column(width=4,
-        img(src="images/view.png", height = "46px"),
+        img(src="images/view.png", height = "48px"),
         h3(span("Données de la table courante", style="color: blue"))
       ),
       column(width=8,
@@ -104,20 +104,20 @@
         column(width=6, uiOutput("view.group.no"))
       ),
       fluidRow(
-        column(width=6, numericInput("view.page.size","Lignes par page",10)),
+        column(width=6, numericInput("view.page.size",.IGoR$s2("Lignes par page"),10)),
         column(width=6, uiOutput("view.page.no"))
   ) ) )
   
   output$view.group <- renderUI(
     if ((length(input$view.rownames)==0)&&.IGoR$test$meta)
-      selectizeInput("view.group", label=.IGoR$GROUPS,
+      selectizeInput("view.group", label=.IGoR$s3(.IGoR$GROUPS),
                      multiple = TRUE, options = list(placeholder = .IGoR$DISCOLS),
                      choices = .columns(input$main.data,c("factor","character","integer","logical")))
   )
     
   output$view.group.no <- renderUI(
     if ((length(input$view.rownames)==0)&&(length(input$view.group)>0))
-      sliderInput("view.group.no","Groupe",1,df()$groups,1, step=1, round=TRUE)
+      sliderInput("view.group.no",.IGoR$s2("Groupe"),1,df()$groups,1, step=1, round=TRUE)
   )
 
   output$view.page.no <- renderUI(
@@ -127,14 +127,14 @@
       else if((df$groups==0)||(length(input$view.group.no)==0)) nrow(df$data)
             else df$groups_size[input$view.group.no]
       m <- trunc((n-1)/input$view.page.size)+1
-      sliderInput("view.page.no","Page",1,m,1,step=1, round=TRUE, sep="")
+      sliderInput("view.page.no",.IGoR$s2("Page"),1,m,1,step=1, round=TRUE, sep="")
     }
   )
   
   output$view.rownames <- renderUI(
     if ((length(input$main.data)>0)&&.IGoR$test$meta)
       if (nrow(get(input$main.data,envir=.GlobalEnv))<100)
-        selectizeInput("view.rownames","Observations :",
+        selectizeInput("view.rownames",.IGoR$s3("Observations :"),
           multiple = TRUE, options = list(placeholder = sprintf("rownames (%d)",nrow(get(input$main.data,envir=.GlobalEnv)))),
           choices = rownames(get(input$main.data,envir=.GlobalEnv))
       )
@@ -143,7 +143,7 @@
   
   output$view.columns <- renderUI(
     if ((length(input$main.data)>0)&&.IGoR$test$meta)
-      selectizeInput("view.columns", "Variables :",
+      selectizeInput("view.columns",.IGoR$s1("Variables :"),
         multiple = TRUE, options = list(placeholder = sprintf("colonnes (%d)",ncol(get(input$main.data,envir=.GlobalEnv)))),
         choices = .columns(input$main.data)
     )
@@ -152,7 +152,7 @@
   output$view.where <- renderUI(
     if ((length(input$main.data)>0)&&(length(input$view.rownames)==0))
       box(width='100%',
-        fluidRow(column(width=12, textInput("view.where","Restreindre aux observations vérifiant la condition"))),
+        fluidRow(column(width=12, textInput("view.where",.IGoR$s3("Restreindre aux observations vérifiant la condition")))),
         fluidRow(column(width=12, verbatimTextOutput("view.comment")))
   )   )
   

@@ -29,26 +29,31 @@
     
   output$mutate.control <- renderUI(
     if ((length(input$main.data)>0)&&.IGoR$test$meta)
-      fluidRow(
-        column(width=8, .IGoR$expr.ui(input,"mutate")),
-        column(width=4,
-          .IGoR$loadBox("mutate",input$main.data),
-          box(width='100%',
-            textInput("mutate.new",.IGoR$NEWCOL,"mutate.new")
-        ))
-    ))
+      tagList(
+        fluidRow(
+          column(width=3, .IGoR$group.ui(input,"mutate")),
+          column(width=9,
+            box(width='100%',
+              column(width=3, textInput("mutate.new",.IGoR$s2(.IGoR$NEWCOL),"mutate.new")),
+              column(width=6, textInput("mutate.out",.IGoR$s2(.IGoR$OUT),input$main.data)),
+              column(width=3, uiOutput("mutate.load"))
+        ) ) ),
+        box(width='100%', 
+          column(width=3, .IGoR$expr.type.ui("mutate","")),
+          column(width=9, uiOutput("mutate.expr.what"))
+  )   ) )
   
   output$mutate.expr.what <- renderUI(
     if (length(input$mutate.type)>0)
       if (input$mutate.type==1)
-        textInput("mutate.expr","Formule de calcul")
+        textInput("mutate.expr",.IGoR$s1("Formule de calcul"))
       else
       if (input$mutate.type==2)
         tagList(
           uiOutput("mutate.fun"),
           fluidRow(
             column(width=4,
-              selectizeInput("mutate.old", label=.IGoR$INVAR,
+              selectizeInput("mutate.old", label=.IGoR$s1(.IGoR$INVAR),
                              choices=c(.IGoR$COLV,.columns(input$main.data)))
             ),
             column(width=4,uiOutput("mutate.arg1")),
@@ -57,11 +62,11 @@
        else
          tagList(
            column(width=4,
-             selectizeInput("mutate.old1", label=.IGoR$INVAR,
+             selectizeInput("mutate.old1", label=.IGoR$s1(.IGoR$INVAR),
                             choices=c(.IGoR$COLV,.columns(input$main.data)))
            ),
            column(width=4,
-              selectizeInput("mutate.op",label="Opérateur",
+              selectizeInput("mutate.op", .IGoR$s1("Opérateur"),
                       choices=c("<operateur>"='',
                                        "plus"="+",
                                       "moins"="-",
@@ -76,7 +81,7 @@
                                 "concaténé à"=" paste0"))
            ),
            column(width=4,
-              selectizeInput("mutate.old2", label=.IGoR$INVAR,
+              selectizeInput("mutate.old2", label=.IGoR$s1(.IGoR$INVAR),
                             choices=c(.IGoR$COLV,.columns(input$main.data)))
            )
          )
@@ -118,31 +123,31 @@
                   "Propager les valeurs non manquantes"="r0 :na.locf")
         )),
         column(width=4, 
-          checkboxInput("mutate.pipe","Utiliser le pipe", TRUE),
+          checkboxInput("mutate.pipe",.IGoR$s5("Utiliser le pipe"), TRUE),
           uiOutput("mutate.narm")
       ))
   })
   
   output$mutate.narm <- renderUI(
     if ((length(input$mutate.fun)>0)&&(substr(input$mutate.fun,1,1)=='n'))
-      checkboxInput("mutate.narm",.IGoR$NARM,TRUE)
+      checkboxInput("mutate.narm",.IGoR$s5(.IGoR$NARM),TRUE)
   )
 
   output$mutate.arg1 <- renderUI(
     if (.isEQ(input$mutate.type,2)&&.isNotEmpty(input$mutate.old)) 
       if ((length(input$mutate.fun)>0)&&(substr(input$mutate.fun,2,2)>0))
         if (substr(input$mutate.fun,3,3)=="c")
-          textInput("mutate.chr.arg1",
+          textInput("mutate.chr.arg1", .IGoR$s2(
             if (substr(input$mutate.fun,4,4)==">") "de"
-            else if (substr(input$mutate.fun,4,4)=="=") "par" else "",
+            else if (substr(input$mutate.fun,4,4)=="=") "par" else ""),
             switch(substring(input$mutate.fun,5),
               iconv="850",
               sprintf="<%5d>"
           ))
         else
-          numericInput("mutate.num.arg1",
+          numericInput("mutate.num.arg1", .IGoR$s2(
             if (substr(input$mutate.fun,4,4)=="-") "depuis"
-            else if (substr(input$mutate.fun,4,4)=="=") "par" else "",
+            else if (substr(input$mutate.fun,4,4)=="=") "par" else ""),
             switch(substring(input$mutate.fun,5),
               quantile=.5,
               coalesce=0
@@ -153,13 +158,13 @@
     if (.isEQ(input$mutate.type,2)&&.isNotEmpty(input$mutate.old)) 
       if ((length(input$mutate.fun)>0)&&(substr(input$mutate.fun,2,2)>1))
         if (substr(input$mutate.fun,3,3)=="c")
-          textInput("mutate.chr.arg2",
-            if (substr(input$mutate.fun,4,4)==">") "vers" else "",
+          textInput("mutate.chr.arg2", .IGoR$s2(
+            if (substr(input$mutate.fun,4,4)==">") "vers" else ""),
             if (substring(input$mutate.fun,5)=="iconv") "UTF-8"
           )
         else
-          numericInput("mutate.num.arg2",
-            if (substr(input$mutate.fun,4,4)=="-") "jusqu'à" else "",
+          numericInput("mutate.num.arg2", .IGoR$s2(
+            if (substr(input$mutate.fun,4,4)=="-") "jusqu'à" else ""),
             NULL
           )
   )  
