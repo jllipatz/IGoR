@@ -5,7 +5,7 @@
   div(id = "bloc_distinct",
     fluidRow(
       column(width=4,
-        img(src="images/distinct.png", height = "46px"),
+        img(src="images/distinct.png", height = "48px"),
         h3(span("Modalités des variables et dénombrements", style="color: blue"))
         ),
         column(width=8, 
@@ -18,10 +18,10 @@
     fluidRow(
       column(width=6,
         box(width='100%',
-          uiOutput("distinct.columns")
+          uiOutput("distinct.group")
       ) ),
       column(width=6,
-        .IGoR$loadBox("distinct","distinct.out"),
+        .IGoR$load.ui("distinct"),
         box(width='100%',
           fluidRow(
             column(width=6, radioButtons("distinct.type","", c("Modalités distinctes"=1, "Compter les observations"=2))),
@@ -38,13 +38,13 @@
   
   output$distinct.more <- renderUI(
     if (.isEQ(input$distinct.type,2)) 
-      textInput("distinct.name","Nom de la variable de dénombrement","n")
+      textInput("distinct.name",.IGoR$s2("Nom de la variable de dénombrement"),"n")
     else
-      checkboxInput("distinct.sort","Trier les modalités",TRUE))
+      checkboxInput("distinct.sort",.IGoR$s5("Trier les modalités"),TRUE))
   
-  output$distinct.columns <- renderUI(
+  output$distinct.group <- renderUI(
     if ((length(input$main.data)>0)&&.IGoR$test$meta)
-      selectizeInput("distinct.columns", label=.IGoR$VARS,
+      selectizeInput("distinct.group", label=.IGoR$s1(.IGoR$VARS),
                      multiple = TRUE, options = list(placeholder = .IGoR$ALL),
                      choices = .columns(input$main.data)
     ))
@@ -60,10 +60,10 @@
                 glue("summarise({input$distinct.name}=n())"),
                 .IGoR$ungroup(input,"distinct",1)
               )
-            else glue("count({.collapse(input$distinct.columns)})")
-          else glue("distinct({.collapse(input$distinct.columns)})"),
+            else glue("count({.collapse(input$distinct.group)})")
+          else glue("distinct({.collapse(input$distinct.group)})"),
           if ((input$distinct.type==1)&&.isTRUE(input$distinct.sort))
-            paste0(NL,glue("arrange({.collapse(input$distinct.columns)})"))
+            paste0(NL,glue("arrange({.collapse(input$distinct.group)})"))
   ) )   )
   
   observeEvent(input$distinct.command2,
@@ -76,7 +76,7 @@
                sprintf("NOTE : Il y a %d modalité(s) :\n %s.",nrow(x),
                        (if (is.character(x[[1]])||is.factor(x[[1]])) .collapse1 else .collapse)(x[[1]]))
           else sprintf("NOTE : Il y a %d modalité(s) croisée(s).",nrow(x)),
-      .subset=glue("select({.collapse(input$distinct.columns)})")
+      .subset=glue("select({.collapse(input$distinct.group)})")
   ))
 
 }
