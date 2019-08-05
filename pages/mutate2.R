@@ -4,7 +4,7 @@
   div(id = "bloc_mutate2",
     fluidRow(
       column(width=4, 
-        img(src="images/mutate2.png", height = "46px"),
+        img(src="images/mutate2.png", height = "48px"),
         h3(span("Modifier un ensemble de variables", style="color: blue"))
       ),
       column(width=8, 

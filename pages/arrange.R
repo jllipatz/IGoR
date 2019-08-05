@@ -8,7 +8,8 @@
       ),
       column(width=8, 
         p("La fonction", code("arrange"), " du package ", strong("dplyr"), "construit une nouvelle",
-          span("table réordonnée seleon l'ordre des modalités", style='color:blue'), "prises par une ou plusieurs variables."
+          span("table réordonnée selon l'ordre des modalités", style='color:blue'), "prises par une ou plusieurs variables.",br(),
+          "En R, le tri est un préalable inutile à la plupart des traitements : il n'est gère utile que pour la présentation de résultats.."
     ) ) ),
     uiOutput("arrange.control"),
     .IGoR$commandBox("arrange")
@@ -24,19 +25,19 @@
       fluidRow(
         column(width=6,
           box(width='100%',
-            column(width=6, selectizeInput("arrange.columns", label=.IGoR$VARS,
+            column(width=6, selectizeInput("arrange.columns", label=.IGoR$s1(.IGoR$VARS),
                            multiple = TRUE, options = list(placeholder = .IGoR$COLS),
                            choices = .columns(input$main.data))),
             column(width=6, uiOutput("arrange.desc"))
         )),
         column(width=6,
-          .IGoR$loadBox("arrange",input$main.data)    
+          .IGoR$load.ui("arrange",input$main.data)    
         )
   ))
   
   output$arrange.desc <- renderUI(
     if (length(input$arrange.columns)>0)
-      selectizeInput("arrange.desc", label="Ordre décroissant pour les variables :",
+      selectizeInput("arrange.desc", .IGoR$s3("Ordre décroissant pour les variables :"),
                      multiple = TRUE, options = list(placeholder = .IGoR$COLS),
                      choices = input$arrange.columns)
   )

@@ -2,7 +2,18 @@
 
 
 .IGoR$page$gather$ui <- function()
-  div(id = "bloc_gather", h3("'gather' : Passage du format large vers le format long"),
+  div(id = "bloc_gather",
+    fluidRow(
+      column(width=4, 
+        img(src="images/gather.png", height = "48px"),
+        h3(span("Passage du format large vers le format long", style="color: blue"))
+      ),
+      column(width=8, 
+        p("La fonction ", code("gather"), "du package", strong("tidyr"), 
+          span("collecte de l'information stockée en ligne dans différentes colonnes en de l'information stockée en une unique colonne sur plusieurs lignes", style='color:blue'), ". ",
+          "Les noms des colonnes d'origine est conservée dans une seconde colonne de la table résultat.", br(),
+          "Il est possible de transposer un ensemble de variables de types différents, la colonne du résultat prendra un type compatible, généralement 'caractère'."
+    ) ) ),
     fluidRow(
       column(width=6,
         imageOutput("gather.wide",height='200px'),
@@ -10,11 +21,11 @@
       ),
       column(width=6,
         imageOutput("gather.long",height='200px'),
-        .IGoR$loadBox("gather","gather.out"),
+        .IGoR$load.ui("gather"),
         box(width='100%',
-          textInput("gather.out.K","Colonne recevant les noms (K)","k"),
-          textInput("gather.out.V","Colonne recevant les valeurs (V)","v")
-    ))),
+          column(width=6, textInput("gather.out.K",.IGoR$s2("Colonne recevant les noms (K)"),"k")),
+          column(width=6, textInput("gather.out.V",.IGoR$s2("Colonne recevant les valeurs (V)"),"v"))
+    ) ) ),
     .IGoR$commandBox("gather")
   )
 
@@ -30,7 +41,7 @@
   output$gather.control <- renderUI(
     if ((length(input$main.data)>0)&&.IGoR$test$meta)
       .IGoR$select.ui("gather", NULL,
-                      buttons.title="Transposer les variables...", buttons.all=FALSE, buttons.class=FALSE,
+                      buttons.title=.IGoR$s2("Transposer les variables..."), buttons.all=FALSE, buttons.class=FALSE,
                       drop=FALSE)
   )
   
