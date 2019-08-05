@@ -19,7 +19,7 @@
           box(width='100%',
 		    column(width=6,
 				selectizeInput("col.X", label=.IGoR$s1(.IGoR$QALVARX1),
-                           choices=c(.IGoR$QALCOLV,.columns(input$main.data,c("factor","character","integer"))))),
+                           choices=c(.IGoR$DISCOLV,.columns(input$main.data,"discrete")))),
 			column(width=6,
 				selectizeInput("col.reorder", .IGoR$s3("Trier par :"),
                            choices=c(.IGoR$NUMCOLV,.columns(input$main.data,"numeric"))))
