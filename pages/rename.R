@@ -108,6 +108,7 @@
             } }
             else 
             if (input$rename.how==1) {
+              new <- str_split(str_trim(input$rename.new)," +")[[1]] %>% make.names()
               old <- .IGoR$select.columns(input,output,"rename")
               if (length(old)==length(new))
                    glue("rename({.collapse(paste0(new,' = \"',old,'\"'))})")
