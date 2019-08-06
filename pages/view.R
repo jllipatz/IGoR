@@ -68,10 +68,12 @@
   }  
   
   df <- reactive({
+    .IGoR$test$meta                          # In case of a new variable added since last view, we must force a new image
+
     df <- get(input$main.data,envir=.GlobalEnv)
     df1 <- df %>%
       mutate(..row.names=row.names(.)) %>%
-      group_by_at(input$view.group)          # perd les row.names sans possibilité de les remettre
+      group_by_at(input$view.group)          # drops the row.names 
     if ((length(input$view.rownames)==0)&&.isNotEmpty(input$view.where)) {
       df2 <- tryCatch(eval(parse(text=glue("df1 %>% filter({input$view.where})"))),
                       error=identity)
@@ -157,7 +159,8 @@
   )   )
   
   output$view.html.table <- renderUI(
-      if ((length(input$main.data)>0)&&.isNotNA(input$view.page.size)&&.isNotNA(input$view.page.no)
+      if ((length(input$main.data)>0)
+        &&.isNotNA(input$view.page.size)&&.isNotNA(input$view.page.no)
         &&(length(setdiff(input$view.columns,names(get(input$main.data,envir=.GlobalEnv))))==0)) # Il peut y avoir défaut de synchronisation
     {
     
