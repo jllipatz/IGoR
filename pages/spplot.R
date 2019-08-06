@@ -1,5 +1,6 @@
 
 ### 01/08/2019 1.03.2
+### 06/08/2019 1.03.3: Suppression de la palette manuelle
 ### TODO : subtitle
 
 .IGoR$page$spplot$ui <- function()
@@ -70,14 +71,13 @@
         column(width=4,
           box(width='100%',
             fluidRow(
-              column(width=6, checkboxInput("spplot.labels",.IGoR$s4("Etiquettes"),FALSE)),
+              column(width=6, checkboxInput("spplot.labels",.IGoR$s4("Etiquettes"),FALSE),
+                              checkboxInput("spplot.colors",.IGoR$s4("Palette de couleurs"), FALSE)),
               column(width=6, selectizeInput("spplot.fill",.IGoR$s2("Couleur des zones sans donnée"),
                                              choices=c("(aucune)"="<none>",.IGoR$COLORS), selected='black'))
             ),
-            fluidRow(
-              column(width=6, selectizeInput("spplot.fill.start",.IGoR$s2("Couleur de départ"), choices=.IGoR$COLORS, selected='yellow')),
-              column(width=6, selectizeInput("spplot.fill.end",  .IGoR$s2("Couleur d'arrivée"), choices=.IGoR$COLORS, selected='red'))
-  )   ) ) ) )
+            uiOutput("spplot.colors")
+   )   ) ) )
   
   output$spplot.sp.zone <- renderUI(
     if (.isNotEmpty(input$spplot.sp))
@@ -100,6 +100,13 @@
     }
   )
   
+  output$spplot.colors <- renderUI(
+    if (.isTRUE(input$spplot.colors))
+      fluidRow(
+        column(width=6, selectizeInput("spplot.fill.start",.IGoR$s2("Couleur de départ"), choices=.IGoR$COLORS, selected='yellow')),
+        column(width=6, selectizeInput("spplot.fill.end",  .IGoR$s2("Couleur d'arrivée"), choices=.IGoR$COLORS, selected='red'))
+  )   )
+  
   output$spplot.command2 <- renderUI(
     .IGoR$textarea("spplot", "spplot(...)", 8,
       if (.isNotEmpty(input$spplot.Z)&&.isNotEmpty(input$spplot.zone)
@@ -118,6 +125,8 @@
                else paste0(", sub=",shQuote(paste0("Source : ",input$spplot.source)))
         labels <- if (!.isTRUE(input$spplot.labels)) ""
                   else paste0(',\n         ',glue("sp.layout=make.labels(tmp.sp,'{input$spplot.sp.zone}')"))
+        colors <- if (!.isTRUE(input$spplot.colors)) ""
+                  else paste0(',\n         ',glue("col.regions=colorRampPalette(c('{input$spplot.fill.start}','{input$spplot.fill.end}'))(100)"))
         if (.isNotEmpty(input$spplot.sp.zone2)&&.isNotEmpty(input$spplot.sp.zone2.ids)) sp <- eval(parse(text=s),envir=.GlobalEnv)
         if (length(unique(df[[input$spplot.zone]]))!=nrow(df))
           {output$spplot.comment <- renderText("ERREUR : Il y a plusieurs observations pour une même zone!"); NULL}
@@ -138,7 +147,7 @@
             glue("idx <- match(tmp.sp@data${input$spplot.sp.zone}, .${input$spplot.zone})"),'\n     ',
             glue("tmp.sp@data$tmp <- .${input$spplot.Z}[idx]"),'\n     ',
             "tmp.sp %>%\n       ",
-            glue("spplot('tmp', col.regions=colorRampPalette(c('{input$spplot.fill.start}','{input$spplot.fill.end}'))(100){col}{main}{sub}{labels})"),
+            glue("spplot('tmp'{col}{main}{sub}{colors}{labels})"),
             if (.isNE(input$spplot.fill,"<none>"))
               paste0(' +\n     ',glue("  layer_(sp.polygons({input$spplot.sp}, fill='{input$spplot.fill}', col=NA))")),
             add,
