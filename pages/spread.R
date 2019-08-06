@@ -1,4 +1,6 @@
 
+### 06/08/2019 1.03.3: Ajout de la possibilité de préfixer les noms des nouvelles variables
+
 .IGoR$page$spread$ui <- function()
   div(id = "bloc_spread",
     fluidRow(
@@ -35,11 +37,20 @@
   output$spread.columns <- renderUI(
     if ((length(input$main.data)>0)&&.IGoR$test$meta)
       box(width='100%',
-        column(width=6, selectizeInput("spread.K", .IGoR$s1("Nom des futures colonnes (K)"),
-                       choices = c(.IGoR$COLV,.columns(input$main.data,"character")))),
-        column(width=6, selectizeInput("spread.V", .IGoR$s1("Valeur des futures colonnes (V)"),
-                       choices = c(.IGoR$COLV,.columns(input$main.data))))
-  )   )
+        fluidRow(
+          column(width=6, selectizeInput("spread.K",.IGoR$s1("Noms des futures colonnes (K)"),
+                                         choices = c(.IGoR$COLV,.columns(input$main.data,"character")))),
+          column(width=6, uiOutput("spread.sep"))
+        ),
+        fluidRow(
+          column(width=6, selectizeInput("spread.V", .IGoR$s1("Valeurs des futures colonnes (V)"),
+                                       choices = c(.IGoR$COLV,.columns(input$main.data))))
+  )   ) )
+  
+  output$spread.sep <- renderUI(
+    if (.isNotEmpty(input$spread.K))
+      checkboxInput("spread.sep",.IGoR$s4(paste0("Préfixer par '",input$spread.K,"'")), FALSE)
+  )
 
   output$spread.command2 <- renderUI(
     if (length(input$main.data)>0)
@@ -50,7 +61,11 @@
             ""
           } 
           else
-            .IGoR$command2(glue("spread({input$spread.K},{input$spread.V})"))
-  )   )                    
+            .IGoR$command2(
+              "spread(",
+              glue("{input$spread.K},{input$spread.V}"),
+              if (.isTRUE(input$spread.sep)) ", sep=\"\"",
+              ')'
+  )   )     )                 
 
 }
