@@ -9,7 +9,7 @@ IGoR a été conçu pour simplifier la prise en main de R en affranchissant l'ut
 Le code produit peut être exécuté sous IGoR et permettre le déroulement d'une analyse simple, mais il peut aussi être amendé ou recopié en dehors d'IGoR. En outre IGoR garde un "log" des différentes séquences qu'il a généré.<br>
 A deux exceptions près (`wtd.percent` et `gf_lorenz` qui sont définies dans *init.R*) le code ne dépend pas d'IGoR mais uniquement des packages appelés par IGoR.
 
-IGoR est livré avec petites tables de test, mais n'est pas restreint aux données de celles-ci et IGoR peut en pratique travailler sur tout fichier qui puisse être chargé dans la mémoire de RStudio. Néanmoins IGoR travaille dans l'optique du "tidy data" et ne connaît que les types de données de base.
+IGoR est livré avec deux petites tables de test, mais n'est pas restreint aux données de celles-ci et IGoR peut en pratique travailler sur tout fichier qui soit accessible dans les emplacements paramétrés dans le *init.R* et qui puisse être chargé dans la mémoire de RStudio. Néanmoins IGoR travaille dans l'optique du "tidy data" et ne connaît que les types de données de base.
 
 Le code généré par IGoR peut être incorrect si les éléments fournis par l'utilisateur sont inadéquats ou si la structure des données sort d'un cadre strictement "tidy". Dans la mesure du possible les erreurs qui en sont la conséquence sont interceptées et n'interrompent pas le fonctionnement d'IGoR (sauf bugs). Mais les messages d'erreur proviennent le plus souvent de R lui même, ne sont pas toujours faciles à décrypter et ne sont traduits que dans les cas les plus évidents de fausse manipulation. Ceci est le lot commun des programmeurs en R et ne sera pas amélioré.
 
