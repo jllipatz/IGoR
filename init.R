@@ -1,28 +1,28 @@
-library(shiny)
-library(shinydashboard)
-library(shinyjs)
-library(shinyFiles)
+library(shiny)          # 1.2.0
+library(shinydashboard) # 0.7.1
+library(shinyjs)        # 1.0
+library(shinyFiles)     # >=0.7.2, problème avec les versions antérieures
 
-library(purrr)
-library(tidyr)
-library(dplyr)
-library(stringr)
-library(glue)
+library(purrr)          # 0.2.5
+library(tidyr)          # 0.8.2
+library(dplyr)          # >=0.7.8, problème avec la 0.7.4
+library(stringr)        # 1.3.1
+library(glue)           # 1.3.0
 
-library(rio)
+library(rio)            # 0.5.16
+library(ggformula)      # >=0.9.0, pour 'layer_factory'
 
-library(lubridate)
-library(zoo)
+library(lubridate)      # 1.7.4  Usage marginal
 
-library(fst)          # pages 'import', 'export'
-library(feather)      # pages 'import', 'export'
-library(fuzzyjoin)    # page 'fuzzyjoin'
-library(tables)       # page 'tabular'
-library(skimr)        # page 'skim'
-library(ggformula)
-library(gglorenz)     # page 'lorenz'
-library(sp)           # page 'spplot'
-library(latticeExtra) # page 'spplot'
+library(zoo)            # 1.8-4  page 'mutate', pour 'na.locf'
+library(fst)            # 0.8.8  pages 'import', 'export'
+library(feather)        # 0.3.2  pages 'import', 'export'
+library(fuzzyjoin)      # 0.1.4  page 'fuzzyjoin'
+library(tables)         # 0.8.7  page 'tabular'
+library(skimr)          # 1.0.3  page 'skim'
+library(gglorenz)       # 0.1.0  page 'lorenz'
+library(sp)             # 1.3-1  page 'spplot'
+library(latticeExtra)   # 0.6-28 page 'spplot'
 
 `%not in%` <- Negate(`%in%`)
 
