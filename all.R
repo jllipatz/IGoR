@@ -557,10 +557,12 @@ NL <- ' %>%\n   '
 }
 
 ## Fonctions pour les pages graphiques
-.IGoR$dropdownButton <- function(...,page, width="800px", tooltip = tooltipOptions(title = .IGoR$GOPTIONS))
+.IGoR$dropdownButton <- function(..., page, width="800px", title = .IGoR$GOPTIONS, status="info")
   tagList(
-    tags$style(HTML(paste0("#dropdown-menu-",page," {background-color: #F0F0FF ;}"))),
-    dropdownButton(inputId=page, width=width, tooltip=tooltip, status="info", ...)
+    tags$style(HTML(paste0("#dropdown-menu-",page," {border: 1px solid blue ;background-color: #F0F0FF ;}"))),
+    dropdownButton(inputId=page, width=width, tooltip=tooltipOptions(title=title), status=status,
+                   p(title),
+                   ...)
   )
 
 .IGoR$hr <- function() hr(style='border:0; margin:0; width:100%; height:2px; background:blue;')
@@ -592,7 +594,7 @@ NL <- ' %>%\n   '
     if (dropdown)
       fluidRow(
         column(width=1,
-          .IGoR$dropdownButton(page=paste0(page,"_titles"), width=NULL, tooltip = tooltipOptions(title = "Titres"),
+          .IGoR$dropdownButton(page=paste0(page,"_titles"), width=NULL, title = "Titres",
             textInput(paste0(page,".title"),.IGoR$s4("Titre"),""),
             if (subtitle) textInput(paste0(page,".subtitle"),.IGoR$s4("Sous-titre"),""),
             textInput(paste0(page,".source"),.IGoR$s4("Source"),""),
@@ -659,6 +661,22 @@ NL <- ' %>%\n   '
   
   shinyFileSave(input,page, roots=.IGoR$volumes, defaultPath='', defaultRoot='home')
   
+}
+
+## Widgets within dropdownButtons are not refreshed until they are shown,
+## so the input files may conserve a value entered before the data table has changed and may lead to inconsistence.
+## To bypass, we remember the name of the table and the columns change state when creating the widgets.
+##  see the 'browse' page for examples of use.
+.IGoR$sync <- list()
+.IGoR$do.sync <- function (input,id) {
+  .IGoR$sync[[id]] <<- list(input$main.data, .IGoR$test$meta)
+  id                                   # meant to be used as widget id
+}
+.IGoR$is.sync <- function (input,id)
+  identical(.IGoR$sync[[id]], list(input$main.data, .IGoR$test$meta))
+.IGoR$if.sync <- function (input,id) {
+  x <- input[[id]]                     # in case of not refreshed, will cause to refresh
+  if (.IGoR$is.sync(input,id)) x       # if not refreshed returns NULL else its value
 }
 
 
