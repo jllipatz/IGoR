@@ -29,8 +29,7 @@
       column(width=1,
         .IGoR$dropdownButton(page="view_rows",title="Observations",
           uiOutput("view.rownames"),
-          fluidRow(column(width=12, uiOutput("view.where"))),
-          fluidRow(column(width=12, verbatimTextOutput("view.comment"))),
+          uiOutput("view.where"),
           fluidRow(
             column(width=6, uiOutput("view.group")),
             column(width=6, uiOutput("view.group.no"))
@@ -94,7 +93,7 @@
         df <- df %>% filter(FALSE)
       }
       else {
-        output$view.comment <- renderText(.IGoR$look(input$view.where))
+        output$view.comment <- renderText(str_sub(.IGoR$look(input$view.where),4))
         df1 <- df2
         df <- as.data.frame(df1)
         row.names(df) <- df$..row.names
@@ -154,8 +153,10 @@
   
   output$view.where <- renderUI(
     if ((length(input$main.data)>0)&&(length(input$view.rownames)==0))
-      textInput(.IGoR$do.sync(input,"view.where"),.IGoR$s3("Restreindre aux observations vérifiant la condition"))
-  )
+      tagList(
+        textInput(.IGoR$do.sync(input,"view.where"),.IGoR$s3("Restreindre aux observations vérifiant la condition"),width='100%'),
+        verbatimTextOutput("view.comment")
+  )   )
   
   output$view.html.table <- renderUI(
     if ((length(input$main.data)>0)&&.IGoR$test$meta) {
