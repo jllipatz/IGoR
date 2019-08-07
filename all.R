@@ -7,6 +7,8 @@
 ### 18/07/2019 1.02.2: Paramétrage de la hauteur des graphiques
 ### 25/07/2019 1.03.0: Desactivation du correcteur orthographique avec .IGoR$textarea
 ### 01/08/2019 1.03.2: Introduction des styles pour les titres des champs
+### 06/08/2019 1.04.0: dropdown buttons
+
 
 .tables <- function () {
   f <- Vectorize(function(x) is.data.frame(get(x,envir=.GlobalEnv)))
@@ -225,8 +227,9 @@ as_tibble <- function(.data) if ("tbl_df" %in% class(.data)) .data else dplyr::a
 .IGoR$GSAVE    = "Sauvegarder le graphique sous :"
 .IGoR$TSAVE0   = "Sauvegarder le tableau"
 .IGoR$FILTER   = "Restreindre aux observations vérifiant la condition"
-.IGoR$COLORS = c("black","red","green","blue","white","yellow","pink")
-.IGoR$STATS  = '<fonctions>'
+.IGoR$COLORS   = c("black","red","green","blue","white","yellow","pink")
+.IGoR$GOPTIONS = 'Options du graphique'
+.IGoR$STATS    = '<fonctions>'
 .IGoR$STATSV = c("Somme"="sum",
                  "Moyenne"="mean",
                  "Mediane"="median",
@@ -554,7 +557,17 @@ NL <- ' %>%\n   '
 }
 
 ## Fonctions pour les pages graphiques
-.IGoR$gUI <- function(page,.title,.text)
+.IGoR$dropdownButton <- function(...,page, width="800px", tooltip = tooltipOptions(title = .IGoR$GOPTIONS))
+  tagList(
+    tags$style(HTML(paste0("#dropdown-menu-",page," {background-color: #F0F0FF ;}"))),
+    dropdownButton(inputId=page, width=width, tooltip=tooltip, status="info", ...)
+  )
+
+.IGoR$hr <- function() hr(style='border:0; margin:0; width:100%; height:2px; background:blue;')
+
+.IGoR$gUI <- function(page,.title,.text,
+                      dropdown=FALSE,
+                      subtitle=TRUE)
   div(id = paste0("bloc_",page), 
     if (missing(.text)) h3(.title)
     else
@@ -565,17 +578,32 @@ NL <- ' %>%\n   '
         ),
         column(width=8, .text)
       ),
-    box(width='100%', collapsible=TRUE, collapsed=TRUE,
-	    fluidRow(
-	      column(width=4, textInput(paste0(page,".title"),.IGoR$s4("Titre"),"")),
-	      column(width=4, textInput(paste0(page,".subtitle"),.IGoR$s4("Sous-titre"),"")),
-	      column(width=4, textInput(paste0(page,".source"),.IGoR$s4("Source"),""))
+    if (!dropdown)
+      box(width='100%', collapsible=TRUE, collapsed=TRUE,
+	      fluidRow(
+	        column(width=4, textInput(paste0(page,".title"),.IGoR$s4("Titre"),"")),
+	        if (subtitle) column(width=4, textInput(paste0(page,".subtitle"),.IGoR$s4("Sous-titre"),"")),
+	        column(width=4, textInput(paste0(page,".source"),.IGoR$s4("Source"),""))
+	      ),
+	      column(width=4, numericInput(paste0(page,".height"),.IGoR$s2("Hauteur du graphique (x100 pixels)"),4))
 	    ),
-	    column(width=4, numericInput(paste0(page,".height"),.IGoR$s2("Hauteur du graphique (x100 pixels)"),4))
-	  ),
     uiOutput(paste0(page,".control")),
     .IGoR$commandBox(page),
-    uiOutput(paste0(page,"..plot"))
+    if (dropdown)
+      fluidRow(
+        column(width=1,
+          .IGoR$dropdownButton(page=paste0(page,"_titles"), width=NULL, tooltip = tooltipOptions(title = "Titres"),
+            textInput(paste0(page,".title"),.IGoR$s4("Titre"),""),
+            if (subtitle) textInput(paste0(page,".subtitle"),.IGoR$s4("Sous-titre"),""),
+            textInput(paste0(page,".source"),.IGoR$s4("Source"),""),
+            .IGoR$hr(),
+            numericInput(paste0(page,".height"),.IGoR$s2("Hauteur du graphique (x100 pixels)"),4)
+          ),
+          uiOutput(paste0(page,".dropdown"))
+        ),
+        column(width=11, uiOutput(paste0(page,"..plot")))
+      )
+    else uiOutput(paste0(page,"..plot"))
   )
 
 .IGoR$gVarLabelUI <- function(input,output,page,var)

@@ -2,6 +2,7 @@ library(shiny)          # 1.2.0
 library(shinydashboard) # 0.7.1
 library(shinyjs)        # 1.0
 library(shinyFiles)     # >=0.7.2, problème avec les versions antérieures
+library(shinyWidgets)   # 0.4.8
 
 library(purrr)          # 0.2.5
 library(tidyr)          # 0.8.2

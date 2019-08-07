@@ -5,7 +5,7 @@
   
   header = dashboardHeader(
     title = "I Go R"
-    ,tags$li(class = "dropdown", p(em("version 1.03.3")))
+    ,tags$li(class = "dropdown", p(em("version 1.04.0")))
     ,tags$li(a(href = 'http://www.insee.fr',
                img(src = 'images/logo_insee.png',
                    title = "insee.fr", height = "46px"),
