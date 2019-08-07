@@ -10,7 +10,9 @@
       "La couleur des points peut également être dépendante d'une autre variable qualitative. ",
       "Dans le cas de tracé de courbes, un tel paramétrage permet de superposer les courbes obtenues pour chacune des modalités de la variable supplémentaire, ",
       "celle ci agissant comme dans un", code("group_by"), "de", strong("dplyr"), "."
-  ) )
+    ),
+    dropdown=TRUE
+  )
 
 
 .IGoR$page$points$sv <- function(input, output, session) {
@@ -33,34 +35,34 @@
               column(width=6, selectizeInput("points.Y", label=.IGoR$s1(.IGoR$NUMVARY1), 
                                              choices=c(.IGoR$NUMCOLV,.columns(input$main.data,"numeric")))),
               column(width=6, uiOutput("points.Y.label"))
-          ) ),
-          uiOutput("points.save.control")
-        ),
+        ) ) ),
         column(width=6,
           box(width='100%',
-            fluidRow(
-              column(width=6, radioButtons("points.type","",
-                                          c("Points seuls"=1,
-                                            "Relier les points"=2,
-                                            "Regression linéaire"=3))),
-              column(width=6, uiOutput("points.scale"))
-            ),
-            hr(),
-            fluidRow(
-              column(width=6, radioButtons("points.size.control", .IGoR$s2("Taille des points"),
-                                          c("En fonction de la variable..."=1,
-                                            "Uniforme..."=2))),
-              column(width=6, uiOutput("points.size"))
-              ),
-            fluidRow(
-              column(width=6, radioButtons("points.color.control", .IGoR$s2("Couleur des points"),
-                                           c("En fonction de la variable..."=1,
-                                             "Uniforme..."=2))),
-              column(width=6, uiOutput("points.color"))
-            ),
-            uiOutput("points.shape")          
-        ))
-  ))
+            radioButtons("points.type",NULL,
+                         c("Points seuls"=1, "Relier les points"=2, "Regression linéaire"=3))),
+           uiOutput("points.save.control")
+  )   ) )
+        
+  output$points.dropdown <- renderUI(
+    if ((length(input$main.data)>0)&&.IGoR$test$meta)
+      .IGoR$dropdownButton(page="points",
+        fluidRow(
+          column(width=6, radioButtons("points.size.type", .IGoR$s2("Taille des points"),
+                                       c("En fonction de la variable..."=1, "Uniforme..."=2))),
+          column(width=6, uiOutput("points.size"))
+        ),
+        fluidRow(
+          column(width=6, radioButtons("points.color.type", .IGoR$s2("Couleur des points"),
+                                       c("En fonction de la variable..."=1, "Uniforme..."=2))),
+          column(width=6, uiOutput("points.color"))
+        ),
+        uiOutput("points.shape"),
+        .IGoR$hr(),
+        strong("Abscisses"),
+        fluidRow(
+          column(width=6, uiOutput("points.scale"))
+        )
+  )   )
   
   .IGoR$gVarLabelUI(input,output,"points","X")
   
@@ -72,8 +74,8 @@
   )
   
   output$points.size <- renderUI(
-    if (.IGoR$test$meta&&(length(input$points.size.control)>0))
-      if (input$points.size.control==1)
+    if (.IGoR$test$meta&&(length(input$points.size.type)>0))
+      if (input$points.size.type==1)
         selectizeInput("points.size.column", .IGoR$s3(.IGoR$NUMVAR1), 
                        choices=c("(aucune)",.columns(input$main.data,"numeric")))
       else
@@ -87,33 +89,35 @@
   )
   
   output$points.color <- renderUI(
-    if (.IGoR$test$meta&&(length(input$points.color.control)>0))
-      selectizeInput("points.color",
-                     if  (input$points.color.control==1) .IGoR$s3(.IGoR$QALVAR1) else "", 
-                     choices=
-                       if (input$points.color.control==1)
-                         c("(aucune)",.columns(input$main.data,c("factor","character")))
-                     else .IGoR$COLORS
-  )   )
+    if (.IGoR$test$meta&&(length(input$points.color.type)>0))
+      if (input$points.color.type==1)
+           selectizeInput("points.color.column", .IGoR$s3(.IGoR$QALVAR1),
+                          choices=c("(aucune)",.columns(input$main.data,c("factor","character"))))
+      else selectizeInput("points.color.value", "", choices=.IGoR$COLORS)
+  )
   
   output$points.command2 <- renderUI(
     .IGoR$textarea("points", "gf_point(y~x)", 4,
-      if ((length(input$points.type)>0)&&(.isNotEmpty(input$points.Y)&&.isNotEmpty(input$points.X))) {
-      color <- if (.inOrNULL(input$points.color,c("(aucune)","black"))) ""
+      if ((length(input$points.type)>0)
+        &&(.isNotEmpty(input$points.Y)&&.isNotEmpty(input$points.X))) {
+      color <- if (length(input$points.color.type)==0) ""
                else 
-                 if (input$points.color.control==1)
-                    glue(", color=~{input$points.color}")
-               else glue(", color='{input$points.color}'")
-      shape <- if (.inOrNULL(input$points.shape,"(aucune)")||(input$points.type==2)) ""
-               else glue(", shape=~{input$points.shape}")
-      size <- if ((length(input$points.size.column)==0)&&(length(input$points.size.value)==0)) ""
+                 if (input$points.color.type==1)
+                   if (.inOrNULL(input$points.color.column,"(aucune)")) ""
+                   else glue(", color=~{input$points.color.column}")
+                 else
+                   if (!.isNE(input$points.color.value,'black')) "" 
+                   else glue(", color='{input$points.color.value}'")
+      size <- if (length(input$points.size.type)==0) ""
               else 
-                if (input$points.size.control==1)
-                  if (input$points.size.column=="(aucune)") ""
+                if (input$points.size.type==1)
+                  if (.inOrNULL(input$points.size.column,"(aucune)")) ""
                   else glue(", size=~{input$points.size.column}")
                 else
-                  if (input$points.size.value==1) ""
+                  if (!.isNE(input$points.size.value,1)) ""
                   else glue(", size={input$points.size.value}")
+      shape <- if (.inOrNULL(input$points.shape,"(aucune)")||(input$points.type==2)) ""
+               else glue(", shape=~{input$points.shape}")
       type <- if (input$points.type==2) "line" else "point"
       .IGoR$command2(
         if (input$points.type==3)

@@ -1,13 +1,17 @@
+
 ### 14/06/2019 1.01.1: Libellé de variable
 ### 19/06/2019 1.01.1: Graduations entières, libellé de l'axe y
 ### 18/07/2019 1.02.2: Possibilité de tri des barres
+### 06/08/2019 1.04.0: dropdown buttons
 
 .IGoR$page$bar$ui <- function() 
   .IGoR$gUI("bar","Distribution d'une variable qualitative",
     p("La fonction ", code("gf_bar"), " du package ", strong("ggformula"), "permet de construire un graphique de ",
       span("barres de taille proportionnelle au nombre d'observations", style="color:blue"), " ventilées selon les modalités d'une variable qualitative.", br(),
       "Une seconde variable qualitative peut être utilisée pour ventiler les effectifs à l'intérieur de chaque modalité de la première variable."
-  ) )
+    ),
+    dropdown=TRUE
+  )
 
 
 .IGoR$page$bar$sv <- function(input, output, session) {
@@ -34,35 +38,36 @@
               column(width=6, selectizeInput("bar.X", label=.IGoR$s1(.IGoR$QALVARX1),
                                            choices=c(.IGoR$QALCOLV, .columns(input$main.data,c("factor","character","integer"))))),
               column(width=6, uiOutput("bar.X.label"))
-          ) ),
-          uiOutput("bar.save.control")
-        ),
-        column(width=6,
-          box(width='100%',
-            fluidRow(
-              column(width=6, radioButtons("bar.color.control", .IGoR$s2("Couleur de remplissage des barres"),
+        ) ) ),
+        column(width=6, uiOutput("bar.save.control"))
+  )   )
+  
+  output$bar.dropdown <- renderUI(
+    if ((length(input$main.data)>0)&&.IGoR$test$meta)
+      .IGoR$dropdownButton(page="bar",
+        fluidRow(
+          column(width=6, radioButtons("bar.color.control", .IGoR$s2("Couleur de remplissage des barres"),
                                           c("En fonction de la variable..."=1,
                                            "Uniforme..."=2))),
-              column(width=6,
-                uiOutput("bar.color"),
-                uiOutput("bar.color.position")
-            )),
-            fluidRow(
-              column(width=6, checkboxInput("bar.coordflip",.IGoR$s4("Barres horizontales"),FALSE)),
-              column(width=6, checkboxInput("bar.reorder",.IGoR$s4("Trier les barres"),FALSE))
-            ),
-            hr(),
-            tags$b("Ordonnées"),
-            fluidRow(
-              column(width=6, checkboxInput("bar.breaks",.IGoR$s4("Graduations entières"),FALSE)),
-              tags$head(
-                tags$style(type="text/css", "#bar_Y_label label{ display: table-cell; text-align: center; vertical-align: middle; } 
-                                             #bar_Y_label .form-group { display: table-row;}")
-              ),
-              tags$div(id = "bar_Y_label", textInput("bar.Y.label",.IGoR$s2("Titre :"),"count"))
-            )
-        ))
-  ))
+          column(width=6,
+            uiOutput("bar.color"),
+            uiOutput("bar.color.position")
+        ) ),
+        fluidRow(
+          column(width=6, checkboxInput("bar.coordflip",.IGoR$s4("Barres horizontales"),FALSE)),
+          column(width=6, checkboxInput("bar.reorder",.IGoR$s4("Trier les barres"),FALSE))
+        ),
+        .IGoR$hr(),
+        tags$b("Ordonnées"),
+        fluidRow(
+          column(width=6, checkboxInput("bar.breaks",.IGoR$s4("Graduations entières"),FALSE)),
+          tags$head(
+            tags$style(type="text/css", "#bar_Y_label label{ display: table-cell; text-align: center; vertical-align: middle; } 
+                                         #bar_Y_label .form-group { display: table-row;}")
+          ),
+          tags$div(id = "bar_Y_label", textInput("bar.Y.label",.IGoR$s2("Titre :"),"count"))
+        )
+  )   )
   
   .IGoR$gVarLabelUI(input,output,"bar","X")
   
@@ -75,9 +80,9 @@
   
   output$bar.command2 <- renderUI(
     .IGoR$textarea("bar", "gf_bar(~x)", 3,
-      if (.isNotEmpty(input$bar.X)&&(length(input$bar.color)>0)) {
+      if (.isNotEmpty(input$bar.X)) {
         x <- if (.isTRUE(input$bar.reorder)) glue("reorder({input$bar.X},`n()`)") else input$bar.X
-        color <- if (input$bar.color %in% c("(aucune)","black")) ""
+        color <- if (.inOrNULL(input$bar.color, c("(aucune)","black"))) ""
           else 
             if (input$bar.color.control==1) {
                p <- if (.inOrNULL(input$bar.color.position,1)) "" else ", position='dodge'"
@@ -85,7 +90,7 @@
             }
           else glue(", fill='{input$bar.color}'")
         r <- c(
-          if (.isTRUE(input$bar.breaks)) "scale_y_continuous(breaks=function (x) pretty(x, 5))",
+          if (.isTRUE(input$bar.breaks))    "scale_y_continuous(breaks=function (x) pretty(x, 5))",
           if (.isTRUE(input$bar.coordflip)) "coord_flip()"
         )
         .IGoR$command2(

@@ -6,7 +6,9 @@
     span("boites à moustaches", style="color:blue"), "résumant les caractéristiques essentielles de la distribution d'une variable qualitative.", br(),
    "Cette représentation est particulièrement utile pour comparer plusieurs sous-populations qui peuvent ici être déterminées ",
    "par les valeurs des modalités d'une seconde variable qui sera, elle, de type qualitatif."
-) )
+   ),
+   dropdown=TRUE
+  )
 
 
 .IGoR$page$boxplot$sv <- function(input, output, session) {
@@ -20,22 +22,23 @@
       fluidRow(
         column(width=6,
           box(width='100%',
-            column(width=6, selectizeInput("boxplot.Y", label=.IGoR$s1(.IGoR$NUMVARY1),
+            fluidRow(
+              column(width=6, selectizeInput("boxplot.Y", label=.IGoR$s1(.IGoR$NUMVARY1),
                                            choices=c(.IGoR$NUMCOLV,.columns(input$main.data,"numeric")))),
-            column(width=6, uiOutput("boxplot.Y.label"))
-          ),
-          uiOutput("boxplot.save.control")
-        ),
-        column(width=6,
-          box(width='100%',
+              column(width=6, uiOutput("boxplot.Y.label"))
+            ),
             fluidRow(
               column(width=6, selectizeInput("boxplot.X", label=.IGoR$s3(.IGoR$QALVARX1),
                                            choices=c(.IGoR$QALCOLV,.columns(input$main.data,c("factor","character"))))),
               column(width=6, uiOutput("boxplot.X.label"))
-            ),
-            checkboxInput("boxplot.coordflip",.IGoR$s4("Graphique horizontal"),FALSE)
-        ))
-  ))
+        ) ) ),
+        column(width=6, uiOutput("boxplot.save.control"))
+  )   )
+  
+  output$boxplot.dropdown <- renderUI(
+    .IGoR$dropdownButton(page="boxplot",
+      checkboxInput("boxplot.coordflip",.IGoR$s4("Graphique horizontal"),FALSE)
+  ) )
   
   .IGoR$gVarLabelUI(input,output,"boxplot","Y")
   
@@ -45,10 +48,12 @@
     .IGoR$textarea("boxplot", "gf_boxplot(y~x)", 3,
       if (.isNotEmpty(input$boxplot.Y))
         .IGoR$command2(
+          "gf_boxplot(",
           glue(if (.isNotEmpty(input$boxplot.X))
-                    "gf_boxplot({input$boxplot.Y} ~ {input$boxplot.X})"
-               else "gf_boxplot( ~ {input$boxplot.Y})"),
-          if (input$boxplot.coordflip) paste0(NL,"gf_refine(coord_flip())"),
+                    "{input$boxplot.Y} ~ {input$boxplot.X}"
+               else " ~ {input$boxplot.Y}"),
+          ")",
+          if (.isTRUE(input$boxplot.coordflip)) paste0(NL,"gf_refine(coord_flip())"),
  		       .IGoR$gTitleCmd(input,"boxplot",Y=TRUE,X=.isNotEmpty(input$boxplot.X)),
 		      .IGoR$gSaveCmd(input,"boxplot")
   ) )   )

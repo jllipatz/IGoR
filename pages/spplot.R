@@ -1,6 +1,7 @@
 
 ### 01/08/2019 1.03.2
 ### 06/08/2019 1.03.3: Suppression de la palette manuelle
+### 06/08/2019 1.04.0: dropdown buttons
 ### TODO : subtitle
 
 .IGoR$page$spplot$ui <- function()
@@ -8,7 +9,10 @@
     p("La fonction", code("spplot"), "du package", strong("sp"), "produit des cartographie thématiques simples.", br(),
       "Les fonds de carte nécessaires peuvent être restaurés à partir du fichier", em("data/geo_GADMxxxx.RData"), ".",br(), 
       em("NOTE : Les fonctionnalités présentées ici ne le sont qu'à titre démonstratif.")
-) )
+    ),
+    dropdown=TRUE,
+    subtitle=FALSE
+  )
 
 
 .IGoR$page$spplot$sv <- function(input, output, session) {
@@ -46,38 +50,25 @@
   output$spplot.control<- renderUI(
     if ((length(input$main.data)>0)&&.IGoR$test$meta)
       fluidRow(
-        column(width=8,
-          box(width='100%',
-            column(width=6, selectizeInput("spplot.Z", .IGoR$s1("Variable quantitative"),
-                                           choices=c(.IGoR$NUMCOLV,.columns(input$main.data,c("numeric","integer"))))),
-            column(width=6, selectizeInput("spplot.zone", .IGoR$s1("Identifiant de zone"),
-                                           choices=c(.IGoR$CHRCOLV,.columns(input$main.data,"character"))))
-          ),
-          box(width='100%',
-            fluidRow(
-              column(width=6, selectizeInput("spplot.sp", .IGoR$s1("Fond  de carte"),
-                                             choices=c("<SpatialPolygonsDataFrame>"="",list.sp()))),
-              column(width=6, uiOutput("spplot.sp.zone"))
-            ),
-            fluidRow(
-              column(width=6, uiOutput("spplot.sp.zone2")),
-              column(width=6, uiOutput("spplot.sp.zone2.ids")) 
-            ),
-            fluidRow(
-             column(width=6, selectizeInput("spplot.sp2",.IGoR$s3("Superposer le fond de carte"),
-                                            choices=c("<SpatialPolygonsDataFrame>"="",list.sp())))
-          ) )
-        ),
         column(width=4,
           box(width='100%',
+            selectizeInput("spplot.Z", .IGoR$s1("Variable quantitative"),
+                           choices=c(.IGoR$NUMCOLV,.columns(input$main.data,c("numeric","integer")))),
+            selectizeInput("spplot.zone", .IGoR$s1("Identifiant de zone"),
+                           choices=c(.IGoR$CHRCOLV,.columns(input$main.data,"character")))
+        ) ),
+        column(width=8,
+          box(width='100%',
             fluidRow(
-              column(width=6, checkboxInput("spplot.labels",.IGoR$s4("Etiquettes"),FALSE),
-                              checkboxInput("spplot.colors",.IGoR$s4("Palette de couleurs"), FALSE)),
-              column(width=6, selectizeInput("spplot.fill",.IGoR$s2("Couleur des zones sans donnée"),
-                                             choices=c("(aucune)"="<none>",.IGoR$COLORS), selected='black'))
-            ),
-            uiOutput("spplot.colors")
-   )   ) ) )
+              column(width=6,
+                selectizeInput("spplot.sp", .IGoR$s1("Fond  de carte"),
+                               choices=c("<SpatialPolygonsDataFrame>"="",list.sp())),
+                uiOutput("spplot.sp.zone")
+              ),
+              column(width=6,
+                uiOutput("spplot.sp.zone2"),
+                uiOutput("spplot.sp.zone2.ids")
+  )   ) ) ) ) )
   
   output$spplot.sp.zone <- renderUI(
     if (.isNotEmpty(input$spplot.sp))
@@ -100,12 +91,28 @@
     }
   )
   
+  output$spplot.dropdown <- renderUI(
+    .IGoR$dropdownButton(page="spplot",
+      fluidRow(
+        selectizeInput("spplot.sp2",.IGoR$s3("Superposer le fond de carte"),
+                       choices=c("<SpatialPolygonsDataFrame>"="",list.sp()))
+      ),
+      .IGoR$hr(),
+      fluidRow(
+        column(width=6, checkboxInput("spplot.labels",.IGoR$s4("Etiquettes"),FALSE),
+                        checkboxInput("spplot.colors",.IGoR$s4("Palette de couleurs"), FALSE)),
+        column(width=6, selectizeInput("spplot.fill",.IGoR$s2("Couleur des zones sans donnée"),
+                                       choices=c("(aucune)"="<none>",.IGoR$COLORS), selected='black'))
+      ),
+      uiOutput("spplot.colors")
+  ) )
+
   output$spplot.colors <- renderUI(
     if (.isTRUE(input$spplot.colors))
       fluidRow(
         column(width=6, selectizeInput("spplot.fill.start",.IGoR$s2("Couleur de départ"), choices=.IGoR$COLORS, selected='yellow')),
         column(width=6, selectizeInput("spplot.fill.end",  .IGoR$s2("Couleur d'arrivée"), choices=.IGoR$COLORS, selected='red'))
-  )   )
+      )   )
   
   output$spplot.command2 <- renderUI(
     .IGoR$textarea("spplot", "spplot(...)", 8,

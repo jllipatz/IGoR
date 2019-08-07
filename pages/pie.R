@@ -7,7 +7,9 @@
       span("répartition d'une variable qualitative", style='color:blue'), "sous forme de camembert.",
       "La représentation présentée ici exploite les possibilités d'accès aux fonctions de", strong("ggplot2"),
       "en partant d'un graphique en barres proportionnelles aux effectifs et le transforme par changement du système de coorodonnées."
-  ) )
+    ),
+    dropdown=TRUE
+  )
 
 
 .IGoR$page$pie$sv <- function(input, output, session) {
@@ -31,10 +33,9 @@
                                              choices=c(.IGoR$NUMCOLV,.columns(input$main.data,c("numeric","integer"))))),
               column(width=6, selectizeInput("pie.X", label=.IGoR$s3(.IGoR$GROUP),
                            choices=c(.IGoR$QALCOLV,.columns(input$main.data,c("factor","character","integer")))))
-          )),               
-          uiOutput("pie.save.control")
-        )
-      ))
+        ) ) ),               
+        column(width=6, uiOutput("pie.save.control"))
+  )   )
   
   .IGoR$gVarLabelUI(input,output,"pie","Y")
   
