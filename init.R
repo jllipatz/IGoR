@@ -52,7 +52,7 @@ attr(mtcars1$drat,'label')<- "Rear axle ratio"
 attr(mtcars1$wt,  'label')<- "Weight (1000 lbs)"
 attr(mtcars1$qsec,'label')<- "1/4 mile time"
 attr(mtcars1$vs,  'label')<- "Engine (0 = V-shaped, 1 = straight)"
-attr(mtcars1$am,  'label')<- "Transmission (TRUE = automatic, FALSE = manual)"
+attr(mtcars1$am,  'label')<- "Transmission (FALSE = automatic, TRUE = manual)"
 attr(mtcars1$gear,'label')<- "Number of forward gears"
 attr(mtcars1$carb,'label')<- "Number of carburetors"
 

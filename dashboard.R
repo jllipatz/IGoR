@@ -1,11 +1,12 @@
 ### 05/07/2019 1.01.4: Initialisation correcte du "home", sauvegarde automatique en mode batch
+### 12/08/2019 1.04.2: Externalisation des libellés en français
 
 .ui <- dashboardPage(
   skin = "blue", 
   
   header = dashboardHeader(
     title = "I Go R"
-    ,tags$li(class = "dropdown", p(em("version 1.04.1")))
+    ,tags$li(class = "dropdown", p(em(.IGoR$Z$version)))
     ,tags$li(a(href = 'http://www.insee.fr',
                img(src = 'images/logo_insee.png',
                    title = "insee.fr", height = "46px"),
@@ -29,56 +30,56 @@
     uiOutput("main.data"),
     sidebarMenu(id = "menu",
                 width = "400",
-                menuItem("Gérer les tables",
-                         menuSubItem("Visualiser la structure",        tabName="contents"),
-                         menuSubItem("Visualiser les données",         tabName="view"),
-                         menuSubItem("Visualiser une observation",     tabName="browse"),
-                         menuSubItem("Modalités des variables",        tabName="distinct"),
-                         menuSubItem("Créer une table ex nihilo",      tabName="create"),
-                         menuSubItem("Importer", 		                   tabName="import"),
-                         menuSubItem("Exporter",                       tabName="export"),
-                         menuSubItem("Lister les tables",              tabName="tables")
+                menuItem(.IGoR$Z$dashboard$manage,
+                         menuSubItem(.IGoR$Z$contents$menu.title,  tabName="contents"),
+                         menuSubItem(.IGoR$Z$view$menu.title,      tabName="view"),
+                         menuSubItem(.IGoR$Z$browse$menu.title,    tabName="browse"),
+                         menuSubItem(.IGoR$Z$distinct$menu.title,  tabName="distinct"),
+                         menuSubItem(.IGoR$Z$create$menu.title,    tabName="create"),
+                         menuSubItem(.IGoR$Z$import$menu.title,    tabName="import"),
+                         menuSubItem(.IGoR$Z$export$menu.title,    tabName="export"),
+                         menuSubItem(.IGoR$Z$tables$menu.title,    tabName="tables")
                 ),
-                menuItem("Recoder",
-                         menuSubItem("Renommer des variables",         tabName="rename"),
-                         menuSubItem("Changer le type des variables",  tabName="factor"),
-                         menuSubItem("Discrétiser une variable", 	     tabName="cut"),
-                         menuSubItem("Créer/modifier une variable",    tabName="mutate"),
-                         menuSubItem("Modifier des variables",         tabName="mutate2")
+                menuItem(.IGoR$Z$dashboard$update,
+                         menuSubItem(.IGoR$Z$rename$menu.title,    tabName="rename"),
+                         menuSubItem(.IGoR$Z$factor$menu.title,  tabName="factor"),
+                         menuSubItem(.IGoR$Z$cut$menu.title, 	     tabName="cut"),
+                         menuSubItem(.IGoR$Z$mutate$menu.title,    tabName="mutate"),
+                         menuSubItem(.IGoR$Z$mutate2$menu.title,   tabName="mutate2")
                 ),
-                menuItem("Extraire",
-                         menuSubItem("une plage d'observations",       tabName="slice"),
-                         menuSubItem("des observations",               tabName="filter"),
-                         menuSubItem("des variables",                  tabName="select")
+                menuItem(.IGoR$Z$dashboard$extract,
+                         menuSubItem(.IGoR$Z$slice$menu.title,     tabName="slice"),
+                         menuSubItem(.IGoR$Z$filter$menu.title,    tabName="filter"),
+                         menuSubItem(.IGoR$Z$select$menu.title,    tabName="select")
                 ),
-                menuItem("Restructurer",
-                         menuSubItem("Cumuler", 	                     tabName="summarise"),
-                         menuSubItem("Transposer en format long",      tabName="gather"),
-                         menuSubItem("Transposer en format large",     tabName="spread"),
-                         menuSubItem("Trier",                          tabName="arrange")
+                menuItem(.IGoR$Z$dashboard$reshape,
+                         menuSubItem(.IGoR$Z$summarise$menu.title, tabName="summarise"),
+                         menuSubItem(.IGoR$Z$gather$menu.title,    tabName="gather"),
+                         menuSubItem(.IGoR$Z$spread$menu.title,    tabName="spread"),
+                         menuSubItem(.IGoR$Z$arrange$menu.title,   tabName="arrange")
                 ),
-                menuItem("Enrichir",
-                         menuSubItem("Jointure sur égalité",           tabName="join"),
-                         menuSubItem("Jointure floue", 	               tabName="fuzzyjoin"),
-                         menuSubItem("Libellés d'un facteur",          tabName="labels")
+                menuItem(.IGoR$Z$dashboard$merge,
+                         menuSubItem(.IGoR$Z$join$menu.title,      tabName="join"),
+                         menuSubItem(.IGoR$Z$fuzzyjoin$menu.title, tabName="fuzzyjoin"),
+                         menuSubItem(.IGoR$Z$labels$menu.title,    tabName="labels")
                 ),
-                menuItem("Statistiques",
-                         menuSubItem("Analyse rapide",                 tabName="skim"),
-                         menuSubItem("Tableaux",                       tabName="tabular")
+                menuItem(.IGoR$Z$dashboard$statistics,
+                         menuSubItem(.IGoR$Z$skim$menu.title,      tabName="skim"),
+                         menuSubItem(.IGoR$Z$tabular$menu.title,   tabName="tabular")
                 ),
-                menuItem("Graphiques",
-                         menuSubItem("Barres (données individuelles)", tabName="bar"),
-                         menuSubItem("Barres (données cumulées)",      tabName="col"),
-                         menuSubItem("Histogramme", 		               tabName="histogram"),
-                         menuSubItem("Boite à moustache", 	           tabName="boxplot"),
-                         menuSubItem("Diagramme en camembert",         tabName="pie"),
-                         menuSubItem("Nuage de points",	               tabName="points"),
-                         menuSubItem("Carte de densité",               tabName="bin2d"),
-                         menuSubItem("Courbe de Lorenz",               tabName="lorenz"),
-                         menuSubItem("Cartographie",                   tabName="spplot")
+                menuItem(.IGoR$Z$dashboard$graphics,
+                         menuSubItem(.IGoR$Z$bar$menu.title,       tabName="bar"),
+                         menuSubItem(.IGoR$Z$col$menu.title,       tabName="col"),
+                         menuSubItem(.IGoR$Z$histogram$menu.title, tabName="histogram"),
+                         menuSubItem(.IGoR$Z$boxplot$menu.title, 	 tabName="boxplot"),
+                         menuSubItem(.IGoR$Z$pie$menu.title,       tabName="pie"),
+                         menuSubItem(.IGoR$Z$points$menu.title,    tabName="points"),
+                         menuSubItem(.IGoR$Z$bin2d$menu.title,     tabName="bin2d"),
+                         menuSubItem(.IGoR$Z$lorenz$menu.title,    tabName="lorenz"),
+                         menuSubItem(.IGoR$Z$spplot$menu.title,    tabName="spplot")
                 ),
                 menuItem(
-                  actionButton("main.quit", label = "Quitter",
+                  actionButton("main.quit", .IGoR$Z$dashboard$quit,
                                style = "background-color:rgb(34, 45, 50);border-color:rgb(34, 45, 50);color:white;width:32%;text-align: center;"
                   )),
                 useShinyjs(),
@@ -133,11 +134,11 @@
                showModal(modalDialog(
                  title = "Quitter IGoR?",
                  if (!.IGoR$save)
-                      "ATTENTION : Le contenu de la mémoire ne sera pas sauvegardé!"
-                 else "L'intégralite des tables en mémoire va être sauvegardé.",
+                      .IGoR$Z$dashboard$msg.drop
+                 else .IGoR$Z$dashboard$msg.save,
                  footer = tagList(
-                   modalButton("Annuler"),
-                   actionButton("quit.ok", "Confirmer")
+                   modalButton(.IGoR$Z$dashboard$quit.cancel),
+                   actionButton("quit.ok",.IGoR$Z$dashboard$quit.ok)
                  )))
   )
   

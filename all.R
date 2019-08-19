@@ -8,6 +8,235 @@
 ### 25/07/2019 1.03.0: Desactivation du correcteur orthographique avec .IGoR$textarea
 ### 01/08/2019 1.03.2: Introduction des styles pour les titres des champs
 ### 06/08/2019 1.04.0: dropdown buttons
+### 13/08/2019 1.04.2: Externalisation des libellés en français
+
+.IGoR$MAXROWNAMES = 100              # Maximum rows number for a row.names menu ('browse','view')
+.IGoR$Z.FILE      = "IGoR.json"      # File containing translatable titles and texts
+.IGoR$COLORS      = c("black","red","green","blue","white","yellow","pink")
+
+.IGoR$Z <- jsonlite::fromJSON(.IGoR$Z.FILE)
+
+## First item for column selection, when multiple=FALSE
+.IGoR$NONE        = '' %>% {names(.)<- .IGoR$Z$any$none        ; .}
+.IGoR$TABLE       = '' %>% {names(.)<- .IGoR$Z$any$table       ; .}
+.IGoR$COLV        = '' %>% {names(.)<- .IGoR$Z$any$col         ; .}
+.IGoR$CHRCOLV     = '' %>% {names(.)<- .IGoR$Z$any$col.chr     ; .}
+.IGoR$QALCOLV     = '' %>% {names(.)<- .IGoR$Z$any$col.discrete; .}
+.IGoR$NUMCOLV     = '' %>% {names(.)<- .IGoR$Z$any$col.numeric ; .}
+
+.column   <- function(input) c(.IGoR$COLV,.columns(input$main.data))
+.discrete <- function(input,none=.IGoR$QALCOLV) c(none,.columns(input$main.data,"discrete"))
+.numeric  <- function(input,none=.IGoR$NUMCOLV) c(none,.columns(input$main.data,"numeric"))
+
+.IGoR$Znames <- function(page,item,items) {
+  names(items)<- Vectorize(function(x) .IGoR$Z[[page]][[paste0(item,'.',x)]])(items)
+  items
+}
+
+.IGoR$Zrename <- function(items) {
+  names(items)<- Vectorize(function (x) .IGoR$Z$any$fun.name[[x]])(names(items))
+  items
+}
+
+.IGoR$hr <- function() hr(style='border:0; margin:0; width:100%; height:1px; background:blue;')
+
+.IGoR$s1 <- function(s) strong(span(s, style='color:red'))  # mandatory field without default setting
+.IGoR$s2 <- function(s) strong(span(s, style='color:blue')) # mandatory field with default setting
+.IGoR$s3 <- function(s) em(s)                               # control field with default setting
+.IGoR$s4 <- function(s) em(span(s, style='color:blue'))     # optional field without default setting
+.IGoR$s5 <- function(s) span(s, style='color:blue')         # optional field with default setting
+
+##
+## The user interface builder
+##
+.IGoR$ui <- function(..., page, icon=page, 
+                     control=graphics, command=TRUE, 
+                     graphics=FALSE, subtitle=TRUE)
+  div(id=paste0("div_",page),
+    fluidRow(
+      column(width=4,
+        img(src=paste0("images/",icon,".png"), height = "48px"),
+        h3(span(.IGoR$Z[[page]]$page.title, style="color: blue"))
+      ),
+      column(width=8, 
+        HTML(paste(.IGoR$Z[[page]]$info,collapse=" "))
+    ) ),
+    hr(),
+    if (control) uiOutput(paste0(page,".control")),
+    ...,
+    if (command) .IGoR$commandBox(page),
+    if (graphics)
+      fluidRow(
+        column(width=1,
+          .IGoR$dropdownButton(page=paste0(page,"_titles"), width=NULL, title=.IGoR$Z$all$titles,
+            textInput(paste0(page,".title"),.IGoR$s4(.IGoR$Z$any$title),""),
+            if (subtitle) textInput(paste0(page,".subtitle"),.IGoR$s4(.IGoR$Z$all$subtitle),""),
+            textInput(paste0(page,".source"),.IGoR$s4(.IGoR$Z$all$source),""),
+            .IGoR$hr(),
+            sliderInput(paste0(page,".height"),.IGoR$s2(.IGoR$Z$all$height),1,16,4)
+          ),
+          uiOutput(paste0(page,".dropdown"))
+        ),
+        column(width=11, uiOutput(paste0(page,"..plot")))
+  )   )
+
+.IGoR$dropdownButton <- function(..., page, width="800px", title=.IGoR$Z$all$graphics.options, status="info")
+  tagList(
+    tags$style(HTML(paste0("#dropdown-menu-",page," {border: 1px solid blue ;background-color: #F0F0FF ;}"))),
+    dropdownButton(inputId=page, width=width, tooltip=tooltipOptions(title=title), status=status,
+                   circle=FALSE,
+                   em(title),
+                   .IGoR$hr(),
+                   ...),
+    br()
+  )
+
+.IGoR$commandBox <- function(page)
+  tagList(
+    box(width=12, collapsible=TRUE,
+      column(width=2, 
+        imageOutput(paste0(page,".R"), height='128px'),
+        actionButton(paste0(page,".copy"),.IGoR$Z$all$copy)
+      ),
+      column(width=10,
+        verbatimTextOutput(paste0(page,".command1")), # immutable command header
+        uiOutput(paste0(page,".command2")),           # modifiable command text
+        verbatimTextOutput(paste0(page,".command3"))  # only for 'create'
+    ) ),
+    verbatimTextOutput(paste0(page,".comment")),      # messages from execution of the command or of its test
+    verbatimTextOutput(paste0(page,".preview"))       # display of the command result
+  )
+
+## Used in the 'command2' fields.
+.IGoR$textarea <- function (page,placeholder,rows,text)
+  tagList(
+    tags$style(type="text/css",
+               "textarea {font-family: 'Courier New'; width: 100%; background: rgb(245,245,245); border-color: rgb(204,204,204); }"),
+    tags$textarea(id=paste0(page,".command2"), spellcheck='false',
+                  placeholder=placeholder, rows=rows, 
+                  text)    
+  )
+
+## Widget to create the output table
+.IGoR$load.ui <- function(page, out=paste0(page,".out"))
+  box(width='100%', NULL,
+    column(width=8, textInput(paste0(page,".out"), .IGoR$s2(.IGoR$Z$any$out), out)),
+    column(width=4, uiOutput(paste0(page,".load")))
+  )
+
+## textInput widget with title before cell instead of above
+.IGoR$label.ui <- function(page,var,value,
+                           title=.IGoR$s2(.IGoR$Z$any$titleh), suffix=".label") {
+  id <- paste0(page,".",var,suffix)
+  div_id <- str_replace_all(id,'\\.','_')
+  tagList(			    
+    tags$head(
+      tags$style(type="text/css",
+        paste0("#",div_id," label{ display: table-cell; text-align: center; vertical-align: middle; } 
+                #",div_id," .form-group { display: table-row;}"))),
+    tags$div(id=div_id, textInput(id,title,value))
+  )
+}
+
+._     <- function(x,page,field)       x[[paste0(page,".",as.character(as.list(match.call())$field))]]
+`._<-` <- function(x,page,field,value) x[[paste0(page,".",as.character(as.list(match.call())$field))]]<- value
+
+## textInput widget with default text column label if some exists or column name if not
+.IGoR$gLabel.ui <- function(input,page,var) {
+  v <- input[[paste0(page,".",var)]]
+  d <- get(input$main.data,envir=.GlobalEnv)
+  l <- attr(d[[v]],'label')
+  textInput(paste0(page,".",var,".label"),.IGoR$Z$any$title,if (is.null(l)) v else l)
+}
+
+## (graphics) Builds the additional arg to set a title from a column name or label or user text
+.IGoR$gLabel.arg <- function(input,page,var,name)
+  if (.isNE(input[[paste0(page,'.',var,'.label')]],input[[paste0(page,'.',var)]]))
+    paste0('\n     ',name,'=',shQuote(input[[paste0(page,'.',var,'.label')]]))
+
+## selectizeInput for group columns
+.IGoR$group.ui <- function (input,page, box=TRUE){
+  f <- function()
+    selectizeInput(paste0(page,".group"), label=.IGoR$s3(.IGoR$Z$any$group),
+                   multiple = TRUE, options = list(placeholder = .IGoR$Z$any$cols.discrete),
+                   choices = .columns(input$main.data,"discrete"))
+  
+  if (box) box(width='100%', f()) else f()
+}
+
+## Columns selection box
+## Used by 'browse', 'factor', 'gather', 'skim', 'mutate2', 'rename', 'select', "summarise'
+.IGoR$select.ui <- function(page, title=NULL, box=TRUE,
+                            buttons.title=NULL, selected=1,
+                            buttons.all=TRUE, buttons.class=TRUE, buttons.range=FALSE,
+                            drop=TRUE) {
+  f <- function ()
+    tagList(
+      fluidRow(
+        column(width=6,
+          radioButtons(paste0(page,".type"),buttons.title,
+                       .IGoR$Znames("all","select",c(1,if (buttons.class) 2,if (buttons.all) 3,4:7,if (buttons.range) 0)),
+                       selected=selected)),
+        column(width=6,
+          if (drop) 
+               checkboxInput(paste0(page,".drop"),.IGoR$s4(.IGoR$Z$any$drop),FALSE)
+          else uiOutput(paste0(page,".drop")),
+          uiOutput(paste0(page,".columns.what")),     # Auxiliary input field for type 1,2, 4:7 selections
+          uiOutput(paste0(page,".columns.more"))      # Auxiliary input field ('select')
+      ) ),
+      verbatimTextOutput(paste0(page,".columns.why")) # Messages from type 7 selection
+    )
+  
+  if (box) box(width='100%', title=title, f()) else f()
+}
+
+## Builds the auxiliary input 'drop' checkbox for column selection box
+.IGoR$select.drop <- function(input,output,page)
+  ._(output,page,drop) <- renderUI(
+    if (length(._(input,page,type))>0)
+      if (((._(input,page,type)==1)&&(length(._(input,page,columns))>0))   # selection by list (allows no selection)
+        ||((._(input,page,type)>=4)&&.isNotEmpty(._(input,page,pattern)))  # selection by name
+      ) 
+        checkboxInput(paste0(page,".drop"),.IGoR$s4(.IGoR$Z$any$drop),FALSE)
+  )
+
+## Builds the auxiliary input field for column selection box
+.IGoR$select.what <- function(input,output,page,
+                              columns.all=FALSE)
+  ._(output,page,columns.what) <- renderUI(
+    if (length(._(input,page,type))>0)
+      if (._(input,page,type)==0)
+        fluidRow(
+          column(width=6, numericInput(paste0(page,".start"),.IGoR$s2(.IGoR$Z$all$select.range.start),1)),
+          column(width=6, numericInput(paste0(page,".end"),  .IGoR$s2(.IGoR$Z$all$select.range.end),  ncol(get(input$main.data,envir=.GlobalEnv))))
+        )
+      else
+      if (._(input,page,type)==1) {
+        .IGoR$test$meta
+        selectizeInput(paste0(page,".columns"),"",
+                       multiple = TRUE,  options = list(placeholder = if (columns.all) .IGoR$Z$any$all else .IGoR$Z$any$cols),
+                       choices = .columns(input$main.data))
+        
+      }
+      else
+      if (._(input,page,type)==2)
+        selectizeInput(paste0(page,".class"),"",
+                       choices=.IGoR$Znames("all","select.type",c("character","numeric","double","integer","logical","factor","Date")))
+      else
+      if (._(input,page,type)>=4)
+        textInput(paste0(page,".pattern"),"")
+  )
+
+## ('filter', 'mutate') Widget to select expression writing
+.IGoR$expr.type.ui <- function (page,title=NULL)
+  radioButtons(paste0(page,".type"),title,.IGoR$Znames("all","expr",0:3))
+
+## (graphics, 'tabular') Widget to allow saving results
+.IGoR$save.ui <- function (page,.title=.IGoR$Z$all$graphics.save)
+  box(width='100%',
+      column(width=6, checkboxInput(paste0(page,".save"), .title, FALSE)),
+      column(width=6, uiOutput(paste0(page,".save")))
+  )
 
 
 .tables <- function () {
@@ -53,11 +282,6 @@
 .isIn     <- function (x,y) (length(x)>0)&&(x %in% y)
 .inOrNULL <- function (x,y) (length(x)==0)||(x %in% y)
 
-.p <- function(s,n,f=TRUE)
-  if (n==0) glue("aucun{if (f) 'e' else ''} {s}") else
-  if (n==1) glue("un{if (f) 'e' else ''} {s}")    else
-            glue("{n} {s}s")
-
 ## En 3.5, as_tibble efface la classe skim_df quand elle est présente
 as_tibble <- function(.data) if ("tbl_df" %in% class(.data)) .data else dplyr::as_tibble(.data)
 
@@ -65,7 +289,7 @@ as_tibble <- function(.data) if ("tbl_df" %in% class(.data)) .data else dplyr::a
   a <- if (.table %in% .IGoR$tables) "updated"
   else {
     output$main.data <-  renderUI(
-      selectizeInput("main.data", label = .IGoR$IN,
+      selectizeInput("main.data", label = .IGoR$Z$all$main.data,
                      selected=if (.select) .table else input$main.data,
                      choices = eval(quote(.IGoR$tables <- .tables()),envir=.GlobalEnv)
       ))
@@ -94,7 +318,7 @@ as_tibble <- function(.data) if ("tbl_df" %in% class(.data)) .data else dplyr::a
       .IGoR$newTable(input,output,t,.select=TRUE)
       d <- get(t,envir=.GlobalEnv)
       output[[paste0(.page,".preview")]] <- renderPrint(d %>% as_tibble() %>% print())
-      output[[paste0(.page,".comment")]] <- renderText(sprintf("NOTE : La table '%s' comporte %d ligne(s) et %d colonne(s).", t, nrow(d), ncol(d)))
+      output[[paste0(.page,".comment")]] <- renderText(sprintf(.IGoR$Z$all$msg.result, t, nrow(d), ncol(d)))
     }
 })
 
@@ -125,7 +349,7 @@ as_tibble <- function(.data) if ("tbl_df" %in% class(.data)) .data else dplyr::a
   else .IGoR$newTable(input,output,t)
   output[[paste0(.page,".preview")]] <- renderPrint(d %>% as_tibble() %>% print())
   output[[paste0(.page,".comment")]] <- renderText(
-    sprintf("NOTE : La table '%s' comporte %d ligne(s) et %d colonne(s).", t, nrow(d), ncol(d))
+    sprintf(.IGoR$Z$all$msg.result, t, nrow(d), ncol(d))
   )
   shinyjs::disable(paste0(.page,".load"))
 }
@@ -134,17 +358,8 @@ as_tibble <- function(.data) if ("tbl_df" %in% class(.data)) .data else dplyr::a
   v <- tryCatch(getParseData(parse(text=text,keep.source=TRUE)) %>%
                   .[.$token %in% c("OR2","AND2","EQ_ASSIGN"),"text"],
                 error=identity)
-  if ((length(v)>0)&&!is(v,"condition")) paste0(" # *** Maître! Etes vous sûr de vouloir employer ",.collapse(v)," ?") else ""
+  if ((length(v)>0)&&!is(v,"condition")) sprintf(.IGoR$Z$all$msg.warning,.collapse(v)) else ""
 }
-
-.IGoR$textarea <- function (page,placeholder,rows,text)
-  tagList(
-    tags$style(type="text/css",
-               "textarea {font-family: 'Courier New'; width: 100%; background: rgb(245,245,245); border-color: rgb(204,204,204); }"),
-    tags$textarea(id=paste0(page,".command2"), spellcheck='false',
-                  placeholder=placeholder, rows=rows, 
-                  text)    
-  )
 
 .IGoR$try <- function (input,output,.page,.fn=NULL,.subset="head(1)") {
   output[[paste0(.page,".preview")]] <- renderText("")
@@ -177,7 +392,7 @@ as_tibble <- function(.data) if ("tbl_df" %in% class(.data)) .data else dplyr::a
 .IGoR$renderTables <- function(input,output) 
   output$main.data <-   renderUI({
     eval(quote(.IGoR$tables <- .tables()),envir=.GlobalEnv)
-    selectizeInput("main.data", label = .IGoR$IN,
+    selectizeInput("main.data", label = .IGoR$Z$all$main.data,
                    selected=if (length(input$main.data)>0) input$main.data,
                    choices = .IGoR$tables
     )
@@ -191,85 +406,7 @@ as_tibble <- function(.data) if ("tbl_df" %in% class(.data)) .data else dplyr::a
 .IGoR$log <- data.frame(time=Sys.time(),page="",command="#Yes master!",stringsAsFactors = FALSE)
 .IGoR$save <- !rstudioapi::isAvailable()
 
-.IGoR$IN       = "Table courante"
-.IGoR$OUT      = "Mémoriser le résultat sous le nom :"
-.IGoR$OUTNCOL  = "NOTE : Le résultat aura %d colonne(s)."
-.IGoR$ALLV     = "<toutes"
-.IGoR$NEWCOL   = "Colonne à créer ou remplacer"
-.IGoR$INVAR    = "Variable en entrée"
-.IGoR$OLDVAR   = "Variable à convertir"
-.IGoR$NUMERIC  = "Variable quantitative"
-.IGoR$NUMVAR1  = "Variable quantitative"
-.IGoR$NUMVARX1 = "Variable quantitative en abscisse"
-.IGoR$NUMVARY1 = "Variable quantitative en ordonnée"
-.IGoR$QALVAR   = "Variable qualitative"
-.IGoR$QALVAR1  = "Variable qualitative"
-.IGoR$QALVARX1 = "Variable qualitative en abscisse"
-.IGoR$QALVARS  = "Variables qualitatives"
-.IGoR$VARS     = "Variables"
-.IGoR$ALL      = "<toutes>"
-.IGoR$COLS     = "<colonnes>"
-.IGoR$COLV     = c("<colonne>"='')
-.IGoR$QALCOLV  = c("<colonne de type 'factor' ou 'character'>"='')
-.IGoR$FACTOR   = "Variable qualitative (énumération)"
-.IGoR$FCTCOLS  = "<colonnes de type 'factor'>"
-.IGoR$CHRCOLV  = c("<colonne de type caractère>"='')
-.IGoR$NUMCOLV  = c("<colonne de type numérique>"='')
-.IGoR$NUMCOLS  = "<colonnes numériques>"
-.IGoR$GROUP    = "Grouper par modalité de la variable"
-.IGoR$GROUPS   = "Grouper par modalité de :"
-.IGoR$WEIGHT   = "Pondérer avec :"
-.IGoR$DISCOLS  = "<colonnes (hors type 'double')>"
-.IGoR$DISCOLV  = c("<colonne (hors type 'double')>"='')
-.IGoR$NARM     = "Ignorer les valeurs manquantes" 
-.IGoR$BROWSE   = "Parcourir..."
-.IGoR$GSAVE0   = "Sauvegarder le graphique"
-.IGoR$GSAVE    = "Sauvegarder le graphique sous :"
-.IGoR$TSAVE0   = "Sauvegarder le tableau"
-.IGoR$FILTER   = "Restreindre aux observations vérifiant la condition"
-.IGoR$COLORS   = c("black","red","green","blue","white","yellow","pink")
-.IGoR$GOPTIONS = 'Options du graphique'
-.IGoR$STATS    = '<fonctions>'
-.IGoR$STATSV = c("Somme"="sum",
-                 "Moyenne"="mean",
-                 "Mediane"="median",
-                 "Premier quartile"="q1",
-                 "Dernier quartile"="q3",
-                 "Premier décile"="p10",
-                 "Dernier décile"="p90",
-                 "Ecart type"="sd",
-                 "Variance"="var",
-                 "Minimum"="min",
-                 "Maximum"="max",
-                 "Premiere valeur"="first",
-                 "Derniere valeur"="last")
-
 NL <- ' %>%\n   '
-
-.IGoR$commandBox <- function(page)
-  tagList(
-   box(width=12, collapsible=TRUE,
-     column(width=2, 
-       imageOutput(paste0(page,".R"), height='128px'),
-       actionButton(paste0(page,".copy"),"Copier le code")
-     ),
-     column(width=10,
-       verbatimTextOutput(paste0(page,".command1")),
-       uiOutput(paste0(page,".command2")),
-       verbatimTextOutput(paste0(page,".command3"))
-     )),
-   verbatimTextOutput(paste0(page,".comment")),
-   verbatimTextOutput(paste0(page,".preview"))
- )
-
-.IGoR$loadBox <- function(page, out=paste0(page,".out"), title=.IGoR$OUT, text.title=NULL)
-  box(width='100%', title=title,
-    column(width=8, textInput(paste0(page,".out"), text.title, out)),
-    column(width=4, uiOutput(paste0(page,".load")))
-)
-
-.IGoR$load.ui <- function(page, out=paste0(page,".out"))
-  .IGoR$loadBox(page, out, NULL, .IGoR$s2(.IGoR$OUT))
 
 .IGoR$rLogo <- function(input,output,.page) {
   
@@ -289,12 +426,6 @@ NL <- ' %>%\n   '
     writeClipboard(text)
   })
 }
-
-.IGoR$s1 <- function(s) strong(span(s, style='color:red'))  # mandatory field without default setting
-.IGoR$s2 <- function(s) strong(span(s, style='color:blue')) # mandatory field with default setting
-.IGoR$s3 <- function(s) em(s)                               # control field with default setting
-.IGoR$s4 <- function(s) em(span(s, style='color:blue'))     # optional field without default setting
-.IGoR$s5 <- function(s) span(s, style='color:blue')         # optional field with default setting
 
 ## Fonctions pour les pages créant une nouvelle table
 .IGoR$aServer <- function(input,output,.page,.signal=TRUE) {
@@ -332,83 +463,9 @@ NL <- ' %>%\n   '
            envir=.GlobalEnv)
   )
 }
-._     <- function(x,page,field)       x[[paste0(page,".",as.character(as.list(match.call())$field))]]
-`._<-` <- function(x,page,field,value) x[[paste0(page,".",as.character(as.list(match.call())$field))]]<- value
 
-## *** Columns selection box
-## Used by 'browse', 'factor', 'gather', 'skim', 'mutate2', 'rename', 'select', "summarise'
-.IGoR$select.ui <- function(page,title=NULL,box=TRUE,
-                            buttons.title=NULL,selected=1,
-                            buttons.all=TRUE, buttons.class=TRUE, buttons.range=FALSE,
-                            drop=TRUE) {
-  f <- function ()
-    tagList(
-      fluidRow(
-        column(width=6,
-          radioButtons(paste0(page,".type"),buttons.title,
-                   c("sélectionnées..."=1,
-                     if (buttons.class) c("du type..."=2),
-                     if (buttons.all)   c("toutes"=3),
-                     "dont le nom débute par..."=4,
-                     "dont le nom finit par..."=5,
-                     "dont le nom contient..."=6,
-                     "dont le nom contient l'expression régulière..."=7,
-                     if (buttons.range) c("entre les positions..."=0)),
-                   selected=selected)),
-        column(width=6,
-          if (drop) 
-               checkboxInput(paste0(page,".drop"),.IGoR$s4("Inverser la sélection"),FALSE)
-          else uiOutput(paste0(page,".drop")),
-          uiOutput(paste0(page,".columns.what")),
-          uiOutput(paste0(page,".columns.more"))
-      ) ),
-      verbatimTextOutput(paste0(page,".columns.why"))
-    )
-  
-  if (box) box(width='100%', title=title, f()) else f()
-}
 
-## *** Builds the auxiliary input field for column selection
-.IGoR$select.what <- function(input,output,page,
-                              columns.all=FALSE, buttons.class=TRUE, buttons.range=FALSE)
-  ._(output,page,columns.what) <- renderUI(
-    if (length(._(input,page,type))>0)
-      if (._(input,page,type)==0)
-        fluidRow(
-          column(width=6, numericInput(paste0(page,".start"),.IGoR$s2("Première colonne"),1)),
-                 column(width=6, numericInput(paste0(page,".end"),.IGoR$s2("Dernière colonne"),ncol(get(input$main.data,envir=.GlobalEnv))))
-        )
-      else
-      if (._(input,page,type)==1) {
-        .IGoR$test$meta
-        selectizeInput(paste0(page,".columns"),"",
-                       multiple = TRUE,  options = list(placeholder = if (columns.all) '<toutes>' else '<colonnes>'),
-                       choice = .columns(input$main.data))
-        
-      }
-      else
-      if ((._(input,page,type)==2)&&buttons.class)
-        selectizeInput(paste0(page,".class"),"",
-                       choices=c("numérique"="numeric",
-                                 "numérique virgule flottante"="double",
-                                 "numérique entier"="integer",
-                                 "énumération (facteur)"="factor",
-                                 "caractère"="character",
-                                 "booléen"="logical"))
-      else
-      if (._(input,page,type)>3)
-        textInput(paste0(page,".pattern"),"")
-  )
 
-## *** Builds the 'auxiliary input'drop' field for column selection
-.IGoR$select.drop <- function(input,output,page)
-  ._(output,page,drop) <- renderUI(
-    if (length(._(input,page,type))>0)
-      if (((._(input,page,type)==1)&&(length(._(input,page,columns))>0))
-          ||((._(input,page,type)>=4)&&(.isNotEmpty(._(input,page,pattern))))
-      ) 
-        checkboxInput(paste0(page,".drop"),.IGoR$s4("Inverser la selection"),FALSE)
-  )
 
 ## >>> command2 helpers (return strings)
 ##
@@ -488,41 +545,6 @@ NL <- ' %>%\n   '
   
 }
 
-## Widgets for writing assisted expressions
-## used by 'filter', 'mutate'
-.IGoR$expr.ui <- function(input,page,buttons.title="")
-  tagList(
-    box(width='100%',
-      fluidRow(
-        column(width=8, .IGoR$expr.type.ui(page,buttons.title)),
-        column(width=4, uiOutput(paste0(page,".expr.more")))
-      ),
-      uiOutput(paste0(page,".expr.what"))
-    ),
-    .IGoR$group.ui(input,page)
-  )
-
-.IGoR$expr.type.ui <- function (page,title)
-  radioButtons(paste0(page,".type"),title,
-               c("Expression non assistée"=1,
-                 "Mode assisté sur une variable"=2,
-                 "Mode assisté entre deux variables"=3)
-  )
-
-.IGoR$group.ui <- function (input,page)
-  box(width='100%',
-    selectizeInput(paste0(page,".group"), label=.IGoR$s3(.IGoR$GROUPS),
-                   multiple = TRUE, options = list(placeholder = .IGoR$DISCOLS),
-                   choices = .columns(input$main.data,c("factor","character","integer","logical")))
-  )
-                     
-
-.IGoR$save.ui <- function (page,.title=.IGoR$GSAVE0)
-  box(width='100%',
-      column(width=6, checkboxInput(paste0(page,".save"), .title, FALSE)),
-      column(width=6, uiOutput(paste0(page,".save")))
-  )
-
 ## Functions for 'join' and 'fuzzy join'
 .IGoR$jServer <- function (input,output,page) {
 
@@ -531,82 +553,31 @@ NL <- ' %>%\n   '
   output[[paste0(page,".data")]]<- renderUI({
     .IGoR$test$list
     fluidRow(
-      column(width=6, selectizeInput(paste0(page,".data"), .IGoR$s1("Seconde table en entrée"),
-                                     choices = c("<table>"="",.tables()))),
+      column(width=6, selectizeInput(paste0(page,".data"), .IGoR$s1(.IGoR$Z$all$join.data), choices=c(.IGoR$TABLE,.tables()))),
       column(width=6, uiOutput(paste0(page,".columns2")))
     )
   })
 
   output[[paste0(page,".columns2")]]<- renderUI(
     if (.isNotEmpty(._(input,page,data))&&.IGoR$test$join)
-      selectizeInput(paste0(page,".columns2"), .IGoR$s1("Clés de jointure"),
-                     multiple = TRUE, options = list(placeholder = .IGoR$DISCOLS),
-                     choices = .columns(._(input,page,data),c("factor","character","integer", "logical"))
+      selectizeInput(paste0(page,".columns2"), .IGoR$s1(.IGoR$Z$all$join.keys),
+                     multiple = TRUE, options = list(placeholder = .IGoR$Z$any$cols.discrete),
+                     choices = .columns(._(input,page,data),"discrete")
   )    )
  
   output[[paste0(page,".columns")]]<- renderUI(
    if ((length(input$main.data)>0)&&.IGoR$test$meta)
      fluidRow(
-       column(width=6, .IGoR$s2("Table courante")),
-       column(width=6, selectizeInput(paste0(page,".columns"), .IGoR$s1("Clés de jointure"),
-                                      multiple = TRUE, options = list(placeholder = .IGoR$DISCOLS),
-                                      choices = .columns(input$main.data,c("factor","character","integer", "logical")))
+       column(width=6, .IGoR$s2(.IGoR$Z$all$main.data)),
+       column(width=6, selectizeInput(paste0(page,".columns"), .IGoR$s1(.IGoR$Z$all$join.keys),
+                                      multiple = TRUE, options = list(placeholder = .IGoR$Z$any$cols.discrete),
+                                      choices = .columns(input$main.data,"discrete"))
  )   ) ) 
  
  
 }
 
 ## Fonctions pour les pages graphiques
-.IGoR$dropdownButton <- function(..., page, width="800px", title = .IGoR$GOPTIONS, status="info")
-  tagList(
-    tags$style(HTML(paste0("#dropdown-menu-",page," {border: 1px solid blue ;background-color: #F0F0FF ;}"))),
-    dropdownButton(inputId=page, width=width, tooltip=tooltipOptions(title=title), status=status,
-                   p(title),
-                   ...)
-  )
-
-.IGoR$hr <- function() hr(style='border:0; margin:0; width:100%; height:2px; background:blue;')
-
-.IGoR$gUI <- function(page,.title,.text,
-                      dropdown=FALSE,
-                      subtitle=TRUE)
-  div(id = paste0("bloc_",page), 
-    if (missing(.text)) h3(.title)
-    else
-      fluidRow(
-        column(width=4, 
-          img(src=paste0("images/",page,".png"), height = "48px"),
-          h3(span(.title, style="color: blue"))
-        ),
-        column(width=8, .text)
-      ),
-    if (!dropdown)
-      box(width='100%', collapsible=TRUE, collapsed=TRUE,
-	      fluidRow(
-	        column(width=4, textInput(paste0(page,".title"),.IGoR$s4("Titre"),"")),
-	        if (subtitle) column(width=4, textInput(paste0(page,".subtitle"),.IGoR$s4("Sous-titre"),"")),
-	        column(width=4, textInput(paste0(page,".source"),.IGoR$s4("Source"),""))
-	      ),
-	      column(width=4, numericInput(paste0(page,".height"),.IGoR$s2("Hauteur du graphique (x100 pixels)"),4))
-	    ),
-    uiOutput(paste0(page,".control")),
-    .IGoR$commandBox(page),
-    if (dropdown)
-      fluidRow(
-        column(width=1,
-          .IGoR$dropdownButton(page=paste0(page,"_titles"), width=NULL, title = "Titres",
-            textInput(paste0(page,".title"),.IGoR$s4("Titre"),""),
-            if (subtitle) textInput(paste0(page,".subtitle"),.IGoR$s4("Sous-titre"),""),
-            textInput(paste0(page,".source"),.IGoR$s4("Source"),""),
-            .IGoR$hr(),
-            numericInput(paste0(page,".height"),.IGoR$s2("Hauteur du graphique (x100 pixels)"),4)
-          ),
-          uiOutput(paste0(page,".dropdown"))
-        ),
-        column(width=11, uiOutput(paste0(page,"..plot")))
-      )
-    else uiOutput(paste0(page,"..plot"))
-  )
 
 .IGoR$gVarLabelUI <- function(input,output,page,var)
   output[[paste0(page,".",var,".label")]] <- renderUI({
@@ -656,7 +627,7 @@ NL <- ' %>%\n   '
   
   output[[paste0(page,".save")]] <- renderUI(
     if (.isTRUE(input[[paste0(page,".save")]]))
-      shinySaveButton(page, .IGoR$BROWSE, .IGoR$GSAVE, filetype=list(png="png"))
+      shinySaveButton(page, .IGoR$Z$any$browse, .IGoR$Z$all$graphics.save.as, filetype=list(png="png"))
   )
   
   shinyFileSave(input,page, roots=.IGoR$volumes, defaultPath='', defaultRoot='home')
