@@ -1,19 +1,9 @@
-### 28/06/2019 1.01.2: Corretion: widget gather.inverse qui n'apparaissait pas etbloquait la seletion de type 1
 
+### 28/06/2019 1.01.2: Correction: widget gather.inverse qui n'apparaissait pas et bloquait la selection de type 1
+### 10/08/2019 1.04.2: Externalisation des libellés en français
 
 .IGoR$page$gather$ui <- function()
-  div(id = "bloc_gather",
-    fluidRow(
-      column(width=4, 
-        img(src="images/gather.png", height = "48px"),
-        h3(span("Passage du format large vers le format long", style="color: blue"))
-      ),
-      column(width=8, 
-        p("La fonction ", code("gather"), "du package", strong("tidyr"), 
-          span("collecte de l'information stockée en ligne dans différentes colonnes en de l'information stockée en une unique colonne sur plusieurs lignes", style='color:blue'), ". ",
-          "Les noms des colonnes d'origine est conservée dans une seconde colonne de la table résultat.", br(),
-          "Il est possible de transposer un ensemble de variables de types différents, la colonne du résultat prendra un type compatible, généralement 'caractère'."
-    ) ) ),
+  .IGoR$ui(page="gather",
     fluidRow(
       column(width=6,
         imageOutput("gather.wide",height='200px'),
@@ -23,11 +13,9 @@
         imageOutput("gather.long",height='200px'),
         .IGoR$load.ui("gather"),
         box(width='100%',
-          column(width=6, textInput("gather.out.K",.IGoR$s2("Colonne recevant les noms (K)"),"k")),
-          column(width=6, textInput("gather.out.V",.IGoR$s2("Colonne recevant les valeurs (V)"),"v"))
-    ) ) ),
-    .IGoR$commandBox("gather")
-  )
+          column(width=6, textInput("gather.out.K",.IGoR$s2(.IGoR$Z$gather$out.k),"k")),
+          column(width=6, textInput("gather.out.V",.IGoR$s2(.IGoR$Z$gather$out.v),"v"))
+  ) ) ) )
 
 
 .IGoR$page$gather$sv <- function(input, output, session) {
@@ -41,11 +29,11 @@
   output$gather.control <- renderUI(
     if ((length(input$main.data)>0)&&.IGoR$test$meta)
       .IGoR$select.ui("gather", NULL,
-                      buttons.title=.IGoR$s2("Transposer les variables..."), buttons.all=FALSE, buttons.class=FALSE,
+                      buttons.title=.IGoR$s2(.IGoR$Z$gather$gather), buttons.all=FALSE, buttons.class=FALSE,
                       drop=FALSE)
   )
   
-  .IGoR$select.what(input,output,"gather", buttons.class=FALSE)
+  .IGoR$select.what(input,output,"gather",columns.all=TRUE)
   .IGoR$select.drop(input,output,"gather")
 
   output$gather.command2 <- renderUI(
@@ -62,7 +50,7 @@
   ) )   )
   
   observeEvent(input$gather.command2,
-    .IGoR$try(input,output,"gather", .fn=function(x) sprintf(.IGoR$OUTNCOL, ncol(x))
+    .IGoR$try(input,output,"gather", .fn=function(x) sprintf(.IGoR$Z$gather$msg.result, ncol(x))
   ))
 
 }

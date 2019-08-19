@@ -1,34 +1,18 @@
 
-### 06/06/2019 v1.01.0: Harmonisation de la selection de variables
-### 15/07/2019 v1.02.1: Corrections (na.rm, noms en clairs), ajout des dénombrements
-### 31/07/2019 v1.03.1: AJout du comptage d'une modalité
+### 06/06/2019 1.01.0: Harmonisation de la selection de variables
+### 15/07/2019 1.02.1: Corrections (na.rm, noms en clairs), ajout des dénombrements
+### 31/07/2019 1.03.1: AJout du comptage d'une modalité
+### 12/08/2019 1.04.2: Externalisation des libellés en français
 
-.IGoR$page$summarise$ui <- function()
-  div(id = "bloc_summarise",
-    fluidRow(
-      column(width=4, 
-        img(src="images/summarise.png", height = "48px"),
-        h3(span("Récapituler des variables quantitatives", style="color: blue"))
-      ),
-      column(width=8, 
-        p("Les fonctions de la famille ", code("summarise"), " du package ", strong("dplyr"),
-          " prennent un ensemble d'observations et construisent une statistique synthétique ou un ensemble de statistiques synthétiques, ",
-          "sur une variable ou une famille de variables. ",
-          "Ces variables doivent êtres de type quantitatif, sauf pour deux cas offerts ici : ",
-          "le dénombrement d'observations et le dénombrement d'observations dont les variables sélectionnées prennent une valeur précise.", br(),
-          "Le résultat est une table comportant une seule ligne, sauf si on traite la table courante par groupe d'observations, ",
-          "auquel cas le résultat aura autant de lignes que de groupes."
-     ) ) ),
-    uiOutput("summarise.control"),
-    .IGoR$commandBox("summarise")
-  )
+.IGoR$page$summarise$ui <- function() .IGoR$ui(page="summarise", control=TRUE)
 
 
 .IGoR$page$summarise$sv <- function(input, output, session) {
   
   .IGoR$vServer(input,output,"summarise")
   
-  statsv <- c("Nombre"="n","Comptage"="v",.IGoR$STATSV)
+  statsv <- c("n","v","sum","mean","median","q1","q3","p10","p90","sd","var","min","max","first","last") %>%
+    {names(.) <- .; .} %>% .IGoR$Zrename()
   
   stat <- function (i,w,has.na,na.rm,wtd) {
     value <- 
@@ -85,44 +69,34 @@
     if ((length(input$main.data)>0)&&.IGoR$test$meta)
       fluidRow(
         column(width=6,
-          .IGoR$select.ui("summarise", buttons.title=.IGoR$s2("Cumuler les variables...")),
+          .IGoR$select.ui("summarise", buttons.title=.IGoR$s2(.IGoR$Z$summarise$summarise)),
           box(width='100%', collapsible=TRUE,
-            column(width=6, selectizeInput("summarise.group", label=.IGoR$s3(.IGoR$GROUPS),
-                                           multiple = TRUE, options = list(placeholder = .IGoR$DISCOLS),
-                                           choices = .columns(input$main.data,"discrete"))),
-            column(width=6, selectizeInput("summarise.W", label=.IGoR$s3(.IGoR$WEIGHT), 
-                                           choices=c(.IGoR$NUMCOLV,.columns(input$main.data,"numeric"))))
+            column(width=6, .IGoR$group.ui(input,"summarise", box=FALSE)),
+            column(width=6, selectizeInput("summarise.W", .IGoR$s3(.IGoR$Z$any$weight), .numeric(input)))
         ) ),
         column(width=6,
           .IGoR$load.ui("summarise"),
           box(width='100%',
             fluidRow(
               column(width=6,
-                selectizeInput("summarise.funs", .IGoR$s1("Calculer"),
-                           multiple=TRUE, options = list(placeholder = .IGoR$STATS),
+                selectizeInput("summarise.funs", .IGoR$s1(.IGoR$Z$summarise$funs),
+                           multiple=TRUE, options=list(placeholder = .IGoR$Z$any$funs),
                            choices=statsv)),
               column(width=6, uiOutput("summarise.value"))
             ),
             fluidRow(
-              column(width=6, checkboxInput("summarise.names",.IGoR$s5("Intitulés en clair"),TRUE)),
-              column(width=6, checkboxInput("summarise.na.rm",.IGoR$s5("Ignorer les valeurs manquantes"),TRUE))
+              column(width=6, checkboxInput("summarise.names",.IGoR$s5(.IGoR$Z$summarise$names),TRUE)),
+              column(width=6, checkboxInput("summarise.na.rm",.IGoR$s5(.IGoR$Z$any$na.rm),TRUE))
       ) ) ) )
   )
 
   output$summarise.value <- renderUI(
-    if ("v" %in% input$summarise.funs)
-      tagList(
-        tags$head(
-          tags$style(type="text/css",
-                    "#summarise_value label{ display: table-cell; text-align: center; vertical-align: middle; } 
-                     #summarise_value .form-group { display: table-row;}")
-          ),
-        tags$div(id = "summarise_value", textInput("summarise.value",.IGoR$s2("Valeur : "),""))
-  )   )
+    if ("v" %in% input$summarise.funs) .IGoR$label.ui("summarise","value",'', title=.IGoR$Z$summarise$value, suffix='')
+  )
   
   output$summarise.command2 <- renderUI(
     .IGoR$textarea("summarise", "summarise...(...)", 3,
-      if ((length(input$main.data)>0)&&(length(input$summarise.funs)>0)) {          g <- if (length(input$summarise.group)>0) glue("\n  group_by({paste(input$summarise.group,collapse=',')})") else ""
+      if ((length(input$main.data)>0)&&(length(input$summarise.funs)>0)) {
         na <- if (length(intersect(c("n","v","first","last"),input$summarise.funs))>0) "" ## na.rm n'a pas de sens
           else if (.isNotEmpty(input$summarise.W))
                     if (input$summarise.na.rm) "" else ", na.rm=FALSE"  # Dans HMisc le défaut est à TRUE
@@ -166,11 +140,7 @@
       .fn=function(x) {
         l <- setdiff(colnames(x),isolate(input$summarise.group))
         n <- length(l)/length(isolate(input$summarise.funs))
-        paste0("NOTE : ",
-          if (n>1)      sprintf("%d variables vont être cumulées.",n)
-          else if(n==1)         "Une variable va être cumulée."
-          else                  "Aucune variable ne va être cumulée."
-        )
+        sprintf(.IGoR$Z$summarise$msg.result,n)
       }
   ))
   

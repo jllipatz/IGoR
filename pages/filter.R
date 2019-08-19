@@ -1,26 +1,9 @@
 
 ### 25/07/2019 1.03.0 : Mode assisté (keep quiet: temperature was over 35°C!)
+### 12/08/2019 1.04.2: Externalisation des libellés en français
+### 14/08/2019 1.04.3: row_number
 
-.IGoR$page$filter$ui <- function()
-  div(id = "bloc_filter",
-    fluidRow(
-      column(width=4, 
-        img(src="images/filter.png", height = "48px"),
-        h3(span("Sélectionner des observations", style="color: blue"))
-      ),
-      column(width=8, 
-        p("La fonction ", code("filter"), " du package", strong("dplyr"), "construit une",
-          span("nouvelle table limitée aux observations satisfaisant une certaine condition.",style="color:blue"), br(),
-          "Le test de la condition peut être fait en groupant les observations sur les mêmes modalités d'un ensemble de variables.",
-          "Dans ce cas le test sera réalisé groupe par groupe et la table résultat sera l'agrégation des résultats obtenus sur les différents groupes.",
-          "Ceci n'est utile que lorsque la condition utilise une fonction retournant un", em("indicateur statistique"), ": son calcul sera fait groupe par groupe et non sur l'ensemble de la table."
-    ) ) ),
-    fluidRow(
-      column(width=8, uiOutput("filter.control")),
-      column(width=4, .IGoR$load.ui("filter"))
-    ),
-    .IGoR$commandBox("filter")  
-  )
+.IGoR$page$filter$ui <- function() .IGoR$ui(page="filter", control=TRUE)
 
 
 .IGoR$page$filter$sv <- function(input, output, session) {
@@ -29,58 +12,64 @@
   
   output$filter.control <- renderUI(
     if ((length(input$main.data)>0)&&.IGoR$test$meta)
-      .IGoR$expr.ui(input,"filter",.IGoR$s1("Restreindre aux observations vérifiant la condition"))
-  )
-  
-  output$filter.expr.more <- renderUI(
-    checkboxInput("filter.drop",.IGoR$s4("Inverser la condition"), FALSE)
-  )
-  
+      tagList(
+        fluidRow(
+          column(width=6, box(width='50%', checkboxInput("filter.drop",.IGoR$s4(.IGoR$Z$filter$drop), FALSE))),
+          column(width=6, .IGoR$load.ui("filter"))
+        ),
+        box(width='100%',
+          column(width=3, .IGoR$expr.type.ui("filter",.IGoR$s2(.IGoR$Z$filter$filter))),
+          column(width=3, uiOutput("filter.group")),
+          column(width=6, uiOutput("filter.expr.what")
+  )   ) ) ) 
+
   output$filter.expr.what <- renderUI(
     if (length(input$filter.type)>0)
-      if (input$filter.type==1) textInput("filter.where",.IGoR$s1("Formule restituant TRUE ou FALSE"))
+           if (input$filter.type==0) textInput("filter.where",.IGoR$s1(.IGoR$Z$filter$where))
+      else if (input$filter.type==1) numericInput("filter.no",.IGoR$s2(.IGoR$Z$filter$no),1)
       else
         tagList(
           column(width=3,
-            selectizeInput("filter.arg1",.IGoR$s1("Variable"), choices=c(.IGoR$COLV,.columns(input$main.data)))
+            selectizeInput("filter.arg1",.IGoR$s1(.IGoR$Z$any$var), choices=.column(input))
           ),
           column(width=5, uiOutput("filter.fun")),
           column(width=4, uiOutput("filter.arg2"))
   )     ) 
 
   output$filter.fun <- renderUI(
-    if ((length(input$filter.type)>0)&&(input$filter.type>1)
+    if ((length(input$filter.type)>0)&&(input$filter.type>=2)
       &&.isNotEmpty(input$filter.arg1)) {
       c <- get(input$main.data,envir=.GlobalEnv)[[input$filter.arg1]]
-      selectizeInput("filter.fun", .IGoR$s2("Opérateur"), choices=
-              if (is.logical(c))     c("est vrai"=" ",
-                                     "est égal à"="on ==",
-                                             "et"="on &",
-                                             "ou"="on |",
-                         "est à valeur manquante"="f  is.na")
-         else if (is.character(c)) c("est égal à"="oc ==",
-                                   "appartient à"="oC %in%",
-                                   "commence par"="fc startsWith",
-                                      "finit par"="fc endsWith",
-                "contient l'expression régulière"="fc str_detect",
-                         "est à valeur manquante"="f  is.na")
-         else if (is.numeric(c))   c("est égal à"="on ==",
-                                   "appartient à"="oN %in%",
-                                "est supérieur à"="on >",
-                        "est supérieur ou égal à"="on >=",
+      selectizeInput("filter.fun", .IGoR$s2(.IGoR$Z$any$operator),
+        choices=.IGoR$Zrename(
+              if (is.logical(c)) c(isTRUE=" ",
+                                     isEQ="on ==",
+                                      and="on &",
+                                       or="on |",
+                                     isNA="f  is.na")
+         else if (is.character(c)) c(isEQ="oc ==",
+                                belongsTo="oC %in%",
+                               startsWith="fc startsWith",
+                                 endsWith="fc endsWith",
+                                  matches="fc str_detect",
+                                     isNA="f  is.na")
+         else if (is.numeric(c))   c(isEQ="on ==",
+                                belongsTo="oN %in%",
+                                     isGT="on >",
+                                     isGE="on >=",
                         if (input$filter.type==2)
-                        c("est égal au calcul de"="of ==",
-                     "est supérieur au calcul de"="of >"),
-                         "est à valeur manquante"="f  is.na")
-         else if (is.factor(c))    c("est égal à"="oc ==",
-                                   "appartient à"="oC %in%",
-                         "est à valeur manquante"="f  is.na")
-      )
+                              c(isEQ.stat="of ==",
+                                isGT.stat="of >"),
+                                     isNA="f  is.na")
+         else if (is.factor(c))    c(isEQ="oc ==",
+                                belongsTo="oC %in%",
+                                     isNA="f  is.na")
+      ))
     }
   )
   
   output$filter.arg2 <- renderUI(
-    if ((length(input$filter.type)>0)&&(input$filter.type>1)
+    if ((length(input$filter.type)>0)&&(input$filter.type>=2)
       &&.isNotEmpty(input$filter.arg1)
       &&(length(input$filter.fun)>0))
       if (input$filter.fun!=' ') {         # else no function expected
@@ -88,20 +77,29 @@
         if (t!=' ')                        # else no argument expected
           if (input$filter.type==2)
             if (t=='f')
-              selectizeInput("filter.arg2", .IGoR$s2("Indicateur statistique"),
-                            choices=c("sa moyenne"="mean",
-                                      "sa médiane"="median",
-                            "son dernier quartile"="quantile,.75",
-                                     "son maximum"="max",
-                                     "son minimum"="min"))
+              selectizeInput("filter.arg2", .IGoR$s2(.IGoR$Z$filter$stat),
+                choices=.IGoR$Zrename(c(mean="mean",
+                                      median="median",
+                                          q3="quantile,.75",
+                                         p90="quantile,.90",
+                                         max="max",
+                                         min="min")))
             else
             if (t=='n')
-                 numericInput("filter.arg2",.IGoR$s2("Valeur"),0)
-            else textInput("filter.arg2",if (t %in% c('C','N')) "Valeurs v1,v2,v3,..." else "Valeur")
+                 numericInput("filter.arg2",.IGoR$s2(.IGoR$Z$filter$value),0)
+            else textInput("filter.arg2",if (t %in% c('C','N')) .IGoR$Z$filter$values else .IGoR$Z$filter$value)
           else
             if (input$filter.type==3)
-              selectizeInput("filter.arg2",.IGoR$s1("Variable"), choices=c(.IGoR$COLV,.columns(input$main.data)))
+              selectizeInput("filter.arg2",.IGoR$s1(.IGoR$Z$any$var), choices=c(.IGoR$COLV,.columns(input$main.data)))
     }
+  )
+  
+  output$filter.group <- renderUI(
+    if (length(input$filter.type)>0)
+      if (((input$filter.type==0)&&.isNotEmpty(input$filter.where))
+        || (input$filter.type==1)
+        ||((input$filter.type==2)&&(length(input$filter.fun)>0)&&(substr(input$filter.fun,2,2)=='f'))
+         ) .IGoR$group.ui(input,"filter", box=FALSE)
   )
                                   
   output$filter.command2<- renderUI(
@@ -114,11 +112,14 @@
           "filter(",
           {
             drop <- .isTRUE(input$filter.drop)
-            e <-  
-              if ((input$filter.type==1)&&.isNotEmpty(input$filter.where))
+            e <-   if ((input$filter.type==0)&&.isNotEmpty(input$filter.where))
                 list(drop,TRUE,input$filter.where)
-              else
-              if ((input$filter.type>1)&&(length(input$filter.fun)>0)&&(length(input$filter.arg1)>0)) 
+              else if ((input$filter.type==1)&&.isNotNA(input$filter.no))
+                list(FALSE,NA,glue("row_number(){if (drop) '!' else '='}={input$filter.no}"))
+              else if ((input$filter.type>=2)
+                &&.isNotEmpty(input$filter.arg1)
+                &&.isNotEmpty(input$filter.fun)
+                &&((input$filter.type==2)||.isNotEmpty(input$filter.arg2))) 
                 if (input$filter.fun==' ')                             # - no function (logical column only) ------- 
                   list(drop,FALSE,input$filter.arg1)
                 else {                                                 # - a function ------------------------------

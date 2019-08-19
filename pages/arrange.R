@@ -1,19 +1,7 @@
 
-.IGoR$page$arrange$ui <- function()
-  div( id = "bloc_arrange",
-    fluidRow(
-      column(width=4, 
-        img(src="images/arrange.png", height = "48px"),
-        h3(span("Trier la table courante", style="color: blue"))
-      ),
-      column(width=8, 
-        p("La fonction", code("arrange"), " du package ", strong("dplyr"), "construit une nouvelle",
-          span("table réordonnée selon l'ordre des modalités", style='color:blue'), "prises par une ou plusieurs variables.",br(),
-          "En R, le tri est un préalable inutile à la plupart des traitements : il n'est gère utile que pour la présentation de résultats.."
-    ) ) ),
-    uiOutput("arrange.control"),
-    .IGoR$commandBox("arrange")
-  )
+### 10/08/2019 1.04.2: Externalisation des libellés en français
+
+.IGoR$page$arrange$ui <- function() .IGoR$ui(page="arrange", control=TRUE)
 
 
 .IGoR$page$arrange$sv <- function(input, output, session) {
@@ -25,8 +13,8 @@
       fluidRow(
         column(width=6,
           box(width='100%',
-            column(width=6, selectizeInput("arrange.columns", label=.IGoR$s1(.IGoR$VARS),
-                           multiple = TRUE, options = list(placeholder = .IGoR$COLS),
+            column(width=6, selectizeInput("arrange.columns", label=.IGoR$s1(.IGoR$Z$any$vars),
+                           multiple = TRUE, options = list(placeholder = .IGoR$Z$any$cols),
                            choices = .columns(input$main.data))),
             column(width=6, uiOutput("arrange.desc"))
         )),
@@ -37,8 +25,8 @@
   
   output$arrange.desc <- renderUI(
     if (length(input$arrange.columns)>0)
-      selectizeInput("arrange.desc", .IGoR$s3("Ordre décroissant pour les variables :"),
-                     multiple = TRUE, options = list(placeholder = .IGoR$COLS),
+      selectizeInput("arrange.desc", .IGoR$s3(.IGoR$Z$arrange$desc),
+                     multiple = TRUE, options = list(placeholder = .IGoR$Z$any$cols),
                      choices = input$arrange.columns)
   )
 

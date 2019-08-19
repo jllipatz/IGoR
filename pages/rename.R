@@ -1,100 +1,83 @@
 
 ### 12/07/2019 1.02.0: Protection contre les noms de colonne incorrects
+### 10/08/2019 1.04.2: Externalisation des libellés en français
 
-.IGoR$page$rename$ui <- function()
-  div(id = "bloc_rename",
-    fluidRow(
-      column(width=4, 
-        img(src="images/rename.png", height = "48px"),
-        h3(span("Renommer un ensemble de variables", style="color: blue"))
-      ),
-      column(width=8, 
-        p("Les fonctions de la famille ", code("rename"), " du package ", strong("dplyr"), "offrent une alternative à la fonction de base", code("names"),
-          "en permettant, avec une syntaxe simple, de ", span("renommer des variables", style="color:blue"),
-          "présentes dans une table, en les sélectionnant soit toutes, soit par leur nom, soit par leur contenu.", br(),
-          "Le nouveau nom peut soit être précisé explicitement, soit être déterminé par l'application d'une fonction.", br(),
-          "En R, il n'est généralement pas possible de modifier un objet existant, aussi tout ce que fait la fonction c'est créer une nouvelle table ",
-          "contenant les données de l'ancienne table associées aux nouveaux noms.", br(),
-          em("NOTE : si le nom de la table résultat est celui de la table courante, la page se réinitialise dès que la modification a fonctionné.")
-    ) ) ),
-    uiOutput("rename.control"),
-    .IGoR$commandBox("rename")
-  )
+.IGoR$page$rename$ui <- function() .IGoR$ui(page="rename", control=TRUE)
 
 
 .IGoR$page$rename$sv <- function(input, output, session) {
   
   .IGoR$vServer(input,output,"rename")
   
-  TITLE1 <- c("e"="expression","p"="préfixe","s"="suffixe")
+  TITLE1 = c("e"=.IGoR$Z$rename$expression,"p"=.IGoR$Z$rename$prefix,"s"=.IGoR$Z$rename$suffix)
+  FUNS = c("make.names"="    make.names",
+         "str_to_lower"="    str_to_lower",
+         "str_to_upper"="    str_to_upper",                
+          "str_extract"="c e str_extract",
+          "str_replace"="cce str_replace",
+            ".renumber"="c p function(x,y) paste0(y,seq_len(length(x)))",
+              ".prefix"="c p function(x,y) paste0(y,x)",
+              ".suffix"="c s paste0")
   
   output$rename.control <- renderUI(
     if ((length(input$main.data)>0)&&.IGoR$test$meta)
       fluidRow(
-        column(width=6, .IGoR$select.ui("rename", buttons.title=.IGoR$s2("Renommer les variables..."), buttons.range=TRUE)),
+        column(width=6, .IGoR$select.ui("rename", buttons.title=.IGoR$s2(.IGoR$Z$rename$rename), buttons.range=TRUE)),
         column(width=6,
           .IGoR$load.ui("rename",input$main.data),
           box(width='100%',
-            radioButtons("rename.how",NULL,
-                         c("Nouveaux noms"=1,
-                           "Application d'une fonction"=2)),
+            radioButtons("rename.how",NULL,.IGoR$Znames("rename","how",c("names","fun"))),
             uiOutput("rename.how")
-          )
-    )))
+  )   ) ) )
  
-    output$rename.how <- renderUI(
-      if (length(input$rename.how)>0)
-        if (input$rename.how==1)
-          textInput("rename.new",.IGoR$s1("Nouveaux noms (séparés par des espaces)"))
-        else
+  output$rename.how <- renderUI(
+    if (length(input$rename.how)>0)
+      if (input$rename.how=="names")
+        textInput("rename.names",.IGoR$s1(.IGoR$Z$rename$names))
+      else
           fluidRow(
             column(width=6,
-              selectizeInput("rename.fun",.IGoR$s2("Fonction"),
-                           choices=c("Standardiser"="    make.names",
-                             "Mettre en minuscules"="    str_to_lower",
-                             "Mettre en majuscules"="    str_to_upper",                
-                  "Extraire l'expression régulière"="c e str_extract",
-                 "Remplacer l'expression régulière"="cce str_replace",
-                                        "Numéroter"="c p function(x,y) paste0(y,seq_len(length(x)))",
-                                         "Préfixer"="c p function(x,y) paste0(y,x)",
-                                         "Suffixer"="c s paste0"))),
+              selectizeInput("rename.fun",.IGoR$s2(.IGoR$Z$any$fun),choices=.IGoR$Zrename(FUNS))),
             column(width=6, uiOutput("rename.args"))
     )    ) 
     
     output$rename.args <- renderUI(
-      if (.isEQ(input$rename.how,2)&&(length(input$rename.fun)>0))
+      if (.isEQ(input$rename.how,"fun")&&(length(input$rename.fun)>0))
         fluidRow(
           if (str_sub(input$rename.fun,1,1)=='c')
             column(width=6, textInput("rename.arg1", .IGoR$s1(TITLE1[str_sub(input$rename.fun,3,3)]))),
           if (str_sub(input$rename.fun,2,2)=='c')
-            column(width=6, textInput("rename.arg2", .IGoR$s1("par l'expression")))
+            column(width=6, textInput("rename.arg2", .IGoR$s1(.IGoR$Z$rename$to.expr)))
     ))
     
     output$rename.command2 <- renderUI(
       .IGoR$textarea("rename", "rename...(...)", 4,
         if ((length(input$rename.type)>0)&&(length(input$rename.how)>0)
-          &&(((input$rename.how==1)&&.isNotEmpty(input$rename.new))
-           ||((input$rename.how==2)&&.isNotEmpty(input$rename.fun))
+          &&(((input$rename.how=="names")&&.isNotEmpty(input$rename.names))
+           ||((input$rename.how=="fun")&&.isNotEmpty(input$rename.fun))
            ))
           .IGoR$command2( 
-            if (input$rename.type==0) {
-              m <- input$rename.end - input$rename.start + 1
-              s <- glue(
-                     if (.isTRUE(input$rename.drop))
-                       if (m==1) "-{input$rename.start}"
-                       else      "-({input$rename.start}:{input$rename.end})"
-                     else
-                       if (m==1) "{input$rename.start}"
-                       else      "{input$rename.start}:{input$rename.end}")
-              if (input$rename.how==1) {
-                new <- str_split(str_trim(input$rename.new)," +")[[1]] %>% make.names()
-                n <- if (.isTRUE(input$rename.drop)) ncol(get(input$main.data,envir=.GlobalEnv)) - m else m
-                if (n!=length(new)) glue("identity() # *** ERREUR: Il y a {.p('variable',n)} à renommer!")
-                else paste0(
-                  "{names(.)[",s,"]<- ",
-                  .collapse2(new),
-                  "; .}")
-              } else {
+            if (input$rename.type==0) 
+              if (is.null(input$rename.end)||is.null(input$rename.start)) ""
+              else {
+                m <- input$rename.end - input$rename.start + 1
+                s <- glue(
+                       if (.isTRUE(input$rename.drop))
+                         if (m==1) "-{input$rename.start}"
+                         else      "-({input$rename.start}:{input$rename.end})"
+                       else
+                         if (m==1) "{input$rename.start}"
+                         else      "{input$rename.start}:{input$rename.end}")
+                if (input$rename.how=="names") {
+                  new <- str_split(str_trim(input$rename.names)," +")[[1]] %>% make.names()
+                  n <- if (.isTRUE(input$rename.drop)) ncol(get(input$main.data,envir=.GlobalEnv)) - m else m
+                  if (n!=length(new)) paste0("identity() # ",sprintf(.IGoR$Z$rename$msg.badnames,n))
+                  else paste0(
+                    "{names(.)[",s,"]<- ",
+                    .collapse2(new),
+                    "; .}")
+                }
+             else {
                 fun <- str_sub(input$rename.fun,5)
                 paste0(
                   "{names(.)[",s,"]<- ",
@@ -107,12 +90,13 @@
                   "; .}")
             } }
             else 
-            if (input$rename.how==1) {
-              new <- str_split(str_trim(input$rename.new)," +")[[1]] %>% make.names()
+            if (input$rename.how=="names") {
+              new <- str_split(str_trim(input$rename.names)," +")[[1]] %>% make.names()
               old <- .IGoR$select.columns(input,output,"rename")
-              if (length(old)==length(new))
+              n <- length(old) # also for .IGoR$Z$rename$msg.badnames
+              if (n==length(new))
                    glue("rename({.collapse(paste0(new,' = \"',old,'\"'))})")
-              else glue("rename() # *** ERREUR: Il y a {.p('variable',length(old))} à renommer!")
+              else paste0("rename() # ",sprintf(.IGoR$Z$rename$msg.badnames,n))
             }
             else
               paste0("rename",
@@ -142,8 +126,8 @@
                 n <- y %>% filter(old!=new) %>% count() %>% pull(n)
                 m <- ncol(x) - length(unique(names(x)))
                 paste0(
-                  if (m>0) sprintf("ATTENTION: Les noms des nouvelles colonnes ne vont pas être uniques!\n"),
-                  glue("NOTE : {.p('variable',n)} à renommer.")
+                  if (m>0) paste0(.IGoR$Z$rename$msg.duplicated,"\n"),
+                  sprintf(.IGoR$Z$rename$msg.result,n)
                  )
               }
   ) )       )

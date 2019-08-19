@@ -1,8 +1,7 @@
 
-.IGoR$page$lorenz$ui <- function() 
-  .IGoR$gUI("lorenz","'gf_lorenz' : Courbe de Lorenz",
-    dropdown=TRUE
-  )
+### 11/08/2019 1.04.2: Externalisation des libellés en français
+
+.IGoR$page$lorenz$ui <- function() .IGoR$ui(page="lorenz", icon="paresseux", graphics=TRUE)
 
 
 .IGoR$page$lorenz$sv <- function(input, output, session) {
@@ -16,8 +15,7 @@
       fluidRow(
         column(width=6,
           box(width='100%',
-            column(width=6, selectizeInput("lorenz.X", label=.IGoR$s1(.IGoR$NUMVAR1),
-                                           choices=c(.IGoR$NUMCOLV,.columns(input$main.data,c("numeric","integer"))))),
+            column(width=6, selectizeInput("lorenz.X", label=.IGoR$s1(.IGoR$Z$any$var.quan), .numeric(input))),
             column(width=6, uiOutput("lorenz.X.label"))
         ) ),
         column(width=6, uiOutput("lorenz.save.control"))

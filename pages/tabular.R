@@ -1,24 +1,14 @@
-### TODO Offrir la possibilité de convertir le résultat en data.frame
-### TODO Protéger contre les modalités de facteur sous forme de chaine vide 'attempt to use zero-length variable name'
 
 ### 03/06/2019 1.01.0: Formattage des pourcentages
 ### 14/06/2019 1.01.1: Justification des comptages avec séparateurs des milliers
 ### 04/08/2019 1.03.3: Transformation optionnelle en facteurs
+### 12/08/2019 1.04.2: Externalisation des libellés en français
+
+### TODO Offrir la possibilité de convertir le résultat en data.frame
+### TODO Protéger contre les modalités de facteur sous forme de chaine vide 'attempt to use zero-length variable name'
 
 .IGoR$page$tabular$ui <- function()
-  div(id = "bloc_tabular",
-    fluidRow(
-      column(width=4, 
-        img(src="images/tabular.png", height = "48px"),
-        h3(span("Tableaux de statistiques multivariées", style="color: blue"))
-      ),
-      column(width=8, 
-        p("A partir de variables qualitatives qui doivent impérativement être du type 'énumération', la fonction ", code("tabular"), " du package ", strong("tables"), 
-          " produit des comptages ou des statistiques ventilées selon les modalités croisées de ces variables. ",
-          "Les chiffres obtenus sont formattés et mis en page de manière à minimiser le travail nécessaire à leur intégration à un produit de diffusion.",br(),
-          "Le résultat n'est pas une table mais un objet d'un type particulier qui peut être exporté sous format HTML pour être relu sous un tableur."
-    ) ) ),
-    uiOutput("tabular.control"),
+  .IGoR$ui(page="tabular", control=TRUE, command=FALSE,
     .IGoR$commandBox("tabular"),
     tableOutput("tabular.output")
   )
@@ -61,106 +51,94 @@
         column(width=6,
           box(width='100%',
             fluidRow(
-              column(width=6, .IGoR$s1(.IGoR$QALVARS)),
-              column(width=6, checkboxInput("tabular.factor",.IGoR$s4("Forcer la conversion en facteurs"),FALSE))
+              column(width=6, .IGoR$s1(.IGoR$Z$tabular$vars.qual)),
+              column(width=6, checkboxInput("tabular.factor",.IGoR$s4(.IGoR$Z$tabular$factor),FALSE))
             ),
             fluidRow(
               column(width=6, uiOutput("tabular.X")),
-              column(width=6, uiOutput("tabular.mixX"))
+              column(width=6, uiOutput("tabular.X.nest"))
             ),
             fluidRow(
               column(width=6, uiOutput("tabular.Y")),
-              column(width=6, uiOutput("tabular.mixY"))
+              column(width=6, uiOutput("tabular.Y.nest"))
             ), 
             hr(),
             fluidRow(
-              column(width=6, selectizeInput("tabular.W", .IGoR$s3("Pondération"), 
-                            choices=c(.IGoR$NUMCOLV,.columns(input$main.data,c("numeric","integer"))))
-        )))),
+              column(width=6, selectizeInput("tabular.W", .IGoR$s3(.IGoR$Z$any$weight), .numeric(input)))
+        ) ) ),
         column(width=6,
           box(width='100%',
-            column(width=6,radioButtons("tabular.type",.IGoR$s2("Type de tabulation"),
-                            c("Comptage"="count",
-                              "Pourcentage"="all",
-                              "Pourcentage ligne"="row",
-                              "Pourcentage colonne"="col",
-                              "Statistiques sur une autre variable"="var"))),
+            column(width=6,radioButtons("tabular.type",.IGoR$s2(.IGoR$Z$tabular$type),.IGoR$Znames("tabular","type",c("count","all","row","col","var")))),
             column(width=6,uiOutput("tabular.args"))
           ),
           uiOutput("tabular.save.control")
-        )
-  ))
+  )   ) )
   
   output$tabular.X <- renderUI(
-    selectizeInput("tabular.X", "en colonne", 
+    selectizeInput("tabular.X", .IGoR$Z$tabular$col, 
                    multiple = TRUE, 
-                   options = list(placeholder = if (.isTRUE(input$tabular.factor)) .IGoR$DISCOLS else .IGoR$FCTCOLS),
-                   choices = .columns(input$main.data,
-                                      if (.isTRUE(input$tabular.factor)) "discrete" else "factor")
+                   options = list(placeholder = .IGoR$any[[if (.isTRUE(input$tabular.factor)) "cols.discrete" else "cols.fct"]]),
+                   choices = .columns(input$main.data,     if (.isTRUE(input$tabular.factor)) "discrete"      else "factor")
   ) )
 
-  output$tabular.mixX <- renderUI(
+  output$tabular.X.nest <- renderUI(
     if (length(input$tabular.X)>1)
-      checkboxInput("tabular.mixX",.IGoR$s5("Croiser les modalités des variables"),TRUE)
+      checkboxInput("tabular.X.nest",.IGoR$s5(.IGoR$Z$tabular$nest),TRUE)
   )
   
   output$tabular.Y <- renderUI(
-    selectizeInput("tabular.Y", "en ligne", 
+    selectizeInput("tabular.Y", .IGoR$Z$tabular$row, 
                    multiple = TRUE, 
-                   options = list(placeholder =  if (.isTRUE(input$tabular.factor)) .IGoR$DISCOLS else .IGoR$FCTCOLS),
-                   choices = .columns(input$main.data,
-                                      if (.isTRUE(input$tabular.factor)) "discrete" else "factor")
+                   options = list(placeholder = .IGoR$any[[if (.isTRUE(input$tabular.factor)) "cols.discrete" else "cols.fct"]]),
+                   choices = .columns(input$main.data,     if (.isTRUE(input$tabular.factor)) "discrete"      else "factor")
   ) )
   
-  output$tabular.mixY <- renderUI(
+  output$tabular.Y.nest <- renderUI(
     if (length(input$tabular.Y)>1)
-      checkboxInput("tabular.mixY",.IGoR$s5("Croiser les modalités des variables"),TRUE)
+      checkboxInput("tabular.Y.nest",.IGoR$s5(.IGoR$Z$tabular$nest),TRUE)
   )
   
   output$tabular.args <- renderUI(
     if (.isEQ(input$tabular.type,'var')&&(length(input$tabular.W)>0))
       tagList(
-        selectizeInput("tabular.Z", .IGoR$s1("Statistiques sur"),
-                  choices=c(.IGoR$NUMCOLV,.columns(input$main.data,"numeric"))),
-        selectizeInput("tabular.funZ", .IGoR$s1("Fonction statistique"), 
-                  multiple=TRUE, options = list(placeholder = '<fonctions>'),
-                  choices=c("Moyenne"=stat("mean",input$tabular.W),
-                            "Médiane"=stat("median",input$tabular.W),
-                   "Premier quartile"=stat("q1",input$tabular.W),
-                   "Dernier quartile"=stat("q3",input$tabular.W),
-                     "Premier décile"=stat("p10",input$tabular.W),
-                     "Dernier décile"=stat("p90",input$tabular.W),
-                            "Minimum"="min",
-                            "Maximum"="max"))
+        selectizeInput("tabular.Z", .IGoR$s1(.IGoR$Z$tabular$Z), .numeric(input)),
+        selectizeInput("tabular.Z.fun", .IGoR$s1(.IGoR$Z$tabular$Z.fun), 
+                  multiple=TRUE, options = list(placeholder = .IGoR$Z$any$funs),
+                  choices=.IGoR$Zrename(c(mean=stat("mean",input$tabular.W),
+                                        median=stat("median",input$tabular.W),
+                                            q1=stat("q1",input$tabular.W),
+                                            q3=stat("q3",input$tabular.W),
+                                           p10=stat("p10",input$tabular.W),
+                                           p90=stat("p90",input$tabular.W),
+                                           min="min",
+                                           max="max")))
         )
     else
     if (.isIn(input$tabular.type,c("col","row","all")))
-      radioButtons("tabular.digits",.IGoR$s2("Décimales :"),choices=c("deux"=2,"une"=1,"aucune"=0))
+      sliderInput("tabular.digits",.IGoR$s2(.IGoR$Z$tabular$digits),0,2,2)
     else
     if (.isEQ(input$tabular.type,"count"))
-      checkboxInput("tabular.sep",.IGoR$s4("Séparer les milliers"),FALSE)
+      checkboxInput("tabular.sep",.IGoR$s4(.IGoR$Z$tabular$sep),FALSE)
   )
   
-  output$tabular.save.control <- renderUI(if (.isNotEmpty(input$tabular.X)) .IGoR$save.ui("tabular",.title=.IGoR$TSAVE0))
+  output$tabular.save.control <- renderUI(if (.isNotEmpty(input$tabular.X)) .IGoR$save.ui("tabular",.title=.IGoR$Z$tabular$save))
   
   output$tabular.save <- renderUI(
     if (.isTRUE(input$tabular.save))
-      shinySaveButton("tabular", .IGoR$BROWSE, "Sauvegarder le tableau sous :", filetype=list(html="html"))
+      shinySaveButton("tabular", .IGoR$Z$any$browse, .IGoR$Z$tabular$save.as, filetype=list(html="html"))
   )
   
   shinyFileSave(input, "tabular", roots=.IGoR$volumes, defaultPath='', defaultRoot='home')
 
   output$tabular.command2 <- renderUI(
     .IGoR$textarea("tabular", "tabular(...)", 2, 
-      if ((length(input$tabular.X)>0)
-        ||(length(input$tabular.Y)>0)
-        ||(.isNotEmpty(input$tabular.Z)&&(length(input$tabular.funZ)>0))){
+      if (length(input$tabular.type)>0) {
         z <- if (input$tabular.type=='var')
-               if (.isNotEmpty(input$tabular.Z)&&(length(input$tabular.funZ)>0))
+               if (.isNotEmpty(input$tabular.Z)&&(length(input$tabular.Z.fun)>0))
                  paste0(input$tabular.Z,'*',
-                        if (length(input$tabular.funZ)>1)
-                             paste0('(',paste(input$tabular.funZ, collapse='+'),')')
-                        else input$tabular.funZ
+                        if (length(input$tabular.Z.fun)>1)
+                             paste0('(',paste(input$tabular.Z.fun, collapse='+'),')')
+                        else input$tabular.Z.fun
                  )
                else ""
              else 
@@ -171,14 +149,14 @@
              else paste0(
                if (length(input$tabular.Y)>1)
                  paste(input$tabular.Y,
-                       collapse=if (!.isTRUE(input$tabular.mixY)) '+' else '*')
+                       collapse=if (!.isTRUE(input$tabular.Y.nest)) '+' else '*')
                else input$tabular.Y,
                '+1')
         x <- if (length(input$tabular.X)==0) ""
              else paste0(
                if (length(input$tabular.X)>1)
                  paste(input$tabular.X,
-                       collapse=if (!.isTRUE(input$tabular.mixX)) '+' else '*')
+                       collapse=if (!.isTRUE(input$tabular.X.nest)) '+' else '*')
                else input$tabular.X,
                '+1')
         if ((nchar(z)==0)&&(nchar(x)==0)) z <- "1"

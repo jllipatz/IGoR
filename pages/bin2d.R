@@ -1,8 +1,7 @@
 
-.IGoR$page$bin2d$ui <- function()
-  .IGoR$gUI("bin2d","'gf_bin2d' : Carte de densité",
-    dropdown=TRUE
-  )
+### 11/08/2019 1.04.2: Externalisation des libellés en français
+
+.IGoR$page$bin2d$ui <- function() .IGoR$ui(page="bin2d", icon="paresseux", graphics=TRUE)
 
 
 .IGoR$page$bin2d$sv <- function(input, output, session) {
@@ -17,13 +16,11 @@
         column(width=6,
           box(width='100%',
             fluidRow(
-              column(width=6, selectizeInput("bin2d.X",  label=.IGoR$s1(.IGoR$NUMVARX1),
-                           choices=c(.IGoR$NUMCOLV,.columns(input$main.data,c("numeric","integer"))))),
+              column(width=6, selectizeInput("bin2d.X", .IGoR$s1(.IGoR$Z$any$var.quan.x), .numeric(input))),
               column(width=6, uiOutput("bin2d.X.label"))
             ),
             fluidRow(
-              column(width=6, selectizeInput("bin2d.Y",  label=.IGoR$s1(.IGoR$NUMVARY1),
-                           choices=c(.IGoR$NUMCOLV,.columns(input$main.data,c("numeric","integer"))))),
+              column(width=6, selectizeInput("bin2d.Y", .IGoR$s1(.IGoR$Z$any$var.quan.y), .numeric(input))),
               column(width=6, uiOutput("bin2d.Y.label"))
         ) ) ),
         column(width=6, uiOutput("bin2d.save.control"))

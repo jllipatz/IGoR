@@ -1,22 +1,9 @@
 
-### 07/06/2019 v1.01.0 Correction : inversion de la sélection
-### 12/07/2019 v1.02.0 Ajout : everything()
+### 07/06/2019 1.01.0 Correction : inversion de la sélection
+### 12/07/2019 1.02.0 Ajout : everything()
+### 12/08/2019 1.04.2: Externalisation des libellés en français
 
-.IGoR$page$select$ui <- function()
-  div(id = "bloc_select",
-    fluidRow(
-      column(width=4, 
-        img(src="images/select.png", height = "48px"),
-        h3(span("Sélectionner des variables", style="color: blue"))
-      ),
-      column(width=8, 
-        p("La fonction ", code("select"), " du package ", strong("dplyr"), " construit une nouvelle table limitée aux variables choisies.", br(),
-          "La sélection des variables peut se faire sur la forme du nom de la variable ou sur son type.", br(), 
-          "La sélection de variables peut également permettre de réordonner les variables."
-    ) ) ),
-    uiOutput("select.control"),
-    .IGoR$commandBox("select")
-  )      
+.IGoR$page$select$ui <- function() .IGoR$ui(page="select", control=TRUE)
 
 
 .IGoR$page$select$sv <- function(input, output, session) {
@@ -26,8 +13,7 @@
   output$select.control <- renderUI(
     if ((length(input$main.data)>0)&&.IGoR$test$meta)
       fluidRow(
-        column(width=6, .IGoR$select.ui("select", buttons.title=.IGoR$s2("Conserver les variables..."),
-                                        buttons.all=FALSE, drop=FALSE)),
+        column(width=6, .IGoR$select.ui("select", buttons.title=.IGoR$s2(.IGoR$Z$select$select), buttons.all=FALSE)),
         column(width=6, .IGoR$load.ui("select"))
   ))
   
@@ -37,7 +23,7 @@
     if ((length(input$select.type)>0)
       &&(((input$select.type==1)&&(length(input$select.columns)>0))
        ||(input$select.type>3)))
-      checkboxInput("select.everything",.IGoR$s4("Compléter avec toutes les autres"),FALSE)
+      checkboxInput("select.everything",.IGoR$s4(.IGoR$Z$select$everything),FALSE)
   )
 
   output$select.command2 <- renderUI(
@@ -58,7 +44,7 @@
   
   observeEvent(input$select.command2,
     .IGoR$try(input,output,"select",
-      function(x) sprintf("NOTE : Le résultat aura %d colonne(s) :\n  %s.",ncol(x),.collapse(colnames(x)))
+      function(x) sprintf(.IGoR$Z$select$msg.result,ncol(x),.collapse(colnames(x)))
   ))
                
 }

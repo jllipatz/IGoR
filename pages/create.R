@@ -1,30 +1,18 @@
+
 ### 28/06/2019 1.01.2: Protection contre les noms de table incorrects
+### 09/08/2019 1.04.2: Externalisation des libellés en français
 
 .IGoR$page$create$ui <- function()
-  div(id = "bloc_create",
-    fluidRow(
-      column(width=4, 
-        img(src="images/create.png", height = "48px"),
-        h3(span("Créer une table ex nihilo", style="color: blue"))
-      ),
-      column(width=8, 
-        p("La fonction ", code("read.table"), " est la fonction standard permettant de lire des fichiers texte avec séparateurs ou ",
-          "dont les champs sont séparés par un nombre quelconque d'espaces.", 
-          "Elle est utilisée ici dans sa capacité à lire à l'intérieur d'une chaîne de caractères comme s'il s'agissait d'un fichier.", br(),
-          "La fonction devine le type des colonnes à créer en fonction des données qui lui sont fournies.", br(),
-          "Le résultat deviendra la table courante, sauf si une table de même nom éxistait déjà."
-    ) ) ),
+  .IGoR$ui(page="create",
     fluidRow(
       column(width=6,
         box(width='100%',
-          textInput("create.columns",.IGoR$s1("Nom des colonnes (séparés par des espaces)")),
-          checkboxInput("create.factors",.IGoR$s4("Convertir les chaînes de caractères en facteurs"),FALSE),
-          textInput("create.na.strings",.IGoR$s2("Marqueur pour les valeurs manquantes de type caractère"),"NA")
+          textInput("create.columns",    .IGoR$s1(.IGoR$Z$create$names)),
+          checkboxInput("create.factors",.IGoR$s4(.IGoR$Z$any$stringsAsFactors),FALSE),
+          textInput("create.na.strings", .IGoR$s2(.IGoR$Z$create$na.strings),"NA")
       )),
       column(width=6,.IGoR$load.ui("create"))
-    ),
-    .IGoR$commandBox("create")
-  )
+  ) )
 
 
 .IGoR$page$create$sv <- function(input, output, session) {
@@ -39,7 +27,7 @@
     .IGoR$create.command1 <<- paste0(make.names(input$create.out),' <- ',glue(command1)))
   
   output$create.command2 <- renderUI(
-    .IGoR$textarea("create", "lignes de données (séparées par des espaces)", 5, ''))
+    .IGoR$textarea("create", .IGoR$Z$create$data, 5, ''))
   
   output$create.command3 <- renderText(
     .IGoR$create.command3 <<- glue("\", stringsAsFactors={input$create.factors}{na.strings()})"))
@@ -56,7 +44,7 @@
           output$create.load <- renderUI(actionButton(b,.IGoR$buttonName(input,"create")))
           shinyjs::enable(b)
           shinyjs::show(b)
-          sprintf("NOTE : La table '%s' va avoir %d ligne(s) et %d colonne(s).",t,nrow(x),ncol(x))
+          sprintf(.IGoR$Z$create$msg.result,t,nrow(x),ncol(x))
         }
         else {
           shinyjs::hide(b)

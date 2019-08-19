@@ -2,17 +2,9 @@
 ### 01/08/2019 1.03.2
 ### 06/08/2019 1.03.3: Suppression de la palette manuelle
 ### 06/08/2019 1.04.0: dropdown buttons
-### TODO : subtitle
+### 11/08/2019 1.04.2: Externalisation des libellés en français
 
-.IGoR$page$spplot$ui <- function()
-  .IGoR$gUI("spplot","Expérimentations cartographiques",
-    p("La fonction", code("spplot"), "du package", strong("sp"), "produit des cartographie thématiques simples.", br(),
-      "Les fonds de carte nécessaires peuvent être restaurés à partir du fichier", em("data/geo_GADMxxxx.RData"), ".",br(), 
-      em("NOTE : Les fonctionnalités présentées ici ne le sont qu'à titre démonstratif.")
-    ),
-    dropdown=TRUE,
-    subtitle=FALSE
-  )
+.IGoR$page$spplot$ui <- function() .IGoR$ui(page="spplot", graphics=TRUE, subtitle=FALSE)
 
 
 .IGoR$page$spplot$sv <- function(input, output, session) {
@@ -52,17 +44,14 @@
       fluidRow(
         column(width=4,
           box(width='100%',
-            selectizeInput("spplot.Z", .IGoR$s1("Variable quantitative"),
-                           choices=c(.IGoR$NUMCOLV,.columns(input$main.data,c("numeric","integer")))),
-            selectizeInput("spplot.zone", .IGoR$s1("Identifiant de zone"),
-                           choices=c(.IGoR$CHRCOLV,.columns(input$main.data,"character")))
+            selectizeInput("spplot.Z", .IGoR$s1(.IGoR$Z$any$var.quan),.numeric(input)),
+            selectizeInput("spplot.zone", .IGoR$s1(.IGoR$Z$spplot$id), choices=c(.IGoR$CHRCOLV,.columns(input$main.data,"character")))
         ) ),
         column(width=8,
           box(width='100%',
             fluidRow(
               column(width=6,
-                selectizeInput("spplot.sp", .IGoR$s1("Fond  de carte"),
-                               choices=c("<SpatialPolygonsDataFrame>"="",list.sp())),
+                selectizeInput("spplot.sp", .IGoR$s1(.IGoR$Z$spplot$map), choices=c("<SpatialPolygonsDataFrame>"="",list.sp())),
                 uiOutput("spplot.sp.zone")
               ),
               column(width=6,
@@ -72,37 +61,34 @@
   
   output$spplot.sp.zone <- renderUI(
     if (.isNotEmpty(input$spplot.sp))
-      selectizeInput("spplot.sp.zone", .IGoR$s1("Identifiant de zone"),
-                     choices=c("<colonne>"="",list.sp.columns(input$spplot.sp,TRUE)))
+      selectizeInput("spplot.sp.zone", .IGoR$s1(.IGoR$Z$spplot$id), choices=c(.IGoR$COLV,list.sp.columns(input$spplot.sp,TRUE)))
   )
   
   output$spplot.sp.zone2 <- renderUI(
     if (.isNotEmpty(input$spplot.sp))
-      selectizeInput("spplot.sp.zone2",.IGoR$s3("Restreindre aux zones..."),
-                     choices=c("<zonage>"="",list.sp.columns(input$spplot.sp,FALSE)))
+      selectizeInput("spplot.sp.zone2",.IGoR$s3(.IGoR$Z$spplot$where),
+                     choices=c('' %>% {names(.)<- .IGoR$Z$spplot$zone;.},list.sp.columns(input$spplot.sp,FALSE)))
               
   )
   
   output$spplot.sp.zone2.ids <- renderUI(
     if (.isNotEmpty(input$spplot.sp)&&.isNotEmpty(input$spplot.sp.zone2)) {
       l <- list.sp.column.ids(input$spplot.sp,input$spplot.sp.zone2)
-      selectizeInput("spplot.sp.zone2.ids",.IGoR$s3("...de codes"), 
-                     multiple = TRUE, options=list(placeholder = glue("<codes ({length(l)})>")), choices = l)
+      selectizeInput("spplot.sp.zone2.ids",.IGoR$s3(.IGoR$Z$spplot$codes), 
+                     multiple = TRUE, options=list(placeholder = glue("<({length(l)})>")), choices = l)
     }
   )
   
   output$spplot.dropdown <- renderUI(
     .IGoR$dropdownButton(page="spplot",
       fluidRow(
-        selectizeInput("spplot.sp2",.IGoR$s3("Superposer le fond de carte"),
-                       choices=c("<SpatialPolygonsDataFrame>"="",list.sp()))
+        column(width=6, selectizeInput("spplot.sp2",.IGoR$s3(.IGoR$Z$spplot$map2), choices=c("<SpatialPolygonsDataFrame>"="",list.sp())))
       ),
       .IGoR$hr(),
       fluidRow(
-        column(width=6, checkboxInput("spplot.labels",.IGoR$s4("Etiquettes"),FALSE),
-                        checkboxInput("spplot.colors",.IGoR$s4("Palette de couleurs"), FALSE)),
-        column(width=6, selectizeInput("spplot.fill",.IGoR$s2("Couleur des zones sans donnée"),
-                                       choices=c("(aucune)"="<none>",.IGoR$COLORS), selected='black'))
+        column(width=6, checkboxInput("spplot.labels",.IGoR$s4(.IGoR$Z$spplot$labels),FALSE),
+                        checkboxInput("spplot.colors",.IGoR$s4(.IGoR$Z$spplot$palette), FALSE)),
+        column(width=6, selectizeInput("spplot.fill",.IGoR$s2(.IGoR$Z$spplot$fill.none), choices=c(.IGoR$Z$any$NONE,.IGoR$COLORS), selected='black'))
       ),
       uiOutput("spplot.colors")
   ) )
@@ -110,8 +96,8 @@
   output$spplot.colors <- renderUI(
     if (.isTRUE(input$spplot.colors))
       fluidRow(
-        column(width=6, selectizeInput("spplot.fill.start",.IGoR$s2("Couleur de départ"), choices=.IGoR$COLORS, selected='yellow')),
-        column(width=6, selectizeInput("spplot.fill.end",  .IGoR$s2("Couleur d'arrivée"), choices=.IGoR$COLORS, selected='red'))
+        column(width=6, selectizeInput("spplot.fill.start",.IGoR$s2(.IGoR$Z$spplot$fill.start), choices=.IGoR$COLORS, selected='yellow')),
+        column(width=6, selectizeInput("spplot.fill.end",  .IGoR$s2(.IGoR$Z$spplot$fill.end),   choices=.IGoR$COLORS, selected='red'))
       )   )
   
   output$spplot.command2 <- renderUI(
@@ -136,10 +122,10 @@
                   else paste0(',\n         ',glue("col.regions=colorRampPalette(c('{input$spplot.fill.start}','{input$spplot.fill.end}'))(100)"))
         if (.isNotEmpty(input$spplot.sp.zone2)&&.isNotEmpty(input$spplot.sp.zone2.ids)) sp <- eval(parse(text=s),envir=.GlobalEnv)
         if (length(unique(df[[input$spplot.zone]]))!=nrow(df))
-          {output$spplot.comment <- renderText("ERREUR : Il y a plusieurs observations pour une même zone!"); NULL}
+          {output$spplot.comment <- renderText(.IGoR$Z$spplot$msg.duplicated); NULL}
         else
         if (length(intersect(df[[input$spplot.zone]],sp@data[[input$spplot.sp.zone]]))==0)
-          {output$spplot.comment <- renderText("ERREUR : Aucune observation n'a d'écho dans le fond de carte!"); NULL}
+          {output$spplot.comment <- renderText(.IGoR$Z$ssplot$msg.notfound); NULL}
         else
           .IGoR$command2(
             "{",'\n     ',
@@ -155,7 +141,7 @@
             glue("tmp.sp@data$tmp <- .${input$spplot.Z}[idx]"),'\n     ',
             "tmp.sp %>%\n       ",
             glue("spplot('tmp'{col}{main}{sub}{colors}{labels})"),
-            if (.isNE(input$spplot.fill,"<none>"))
+            if (.isNotEmpty(input$spplot.fill))
               paste0(' +\n     ',glue("  layer_(sp.polygons({input$spplot.sp}, fill='{input$spplot.fill}', col=NA))")),
             add,
             '\n   }'

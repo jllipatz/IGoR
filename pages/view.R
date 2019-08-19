@@ -6,38 +6,26 @@
 ### 16/07/2019 1.02.1: Correction - sélection d'une seule ligne invisible
 ### 17/07/2019 1.02.1: Ajout d'une visualisation par groupe et améliorations diverses
 ### 07/08/2019 1.04.0: dropdown buttons
+### 09/08/2019 1.04.2: Externalisation des libellés en français
 
 .IGoR$page$view$ui <- function()
-  div(id = "bloc_view", 
+  .IGoR$ui(page="view",command=FALSE,
     fluidRow(
-      column(width=4,
-        img(src="images/view.png", height = "48px"),
-        h3(span("Données de la table courante", style="color: blue"))
-      ),
-      column(width=8,
-        p("Les colonnes ont des noms, les lignes aussi (",em("rownames"),"), par défaut le numéro d'observation.",
-          "Les modifications apportées à une table conservent rarement les noms des lignes, mais ceux ci sont également rarement utilisés.", br(), 
-          "La fonction ", code("group_by"), "du package ", strong("dplyr"), " permet de considérer une table comme comme un empilement de sous-tables, ",
-          "une pour chaque modalité du croisement des variables citées, et ceci sans qu'aucun réordonnancement de la table ne soit nécessaire. ",
-          "L'applicaton d'une autre fonction de ", strong("dplyr"), " se comportera alors comme une application de la fonction à chacune des sous-tables, ",
-          "puis en la concaténation des différents résultats.", br(),
-          "Cette fonctionnalité est reprise ici à titre purement démonstratif."
-    ) ) ),
-    hr(),
-    fluidRow(column(width=6, box(width='100%', uiOutput("view.columns")))),
+      column(width=6, box(width='100%', uiOutput("view.columns"))),
+      column(width=6, box(width='100%', uiOutput("view.page.no")))
+    ),
     fluidRow(
       column(width=1,
-        .IGoR$dropdownButton(page="view_rows",title="Observations",
+        .IGoR$dropdownButton(page="view_rows",title=.IGoR$Z$any$rows,
           uiOutput("view.rownames"),
           uiOutput("view.where"),
           fluidRow(
             column(width=6, uiOutput("view.group")),
             column(width=6, uiOutput("view.group.no"))
         ) ),
-        .IGoR$dropdownButton(page="view_page",title="Mise en page",
+        .IGoR$dropdownButton(page="view_page",title=.IGoR$Z$any$layout,
           fluidRow(
-            column(width=6, sliderInput("view.page.size",.IGoR$s2("Lignes par page"),1,100,10)),
-            column(width=6, uiOutput("view.page.no"))
+            column(width=6, sliderInput("view.page.size",.IGoR$s2(.IGoR$Z$view$page.size),1,100,10))
       ) ) ),
       column(width=11, htmlOutput("view.html.table"))
   ) )
@@ -53,7 +41,7 @@
     if (is.null(page)) page <- 1
 
     l1 <- do.call(tags$tr,
-                  map(c(sprintf("%dx%d",nrow(.data),ncol(.data)),cols),tags$th)
+                  map(c(sprintf("%dx%d",nrow(.data),length(cols)),cols),tags$th)
           )
     top <- min((page-1)*rows+1,nrow(.data))
     end <- min(page*rows,nrow(.data))
@@ -65,7 +53,7 @@
             do.call(tags$tr,
               append(
                 list(tags$td(tags$span(style="color:blue",rownames(.data)[i]))),
-                map(l,tags$td)
+                map(l,function(x) tags$td(toString(x)))
             ) )
           }
       )
@@ -113,9 +101,9 @@
   
   output$view.group <- renderUI(
     if ((length(input$view.rownames)==0)&&.IGoR$test$meta)
-      selectizeInput(.IGoR$do.sync(input,"view.group"), label=.IGoR$s3(.IGoR$GROUPS),
-                     multiple = TRUE, options = list(placeholder = .IGoR$DISCOLS),
-                     choices = .columns(input$main.data,c("factor","character","integer","logical")))
+      selectizeInput(.IGoR$do.sync(input,"view.group"), label=.IGoR$s3(.IGoR$Z$any$group),
+                     multiple = TRUE, options = list(placeholder = .IGoR$Z$any$cols.discrete),
+                     choices = .columns(input$main.data,"discrete"))
   )
     
   output$view.group.no <- renderUI(
@@ -130,15 +118,15 @@
       else if((df$groups==0)||(length(input$view.group.no)==0)) nrow(df$data)
             else df$groups_size[input$view.group.no]
       m <- trunc((n-1)/input$view.page.size)+1
-      sliderInput(.IGoR$do.sync(input,"view.page.no"),.IGoR$s2("Page"),1,m,1,step=1, round=TRUE, sep="")
+      sliderInput(.IGoR$do.sync(input,"view.page.no"),.IGoR$s2(.IGoR$Z$view$page.no),1,m,1,step=1, round=TRUE, sep="")
     }
   )
   
   output$view.rownames <- renderUI(
     if ((length(input$main.data)>0)&&.IGoR$test$meta)
-      if (nrow(get(input$main.data,envir=.GlobalEnv))<100)
-        selectizeInput("view.rownames",.IGoR$s3("Observations :"),
-          multiple = TRUE, options = list(placeholder = sprintf("rownames (%d)",nrow(get(input$main.data,envir=.GlobalEnv)))),
+      if (nrow(get(input$main.data,envir=.GlobalEnv))<=.IGoR$MAXROWNAMES)
+        selectizeInput("view.rownames",.IGoR$s3(.IGoR$Z$any$rows),
+          multiple = TRUE, options = list(placeholder = sprintf(.IGoR$Z$view$nrows,nrow(get(input$main.data,envir=.GlobalEnv)))),
           choices = rownames(get(input$main.data,envir=.GlobalEnv))
       )
       else h4(sprintf("%d observations",nrow(get(input$main.data,envir=.GlobalEnv))))
@@ -146,15 +134,15 @@
   
   output$view.columns <- renderUI(
     if ((length(input$main.data)>0)&&.IGoR$test$meta)
-      selectizeInput("view.columns",.IGoR$s1("Variables :"),
-        multiple = TRUE, options = list(placeholder = sprintf("colonnes (%d)",ncol(get(input$main.data,envir=.GlobalEnv)))),
+      selectizeInput("view.columns",.IGoR$s1(.IGoR$Z$any$vars),
+        multiple = TRUE, options = list(placeholder = sprintf(.IGoR$Z$view$ncols,ncol(get(input$main.data,envir=.GlobalEnv)))),
         choices = .columns(input$main.data))
   )
   
   output$view.where <- renderUI(
     if ((length(input$main.data)>0)&&(length(input$view.rownames)==0))
       tagList(
-        textInput(.IGoR$do.sync(input,"view.where"),.IGoR$s3("Restreindre aux observations vérifiant la condition"),width='100%'),
+        textInput(.IGoR$do.sync(input,"view.where"),.IGoR$s3(.IGoR$Z$any$where),width='100%'),
         verbatimTextOutput("view.comment")
   )   )
   

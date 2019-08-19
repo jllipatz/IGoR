@@ -1,30 +1,19 @@
 
+### 12/08/2019 1.04.2: Externalisation des libellés en français
+
 .IGoR$page$slice$ui <- function()
-  div(id = "bloc_slice",
-    fluidRow(
-      column(width=4, 
-        img(src="images/slice.png", height = "48px"),
-        h3(span("Sélectionner une plage d'observations", style="color: blue"))
-      ),
-      column(width=8, 
-        p("Les fonctions ", code("head"), " et ", code("tail"), " construisent une nouvelle table limitée aux premières ou aux dernières observations.",
-          "Elle sont complétées par la fonction ", code("slice"), " du package ", strong("dplyr"), " qui permet d'extraire une plage d'observations en milieu de table, ",
-          "ou, au contraire de conserver uniquement les observations qui n'appartiennent pas à la plage spécifiée.",br(),
-          "L'usage de ce type de sélection d'observations est généralement lié à un besoin d'extraire un jeu de test limité."
-    ) ) ),
+  .IGoR$ui(page="slice",
     fluidRow(
       column(width=6,
         box(width='100%',
           fluidRow(
-            column(width=6, numericInput("slice.top",.IGoR$s2("Numéro de la première observation"),1)),
+            column(width=6, numericInput("slice.top",.IGoR$s2(.IGoR$Z$slice$top),1)),
             column(width=6, uiOutput("slice.end"))
           ),
-          checkboxInput("slice.drop",.IGoR$s4("Inverser la sélection"),FALSE)
+          checkboxInput("slice.drop",.IGoR$s4(.IGoR$Z$any$drop),FALSE)
       )),
       column(width=6, .IGoR$load.ui("slice"))
-    ),
-    .IGoR$commandBox("slice")
-  )
+  ) )
 
 
 .IGoR$page$slice$sv <- function(input, output, session) {
@@ -33,7 +22,7 @@
   
   output$slice.end <- renderUI(
     if ((length(input$main.data)>0)&&.IGoR$test$meta)
-      numericInput("slice.end",.IGoR$s2("Numéro de la dernière observation"),nrow(get(input$main.data,envir=.GlobalEnv)))
+      numericInput("slice.end",.IGoR$s2(.IGoR$Z$slice$end),nrow(get(input$main.data,envir=.GlobalEnv)))
   )
   
   output$slice.command2 <- renderUI(

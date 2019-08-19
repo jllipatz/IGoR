@@ -1,18 +1,8 @@
 
 ### 27/07/2019 1.03.0: Ajout du paramétrage des graduations horizontales
+### 11/08/2019 1.04.2: Externalisation des libellés en fran?ais
 
-.IGoR$page$points$ui <- function()
-  .IGoR$gUI("points","Nuage de points",
-    p("La fonction", code("gf_points"), "du package ", strong("ggformula"), "produit des graphiques de",
-      span("nuages de points", style="color:blue"), " construits sur deux variables quantitatives. Elle est complétée par la fonction ", code("gf_line"),
-      "qui en reliant les points entre eux dessine des", span("courbes", style="color:blue"), ".", br(),
-      "La taille des points peut être conditionnée par une autre variable quantitative. ",
-      "La couleur des points peut également être dépendante d'une autre variable qualitative. ",
-      "Dans le cas de tracé de courbes, un tel paramétrage permet de superposer les courbes obtenues pour chacune des modalités de la variable supplémentaire, ",
-      "celle ci agissant comme dans un", code("group_by"), "de", strong("dplyr"), "."
-    ),
-    dropdown=TRUE
-  )
+.IGoR$page$points$ui <- function() .IGoR$ui(page="points", graphics=TRUE)
 
 
 .IGoR$page$points$sv <- function(input, output, session) {
@@ -27,38 +17,39 @@
         column(width=6,
           box(width='100%',
             fluidRow(
-              column(width=6, selectizeInput("points.X", label=.IGoR$s1(.IGoR$NUMVARX1),
-                                             choices=c(.IGoR$NUMCOLV,.columns(input$main.data,"numeric")))),
+              column(width=6, selectizeInput("points.X", .IGoR$s1(.IGoR$Z$any$var.quan.x), .numeric(input))),
               column(width=6, uiOutput("points.X.label"))
             ),
             fluidRow(
-              column(width=6, selectizeInput("points.Y", label=.IGoR$s1(.IGoR$NUMVARY1), 
-                                             choices=c(.IGoR$NUMCOLV,.columns(input$main.data,"numeric")))),
+              column(width=6, selectizeInput("points.Y", .IGoR$s1(.IGoR$Z$any$var.quan.y), .numeric(input))), 
               column(width=6, uiOutput("points.Y.label"))
         ) ) ),
         column(width=6,
           box(width='100%',
-            radioButtons("points.type",NULL,
-                         c("Points seuls"=1, "Relier les points"=2, "Regression linéaire"=3))),
-           uiOutput("points.save.control")
+            radioButtons("points.type",.IGoR$s2(.IGoR$Z$points$type),.IGoR$Znames("points","type",c("points","line","lm")))
+          ),
+          uiOutput("points.save.control")
   )   ) )
         
   output$points.dropdown <- renderUI(
     if ((length(input$main.data)>0)&&.IGoR$test$meta)
       .IGoR$dropdownButton(page="points",
         fluidRow(
-          column(width=6, radioButtons("points.size.type", .IGoR$s2("Taille des points"),
-                                       c("En fonction de la variable..."=1, "Uniforme..."=2))),
-          column(width=6, uiOutput("points.size"))
+          column(width=4, radioButtons("points.size.type",.IGoR$s2(.IGoR$Z$points$size.type),.IGoR$Znames("points","type",c("var","all")))),
+          column(width=3, uiOutput("points.size")),
+          column(width=5, uiOutput("points.size.column.label"))
         ),
         fluidRow(
-          column(width=6, radioButtons("points.color.type", .IGoR$s2("Couleur des points"),
-                                       c("En fonction de la variable..."=1, "Uniforme..."=2))),
-          column(width=6, uiOutput("points.color"))
+          column(width=4, radioButtons("points.color.type",.IGoR$s2(.IGoR$Z$points$color.type),.IGoR$Znames("points","type",c("var","all")))),
+          column(width=3, uiOutput("points.color")),
+          column(width=5, uiOutput("points.color.column.label"))
         ),
-        uiOutput("points.shape"),
+        fluidRow(
+          column(width=7, uiOutput("points.shape")),
+          column(width=5, uiOutput("points.shape.column.label"))
+        ),
         .IGoR$hr(),
-        strong("Abscisses"),
+        strong(.IGoR$Z$any$x),
         fluidRow(
           column(width=6, uiOutput("points.scale"))
         )
@@ -70,30 +61,38 @@
   
   output$points.scale <- renderUI(
     if (.IGoR$test$meta)
-      numericInput("points.scale",.IGoR$s3("Intervalle des graduations"),NA)
+      numericInput("points.scale",.IGoR$s3(.IGoR$Z$points$scale),NA)
   )
   
   output$points.size <- renderUI(
     if (.IGoR$test$meta&&(length(input$points.size.type)>0))
-      if (input$points.size.type==1)
-        selectizeInput("points.size.column", .IGoR$s3(.IGoR$NUMVAR1), 
-                       choices=c("(aucune)",.columns(input$main.data,"numeric")))
-      else
-        sliderInput("points.size.value", "", 1,10,1)
+      if (input$points.size.type=="var")
+           selectizeInput("points.size.column", .IGoR$s3(.IGoR$Z$any$var.quan), choices=.numeric(input,none=.IGoR$NONE))
+      else sliderInput("points.size.value", "", 1,10,1)
   )
   
-  output$points.shape <- renderUI(
-    if (.IGoR$test$meta&&.isNE(input$points.type,2))
-      selectizeInput("points.shape", .IGoR$s3("Forme des points en fonction de la variable qualitative"), 
-                     choices=c("(aucune)",.columns(input$main.data,c("factor","character"))))
+  output$points.size.column.label <- renderUI(
+    if (.isEQ(input$points.size.type,"var")&&.isNotEmpty(input$points.size.column)) .IGoR$gLabel.ui(input,"points","size.column")
   )
   
   output$points.color <- renderUI(
     if (.IGoR$test$meta&&(length(input$points.color.type)>0))
-      if (input$points.color.type==1)
-           selectizeInput("points.color.column", .IGoR$s3(.IGoR$QALVAR1),
-                          choices=c("(aucune)",.columns(input$main.data,c("factor","character"))))
+      if (input$points.color.type=="var")
+           selectizeInput("points.color.column", .IGoR$s3(.IGoR$Z$any$var.qual), choices=.discrete(input,none=.IGoR$NONE))
       else selectizeInput("points.color.value", "", choices=.IGoR$COLORS)
+  )
+  
+  output$points.color.column.label <- renderUI(
+    if (.isEQ(input$points.color.type,"var")&&.isNotEmpty(input$points.column.column)) .IGoR$gLabel.ui(input,"points","color.column")
+  )
+  
+  output$points.shape <- renderUI(
+    if (.IGoR$test$meta&&.isNE(input$points.type,"line"))
+      selectizeInput("points.shape.column", .IGoR$s3(.IGoR$Z$points$shape), choices=.discrete(input,none=.IGoR$NONE))
+  )
+  
+  output$points.shape.column.label <- renderUI(
+    if (.isNotEmpty(input$points.shape.column)) .IGoR$gLabel.ui(input,"points","shape.column")
   )
   
   output$points.command2 <- renderUI(
@@ -102,25 +101,25 @@
         &&(.isNotEmpty(input$points.Y)&&.isNotEmpty(input$points.X))) {
       color <- if (length(input$points.color.type)==0) ""
                else 
-                 if (input$points.color.type==1)
-                   if (.inOrNULL(input$points.color.column,"(aucune)")) ""
+                 if (input$points.color.type=="var")
+                   if (!.isNotEmpty(input$points.color.column)) "" 
                    else glue(", color=~{input$points.color.column}")
                  else
                    if (!.isNE(input$points.color.value,'black')) "" 
                    else glue(", color='{input$points.color.value}'")
       size <- if (length(input$points.size.type)==0) ""
               else 
-                if (input$points.size.type==1)
-                  if (.inOrNULL(input$points.size.column,"(aucune)")) ""
+                if (input$points.size.type=="var")
+                  if (!.isNotEmpty(input$points.size.column)) ""
                   else glue(", size=~{input$points.size.column}")
                 else
                   if (!.isNE(input$points.size.value,1)) ""
                   else glue(", size={input$points.size.value}")
-      shape <- if (.inOrNULL(input$points.shape,"(aucune)")||(input$points.type==2)) ""
-               else glue(", shape=~{input$points.shape}")
-      type <- if (input$points.type==2) "line" else "point"
+      shape <- if (!.isNotEmpty(input$points.shape.column)||(input$points.type=="line")) ""
+               else glue(", shape=~{input$points.shape.column}")
+      type <- if (input$points.type=="line") "line" else "point"
       .IGoR$command2(
-        if (input$points.type==3)
+        if (input$points.type=="lm")
           paste0(glue("gf_lm({input$points.Y} ~ {input$points.X}, interval='confidence')"),NL),
         glue ("gf_{type}({input$points.Y} ~ {input$points.X}{color}{shape}{size})"),
         if (.isNotNA(input$points.scale)) {
@@ -130,7 +129,11 @@
           x2 <- max(x,na.rm=TRUE)
           paste0(NL,glue("gf_refine(scale_x_continuous(breaks=seq({x1},{x2},{scale})))")) 
         },
- 		    .IGoR$gTitleCmd(input,"points",X=TRUE,Y=TRUE),
+ 		    .IGoR$gTitleCmd(input,"points",X=TRUE,Y=TRUE,
+ 		      c(.IGoR$gLabel.arg(input,"points","size.column", "size"),
+ 		        .IGoR$gLabel.arg(input,"points","color.column","color"),
+ 		        .IGoR$gLabel.arg(input,"points","shape.column","shape")
+ 		      ) ),
 		    .IGoR$gSaveCmd(input,"points")
       )}
   ) )

@@ -1,26 +1,12 @@
 
-### BUG coalesce(a,0) ne marche pas si a est "integer", faire coalesce(a,0L)
+### 07/08/2019 1.04.2: str_split, just for the fun!
+### 12/08/2019 1.04.2: Externalisation des libellés en français
+### 14/08/2019 1.04.3: row_number, identity, possibilité d'ajouter un label
 
-.IGoR$page$mutate$ui <- function()
-  div(id = "bloc_mutate",
-    fluidRow(
-      column(width=4, 
-        img(src="images/mutate.png", height = "48px"),
-        h3(span("Créer ou remplacer une variable", style="color: blue"))
-      ),
-      column(width=8, 
-        p("La fonction ", code("mutate"), " du package ", strong("dplyr"), "permet de ", span("créer une nouvelle variable", style="color:blue")," dans une table, ",
-          "ou si une variable de même nom existe déjà, de remplacer cette dernière.", br(),
-          "Le calcul des données de la nouvelle variable peut être fait en groupant les observations sur les mêmes modalités d'un ensemble de variables.",
-          "Dans ce cas le calcul sera réalisé groupe par groupe et la table résultat sera l'agrégation des résultats obtenus sur les différents groupes.",
-          "Ceci n'est utile que lorsque le calcul utilise une fonction retournant un indicateur statistique : ce dernier sera produit groupe par groupe.", br(),
-          "En R, il n'est généralement pas possible de modifier un objet existant, aussi tout ce que fait la fonction c'est créer une nouvelle table ",
-          "contenant les données de l'ancienne table complétées par la nouvelle variable.", br(),
-          em("NOTE : si le nom de la table résultat est celui de la table courante, la page se réinitialise dès que la modification a fonctionné.")
-    ) ) ),
-    uiOutput("mutate.control"),
-    .IGoR$commandBox("mutate")
-  )
+### BUG coalesce(a,0) ne marche pas si a est "integer", faire coalesce(a,0L)
+### TODO Possibilité d'effacer le label?
+
+.IGoR$page$mutate$ui <- function() .IGoR$ui(page="mutate", control=TRUE)
 
 
 .IGoR$page$mutate$sv <- function(input, output, session) {
@@ -31,59 +17,50 @@
     if ((length(input$main.data)>0)&&.IGoR$test$meta)
       tagList(
         fluidRow(
-          column(width=3, .IGoR$group.ui(input,"mutate")),
-          column(width=9,
+          column(width=6,
             box(width='100%',
-              column(width=3, textInput("mutate.new",.IGoR$s2(.IGoR$NEWCOL),"mutate.new")),
-              column(width=6, textInput("mutate.out",.IGoR$s2(.IGoR$OUT),input$main.data)),
-              column(width=3, uiOutput("mutate.load"))
-        ) ) ),
+              column(width=6, textInput("mutate.new",  .IGoR$s2(.IGoR$Z$any$new.col),"mutate.new")),
+              column(width=6, textInput("mutate.label",.IGoR$s3(.IGoR$Z$mutate$label), ''))
+          ) ),
+          column(width=6, .IGoR$load.ui("mutate", out=input$main.data))
+        ),
         box(width='100%', 
-          column(width=3, .IGoR$expr.type.ui("mutate","")),
-          column(width=9, uiOutput("mutate.expr.what"))
+          column(width=3, .IGoR$expr.type.ui("mutate")),
+          column(width=3, uiOutput("mutate.group")),
+          column(width=6, uiOutput("mutate.expr.what"))
   )   ) )
   
   output$mutate.expr.what <- renderUI(
     if (length(input$mutate.type)>0)
-      if (input$mutate.type==1)
-        textInput("mutate.expr",.IGoR$s1("Formule de calcul"))
-      else
-      if (input$mutate.type==2)
+           if (input$mutate.type==0) textInput("mutate.expr",.IGoR$s1(.IGoR$Z$mutate$expr))
+      else if (input$mutate.type==2)
         tagList(
-          uiOutput("mutate.fun"),
           fluidRow(
-            column(width=4,
-              selectizeInput("mutate.old", label=.IGoR$s1(.IGoR$INVAR),
-                             choices=c(.IGoR$COLV,.columns(input$main.data)))
-            ),
-            column(width=4,uiOutput("mutate.arg1")),
-            column(width=4,uiOutput("mutate.arg2"))
-         ))
-       else
+            column(width=4, selectizeInput("mutate.old", label=.IGoR$s1(.IGoR$Z$any$var), .column(input))),
+            column(width=4, uiOutput("mutate.arg1")),
+            column(width=4, uiOutput("mutate.arg2"))
+          ),
+          uiOutput("mutate.fun")
+        )
+       else if (input$mutate.type==3)
          tagList(
+           column(width=4, selectizeInput("mutate.old1", label=.IGoR$s1(.IGoR$Z$any$var), .column(input))),
            column(width=4,
-             selectizeInput("mutate.old1", label=.IGoR$s1(.IGoR$INVAR),
-                            choices=c(.IGoR$COLV,.columns(input$main.data)))
-           ),
-           column(width=4,
-              selectizeInput("mutate.op", .IGoR$s1("Opérateur"),
-                      choices=c("<operateur>"='',
-                                       "plus"="+",
-                                      "moins"="-",
-                                       "fois"="*",
-                                 "divisé par"="/",
-                                         "et"="&",
-                                         "ou"="|",
-                                       "égal"="==",
-                               "différent de"="!=",
-                                "supérieur à"=">",
-                        "supérieur ou égal à"=">=",
-                                "concaténé à"=" paste0"))
-           ),
-           column(width=4,
-              selectizeInput("mutate.old2", label=.IGoR$s1(.IGoR$INVAR),
-                            choices=c(.IGoR$COLV,.columns(input$main.data)))
-           )
+              selectizeInput("mutate.op", .IGoR$s1(.IGoR$Z$any$operator),
+                choices=.IGoR$Zrename(c(none.op='',
+                                           plus="+",
+                                          minus="-",
+                                          times="*",
+                                      dividedBy="/",
+                                            and="&",
+                                             or="|",
+                                           isEQ="==",
+                                           isNE="!=",
+                                           isGT=">",
+                                           isGE=">=",
+                                       pastedTo=" paste0"))
+           ) ),
+           column(width=4, selectizeInput("mutate.old2", label=.IGoR$s1(.IGoR$Z$any$var), .column(input)))
          )
   )
   
@@ -92,45 +69,46 @@
       c <- get(input$main.data,envir=.GlobalEnv)[[input$mutate.old]]
       fluidRow(
         column(width=8,
-          selectizeInput("mutate.fun","",
-            choices=
+          selectizeInput("mutate.fun",NULL,
+            choices=.IGoR$Zrename(
+             c(none.fun='',
+               identity="c0 : identity",
               if (is.character(c))
-                c("Changer d'encodage..."="c2c>iconv",
-                  "Mettre en majuscules"="c0 :str_to_upper",
-                  "Mettre en minuscules"="c0 :str_to_lower",
-                  "Calculer la longueur"="c0 :str_length",
-                  "Extraire la chaîne entre les positions..."="c2n-str_sub",
-                  "Extraire la chaîne à partir de la position..."="c1n-str_sub",
-                  "Chercher une expression régulière..."="c1c:str_detect",
-                  "Extraire une expression régulière..."="c1c:str_extract",
-                  "Remplacer une expression régulière..."="c2c>str_replace",
-                  "Remplacer les valeurs manquantes..."="p1c=coalesce",
-                  "Propager les valeurs non manquantes"="r0 :na.locf")
+                c(iconv="c2c>>iconv",
+           str_to_upper="c0 : str_to_upper",
+           str_to_lower="c0 : str_to_lower",
+               str_sub2="c2n--str_sub",
+               str_sub1="c1n- str_sub",
+            str_extract="c1c< str_extract",
+            str_replace="c2c<=str_replace",
+              str_split="c1c< str_split",
+             str_detect="c1c< str_detect",
+             str_length="c0 : str_length",
+               coalesce="p1c= coalesce")
               else
               if (is.numeric(c))
-                c("Somme"="n0 :sum",
-                  "Moyenne"="n0 :mean",
-                  "Quantile..."="n1n:quantile",
-                  "Valeur maximum"="n0 :max",
-                  "Valeur minimum"="n0 :min",
-                  "Première valeur"="m0 :first",
-                  "Dernière valeur"="m0 :last",
-                  "Remplacer les valeurs manquantes..."="p1n=coalesce",
-                  "Propager les valeurs non manquantes"="r0 :na.locf",
-                  "Formatter..."="x1c:sprintf")
+                  c(sum="n0 : sum",
+                   mean="n0 : mean",
+               quantile="n1n: quantile",
+                    max="n0 : max",
+                    min="n0 : min",
+                  first="m0 : first",
+                   last="m0 : last",
+               coalesce="p1n= coalesce",
+                 format="x1c: sprintf")
               else
-                c("Transformer en caractères"="f0 :as.character",
-                  "Propager les valeurs non manquantes"="r0 :na.locf")
-        )),
+         c(as.character="f0 : as.character"),
+                na.locf="r0 : na.locf")
+        ))),
         column(width=4, 
-          checkboxInput("mutate.pipe",.IGoR$s5("Utiliser le pipe"), TRUE),
+          checkboxInput("mutate.pipe",.IGoR$s5(.IGoR$Z$mutate$pipe), TRUE),
           uiOutput("mutate.narm")
       ))
   })
   
   output$mutate.narm <- renderUI(
     if ((length(input$mutate.fun)>0)&&(substr(input$mutate.fun,1,1)=='n'))
-      checkboxInput("mutate.narm",.IGoR$s5(.IGoR$NARM),TRUE)
+      checkboxInput("mutate.narm",.IGoR$s5(.IGoR$Z$any$na.rm),TRUE)
   )
 
   output$mutate.arg1 <- renderUI(
@@ -138,17 +116,20 @@
       if ((length(input$mutate.fun)>0)&&(substr(input$mutate.fun,2,2)>0))
         if (substr(input$mutate.fun,3,3)=="c")
           textInput("mutate.chr.arg1", .IGoR$s2(
-            if (substr(input$mutate.fun,4,4)==">") "de"
-            else if (substr(input$mutate.fun,4,4)=="=") "par" else ""),
-            switch(substring(input$mutate.fun,5),
+                 if (substr(input$mutate.fun,4,4)==">") .IGoR$Z$any$from
+            else if (substr(input$mutate.fun,4,4)=="=") .IGoR$Z$any$by
+            else if (substr(input$mutate.fun,4,4)=="<") .IGoR$Z$any$prx
+            else ""),
+            switch(substring(input$mutate.fun,6),
               iconv="850",
               sprintf="<%5d>"
           ))
         else
           numericInput("mutate.num.arg1", .IGoR$s2(
-            if (substr(input$mutate.fun,4,4)=="-") "depuis"
-            else if (substr(input$mutate.fun,4,4)=="=") "par" else ""),
-            switch(substring(input$mutate.fun,5),
+                 if (substr(input$mutate.fun,4,4)=="-") .IGoR$Z$any$from
+            else if (substr(input$mutate.fun,4,4)=="=") .IGoR$Z$any$by
+            else ""),
+            switch(substring(input$mutate.fun,6),
               quantile=.5,
               coalesce=0
           ))
@@ -159,35 +140,60 @@
       if ((length(input$mutate.fun)>0)&&(substr(input$mutate.fun,2,2)>1))
         if (substr(input$mutate.fun,3,3)=="c")
           textInput("mutate.chr.arg2", .IGoR$s2(
-            if (substr(input$mutate.fun,4,4)==">") "vers" else ""),
-            if (substring(input$mutate.fun,5)=="iconv") "UTF-8"
+                 if (substr(input$mutate.fun,5,5)=="=") .IGoR$Z$any$by
+            else if (substr(input$mutate.fun,5,5)==">") .IGoR$Z$any$into
+            else ""),
+            if (substring(input$mutate.fun,6)=="iconv") "UTF-8"
           )
         else
           numericInput("mutate.num.arg2", .IGoR$s2(
-            if (substr(input$mutate.fun,4,4)=="-") "jusqu'à" else ""),
+            if (substr(input$mutate.fun,5,5)=="-") .IGoR$Z$any$to else ""),
             NULL
           )
   )  
+  
+  output$mutate.group <- renderUI(
+    if (length(input$mutate.type)>0)
+      if (((input$mutate.type==0)&&.isNotEmpty(input$mutate.expr))
+        || (input$mutate.type==1)
+        ||((input$mutate.type==2)&&(length(input$mutate.fun)>0)&&(substr(input$mutate.fun,1,1) %in% c('n','m')))
+         ) .IGoR$group.ui(input,"mutate", box=FALSE)
+  )
+  
+  label <- function() paste0('{',glue("attr(.${input$mutate.new},'label')<- {shQuote(input$mutate.label)}"),'; .}')
  
   output$mutate.command2 <- renderUI(
     .IGoR$textarea("mutate", "mutate(column=expression)", 3,
-      if (length(input$mutate.type)>0)
+      if ((length(input$mutate.type)>0)
+        &&(((input$mutate.type==0)&&.isNotEmpty(input$mutate.expr))
+         || (input$mutate.type==1)
+         ||((input$mutate.type==2)&&.isNotEmpty(input$mutate.fun)&&.isNotEmpty(input$mutate.old))
+         ||((input$mutate.type==3)&&.isNotEmpty(input$mutate.old1)&&.isNotEmpty(input$mutate.op)&&.isNotEmpty(input$mutate.old2))
+         ))
+        if ((length(input$mutate.label)>0) 
+          &&(((input$mutate.type==0)&&(input$mutate.new==str_squish(input$mutate.expr)))
+           ||((input$mutate.type==2)&&(substring(input$mutate.fun,6)=="identity")&&(input$mutate.old==input$mutate.new))
+           )) .IGoR$command2(label())
+        else
         .IGoR$command2(
           .IGoR$group_by(input,"mutate"),
-          if ((input$mutate.type==1)&&.isNotEmpty(input$mutate.expr))
-            glue("mutate({input$mutate.new} = {input$mutate.expr})")
-          else
-          if ((input$mutate.type==2)&&.isNotEmpty(input$mutate.old)&&.isNotEmpty(input$mutate.fun))
+          "mutate(",
+          input$mutate.new,
+          " = ",
+               if (input$mutate.type==0) input$mutate.expr
+          else if (input$mutate.type==1) "row_number()"
+          else if (input$mutate.type==2)
+            if (substring(input$mutate.fun,6)=="identity") input$mutate.old
+            else
             if ((substring(input$mutate.fun,1,1)=='x')&&(length(input$mutate.chr.arg1)>0))
               if (.isTRUE(input$mutate.pipe))
-                   glue("mutate({input$mutate.new} = {input$mutate.old} %>% {substring(input$mutate.fun,5)}(\"{input$mutate.chr.arg1}\",.))")
-              else glue("mutate({input$mutate.new} = {substring(input$mutate.fun,5)}(\"{input$mutate.chr.arg1}\",{input$mutate.old}))")
+                   glue("{input$mutate.old} %>% {substring(input$mutate.fun,6)}(\"{input$mutate.chr.arg1}\",.)")
+              else glue("{substring(input$mutate.fun,6)}(\"{input$mutate.chr.arg1}\",{input$mutate.old})")
             else
               paste0(
-                glue("mutate({input$mutate.new} = "),
                 if (.isTRUE(input$mutate.pipe))
-                     paste0(input$mutate.old," %>% ",substring(input$mutate.fun,5),'(')
-                else paste0(substring(input$mutate.fun,5),'(',input$mutate.old),
+                     paste0(input$mutate.old," %>% ",substring(input$mutate.fun,6),'(')
+                else paste0(substring(input$mutate.fun,6),'(',input$mutate.old),
                 # Contournement d'un pb sur 'first', 'last'; Error in mutate_impl(.data, dots) : bad value
                 if (.isTRUE(input$mutate.pipe)&&(substr(input$mutate.fun,1,2)=="m0")) '.', 
                 if (substr(input$mutate.fun,2,2)>0)
@@ -215,13 +221,15 @@
                     if (.isTRUE(input$mutate.pipe)&&(substr(input$mutate.fun,2,2)==0)) '' else ', ',
                     "na.rm=FALSE"
                   ),
-              '))'
+              ')'
               )
-            else if ((input$mutate.type==3)&&.isNotEmpty(input$mutate.old1)&&.isNotEmpty(input$mutate.op)&&.isNotEmpty(input$mutate.old2))
+            else if (input$mutate.type==3)
               if (substr(input$mutate.op,1,1)==" ")
-                   glue("mutate({input$mutate.new} = {substring(input$mutate.op,2)}({input$mutate.old1},{input$mutate.old2}))")
-              else glue("mutate({input$mutate.new} = {input$mutate.old1} {input$mutate.op} {input$mutate.old2})"),
-            .IGoR$ungroup(input,"mutate")
+                   glue("{substring(input$mutate.op,2)}({input$mutate.old1},{input$mutate.old2})")
+              else glue("{input$mutate.old1} {input$mutate.op} {input$mutate.old2}"),
+            ')',
+            .IGoR$ungroup(input,"mutate"),
+            if (.isNotEmpty(input$mutate.label)) paste0(NL,label())
   ) )   )
   
   # Ce n'est pas tout à fait correct en cas de modification du nom de la colonne dans command2
@@ -230,8 +238,8 @@
       function(x)
         paste(
           if (input$mutate.new %not in% .columns(input$main.data)) ""
-          else glue("ATTENTION : La colonne '{input$mutate.new}' était déjà présente et sera remplacée!"),
-          glue("NOTE : La colonne '{input$mutate.new}' va être de classe '{class(x[[input$mutate.new]])}'."),
+          else sprintf(.IGoR$Z$mutate$msg.duplicated,input$mutate.new),
+          sprintf(.IGoR$Z$mutate$msg.result,input$mutate.new,class(x[[input$mutate.new]])),
           sep='\n')))
  
 }

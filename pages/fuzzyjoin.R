@@ -1,23 +1,11 @@
+
+### 10/08/2019 1.04.2: Externalisation des libellés en français
+
 ### Exemple multi_match_fun = function(x,y) x[,"a"]==y[,"b"] à intégrer
-### function(x.a,x.b,a.a,y.b,y.c) ... + substitue
+### function(x.a,x.b,a.a,y.b,y.c) ... + substitute
 
 .IGoR$page$fuzzyjoin$ui <- function()
-  div(id = "bloc_fuzzyjoin",
-    fluidRow(
-      column(width=4, 
-        img(src="images/join.png", height = "46px"),
-        h3(span("Jointure de deux tables sur critère quelconque", style="color: blue"))
-      ),
-     column(width=8, 
-       p("Les fonctions du package ", strong("fuzzyjoin")," permettent de compléter les fonctions d'appariement de deux tables, ",
-         "en offrant la possibilité de conditionner la",
-         span("correspondance entre observations provenant de chacune des tables par autre chose qu'une égalité de clés. ", style='color:blue'),
-         "La fonction ", code("fuzzy_join"), "permet d'exprimer le fait qu'il y a correspondance entre deux observations de deux façons :",br(),
-         "- soit parce que l'application d'une ",strong("fonction à deux variables"), ", une dans chaque table, renvoie 'TRUE',", br(),
-         "- soit parce que le calcul d'une ", strong("expression impliquant un nombre de variables quelconque"), " renvoie 'TRUE'", br(),
-         "Le résultat est une table contenant l'intégralité des variables des deux tables. En cas de doublon sur les noms, les variables en cause sont suffixées par '.x' et '.y'.", br(),
-         em("NOTE : la page se réinitialise dès que la jointure a fonctionné.")
-    ) ) ),
+  .IGoR$ui(page="fuzzyjoin",
     fluidRow(
       column(width=6,
         box(width='100%',
@@ -26,19 +14,11 @@
           uiOutput("fuzzyjoin.fun")
       )),
       column(width=6,
+        .IGoR$load.ui("fuzzyjoin"),
         box(width='100%',
-          radioButtons("fuzzyjoin.type", .IGoR$s2("Type de jointure :"),
-            c("Uniquement les lignes ayant un echo dans les deux tables" = "inner",
-              "Les lignes de la table en entrée complétées ou non par celles de la seconde table" = "left",
-              "Les lignes de la seconde table complétées ou non par celles de la table en entrée" = "right",
-              "Les lignes des deux tables qu'elles aient un écho ou non dans leur vis à vis" = "full",
-              "Les lignes de la table en entrée n'ayant aucun écho dans la seconde table" = "anti",
-              "Les lignes de la table en entrée ayant un écho dans la seconde table" = "semi"))
-        ),
-       .IGoR$loadBox("fuzzyjoin","fuzzyjoin.out",NULL,.IGoR$s2(.IGoR$OUT))
-    )),
-    .IGoR$commandBox("fuzzyjoin")
-  )
+          radioButtons("fuzzyjoin.type", .IGoR$s2(.IGoR$Z$join$type),.IGoR$Znames("join","type",c("inner","left","right","full","anti","semi")))
+        )
+  ) ) )
 
 
 .IGoR$page$fuzzyjoin$sv <- function(input, output, session) {
@@ -47,16 +27,17 @@
 
   output$fuzzyjoin.fun <- renderUI(
     if ((length(input$fuzzyjoin.columns)==1)&&(length(input$fuzzyjoin.columns2)==1))
-      textInput("fuzzyjoin.fun",.IGoR$s1("Fonction de comparaison des clés"))
+      textInput("fuzzyjoin.fun",.IGoR$s1(.IGoR$Z$fuzzyjoin$fun))
     else
     if ((length(input$fuzzyjoin.columns)>0)&&(length(input$fuzzyjoin.columns2)>0))
       textInput("fuzzyjoin.fun",
-                .IGoR$s1(paste0("Condition sur ",
+                .IGoR$s1(
+                  paste0(.IGoR$Z$fuzzyjoin$condition,
                        .collapse(vars("x",input$fuzzyjoin.columns,input$fuzzyjoin.columns2)),
-                       " et ",
+                       .IGoR$Z$fuzzyjoin$and,
                        .collapse(vars("y",input$fuzzyjoin.columns2,input$fuzzyjoin.columns)),
-                       ".")))
-  )
+                       "."
+  )   )         ) )
   
   vars <- function(t,l,l2) ifelse(l %in% l2,paste0(l,".",t),l)
   
@@ -69,7 +50,7 @@
       m
     }
     e <- tryCatch(parse(text=expr),error=identity)
-    if (is(e,"condition")) "*** ERREUR ***"
+    if (is(e,"condition")) .IGoR$Z$any$error
     else {
       l <- append(g(quote(x),lx,ly), g(quote(y),ly,lx))
       deparse(

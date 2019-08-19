@@ -1,20 +1,7 @@
 
-.IGoR$page$labels$ui <- function()
-  div(id = "bloc_labels",
-    fluidRow(
-      column(width=4, 
-        img(src="images/labels.png", height = "46px"),
-        h3(span("Importer les libellés d'une variable qualitative", style="color: blue"))
-      ),
-      column(width=8, 
-        p("La fonction", code("factor"), "permet de",
-          span("mettre une variable qualitative dans le type 'énumération'", style='color:blue'),
-          ", tout en précisant les libellés qui doivent apparaître pour chacune des modalités de la variable", br(),
-          "Cette page permet d'exploiter une", em("table de passage"), "définie ailleurs sous forme de table contenant deux colonnes : modalités de la variable et libellés associés. "
-    ) ) ),
-    uiOutput("labels.control"),
-    .IGoR$commandBox("labels")
-  )
+### 12/08/2019 1.04.2: Externalisation des libellés en français
+
+.IGoR$page$labels$ui <- function() .IGoR$ui(page="labels", control=TRUE)
 
 
 .IGoR$page$labels$sv <- function(input, output, session) {
@@ -27,24 +14,23 @@
         fluidRow(
           column(width=3, 
             box(width='100%',
-              selectizeInput("labels.old", .IGoR$s1(.IGoR$OLDVAR),
-                             choices=c(.IGoR$DISCOLV,.columns(input$main.data,c("character","integer","logical"))))
+              selectizeInput("labels.old", .IGoR$s1(.IGoR$Z$any$old.var),
+                             choices=c(.IGoR$COLV,.columns(input$main.data,c("character","integer","logical"))))
           ) ),
           column(width=9, uiOutput("labels.new"))
         ),
         fluidRow(
           column(width=6,
             box(width='100%',
-              selectizeInput("labels.data", .IGoR$s1("Table de correspondance"),
-                             choices=c(c("<table>"=""),.tables())),
+              selectizeInput("labels.data", .IGoR$s1(.IGoR$Z$labels$data), choices=c(.IGoR$TABLE,.tables())),
               uiOutput("labels.data.columns")
   )   ) ) ) )
   
   output$labels.new <- renderUI(
     if ((length(input$main.data)>0)&&.isNotEmpty(input$labels.old))
       box(width='100%',
-        column(width=3, textInput("labels.new",.IGoR$s2(.IGoR$NEWCOL),input$labels.old)),
-        column(width=6, textInput("labels.out",.IGoR$s2(.IGoR$OUT),"labels.out")),
+        column(width=3, textInput("labels.new",.IGoR$s2(.IGoR$Z$any$new.col),input$labels.old)),
+        column(width=6, textInput("labels.out",.IGoR$s2(.IGoR$Z$any$out),"labels.out")),
         column(width=3, uiOutput("labels.load"))
   )   )
   
@@ -52,9 +38,9 @@
     if ((length(input$labels.data)>0)&&.IGoR$test$meta
       &&.isNotEmpty(input$labels.data))
       fluidRow(
-        column(width=6, selectizeInput("labels.data.levels",.IGoR$s1("Variable donnant les codes (levels)"),
-                       choices=c(.IGoR$DISCOLV,.columns(input$labels.data,c("character","integer","logical"))))),
-        column(width=6, selectizeInput("labels.data.labels",.IGoR$s1("Variable donnant les libellés (labels)"),
+        column(width=6, selectizeInput("labels.data.levels",.IGoR$s1(.IGoR$Z$labels$data.levels),
+                       choices=c(.IGoR$COLV,.columns(input$labels.data,c("character","integer","logical"))))),
+        column(width=6, selectizeInput("labels.data.labels",.IGoR$s1(.IGoR$Z$labels$data.labels),
                        choices=c(.IGoR$CHRCOLV,.columns(input$labels.data,"character"))))
       )
   )

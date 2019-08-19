@@ -1,14 +1,8 @@
-### 17/06/2019 1.01.1: Ajout des libellés de variable
 
-.IGoR$page$boxplot$ui <- function() 
-  .IGoR$gUI("boxplot", " Distributions d'une variable quantitative",
-   p("La fonction ", code("gf_boxplot"), " du package ", strong("ggformula"), "permet de construire des représentations en",
-    span("boites à moustaches", style="color:blue"), "résumant les caractéristiques essentielles de la distribution d'une variable qualitative.", br(),
-   "Cette représentation est particulièrement utile pour comparer plusieurs sous-populations qui peuvent ici être déterminées ",
-   "par les valeurs des modalités d'une seconde variable qui sera, elle, de type qualitatif."
-   ),
-   dropdown=TRUE
-  )
+### 17/06/2019 1.01.1: Ajout des libellés de variable
+### 11/08/2019 1.04.2: Externalisation des libellés en français
+
+.IGoR$page$boxplot$ui <- function() .IGoR$ui(page="boxplot", graphics=TRUE)
 
 
 .IGoR$page$boxplot$sv <- function(input, output, session) {
@@ -23,13 +17,11 @@
         column(width=6,
           box(width='100%',
             fluidRow(
-              column(width=6, selectizeInput("boxplot.Y", label=.IGoR$s1(.IGoR$NUMVARY1),
-                                           choices=c(.IGoR$NUMCOLV,.columns(input$main.data,"numeric")))),
+              column(width=6, selectizeInput("boxplot.Y", .IGoR$s1(.IGoR$Z$any$var.quan.y), .numeric(input))),
               column(width=6, uiOutput("boxplot.Y.label"))
             ),
             fluidRow(
-              column(width=6, selectizeInput("boxplot.X", label=.IGoR$s3(.IGoR$QALVARX1),
-                                           choices=c(.IGoR$QALCOLV,.columns(input$main.data,c("factor","character"))))),
+              column(width=6, selectizeInput("boxplot.X", .IGoR$s3(.IGoR$Z$any$var.qual.x), .discrete(input))),
               column(width=6, uiOutput("boxplot.X.label"))
         ) ) ),
         column(width=6, uiOutput("boxplot.save.control"))
@@ -37,7 +29,7 @@
   
   output$boxplot.dropdown <- renderUI(
     .IGoR$dropdownButton(page="boxplot",
-      checkboxInput("boxplot.coordflip",.IGoR$s4("Graphique horizontal"),FALSE)
+      checkboxInput("boxplot.coordflip",.IGoR$s4(.IGoR$Z$boxplot$coordflip),FALSE)
   ) )
   
   .IGoR$gVarLabelUI(input,output,"boxplot","Y")

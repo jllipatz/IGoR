@@ -1,15 +1,8 @@
 
 ### 14/06/2019 1.01.1: Ajout d'une pondération optionnelle
+### 11/08/2019 1.04.2: Externalisation des libellés en français
 
-.IGoR$page$pie$ui <- function()
-  .IGoR$gUI("pie","Diagramme en camembert",
-    p("Il n'existe pas de fonction", strong("ggformula"), "ou", strong("ggplot2"), "pour représenter la",
-      span("répartition d'une variable qualitative", style='color:blue'), "sous forme de camembert.",
-      "La représentation présentée ici exploite les possibilités d'accès aux fonctions de", strong("ggplot2"),
-      "en partant d'un graphique en barres proportionnelles aux effectifs et le transforme par changement du système de coorodonnées."
-    ),
-    dropdown=TRUE
-  )
+.IGoR$page$pie$ui <- function() .IGoR$ui(page="pie", graphics=TRUE)
 
 
 .IGoR$page$pie$sv <- function(input, output, session) {
@@ -24,15 +17,12 @@
         column(width=6,
           box(width='100%',
             fluidRow(
-              column(width=6, selectizeInput("pie.Y", label=.IGoR$s1(.IGoR$QALVAR1),
-                                             choices=c(.IGoR$QALCOLV,.columns(input$main.data,c("factor","character","integer"))))),
+              column(width=6, selectizeInput("pie.Y", .IGoR$s1(.IGoR$Z$any$var.qual), .discrete(input))),
               column(width=6, uiOutput("pie.Y.label"))
             ),
             fluidRow(
-              column(width=6, selectizeInput("pie.W", label=.IGoR$s3(.IGoR$WEIGHT),
-                                             choices=c(.IGoR$NUMCOLV,.columns(input$main.data,c("numeric","integer"))))),
-              column(width=6, selectizeInput("pie.X", label=.IGoR$s3(.IGoR$GROUP),
-                           choices=c(.IGoR$QALCOLV,.columns(input$main.data,c("factor","character","integer")))))
+              column(width=6, selectizeInput("pie.W", .IGoR$s3(.IGoR$Z$any$weight), .numeric(input))),
+              column(width=6, selectizeInput("pie.X", .IGoR$s3(.IGoR$Z$pie$facet),  .discrete(input)))
         ) ) ),               
         column(width=6, uiOutput("pie.save.control"))
   )   )

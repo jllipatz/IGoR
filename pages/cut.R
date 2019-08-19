@@ -1,22 +1,9 @@
 
-.IGoR$page$cut$ui <- function()
-  div( id = "bloc_cut",
-    fluidRow(
-      column(width=4, 
-        img(src="images/cut.png", height = "48px"),
-        h3(span( "Transformation d'une variable de quantitative à qualitative", style="color: blue"))
-      ),
-      column(width=8, 
-         p("La fonction ", code("cut"), 
-           span("transforme une variable quantitative en variable qualitative", style='color:blue'), "sous forme de colonne de type 'facteur' ('énumération').",
-           "L'ensemble des valeurs prise par la variable quantitative est découpé en tranches régulières ou non, ",
-           "le numéro de chaque tranche devenant une modialité de la nouvelle variable qualitative.", br(),
-           em("ATTENTION : l'opération n'est pas réversible."), br(),
-           em("NOTE : si le nom de la table résultat est celui de la table courante, la page se réinitialise dès que la modification a fonctionné.")
-    ) ) ),
-    uiOutput("cut.control"),
-    .IGoR$commandBox("cut")
-  )
+### 12/08/2019 1.04.2: Externalisation des libellés en français
+
+### BUG La methode des tracnhes régulières ne semble pas marcher avec des pas <1
+
+.IGoR$page$cut$ui <- function() .IGoR$ui(page="cut", control=TRUE)
 
 
 .IGoR$page$cut$sv <- function(input, output, session) {
@@ -29,13 +16,12 @@
         fluidRow(
           column(width=3,
             box(width='100%',
-              selectizeInput("cut.column", label=.IGoR$s1(.IGoR$OLDVAR),
-                             choices=c(.IGoR$NUMCOLV,.columns(input$main.data,"numeric")))
+              selectizeInput("cut.column", label=.IGoR$s1(.IGoR$Z$any$old.var), .numeric(input))
           ) ),
           column(width=9,
             box(width='100%',
-              column(width=3, textInput("cut.new",.IGoR$s2(.IGoR$NEWCOL),"cut.new")),
-              column(width=6, textInput("cut.out",.IGoR$s2(.IGoR$OUT),input$main.data)),
+              column(width=3, textInput("cut.new",.IGoR$s2(.IGoR$Z$any$new.col),"cut.new")),
+              column(width=6, textInput("cut.out",.IGoR$s2(.IGoR$Z$any$out),input$main.data)),
               column(width=3, uiOutput("cut.load"))
         ) ) ),
         fluidRow(
@@ -46,10 +32,7 @@
   output$cut.method <- renderUI(
     if (.isNotEmpty(input$cut.column))
       box(width='100%',
-        column(width=6, radioButtons("cut.method", .IGoR$s2("Méthode :"),
-                        c("Valeurs indivudelles"=1,
-                            "Tranches manuelles"=2,
-                           "Tranches régulières"=3))),
+        column(width=6, radioButtons("cut.method", .IGoR$s2(.IGoR$Z$cut$method), .IGoR$Znames("cut","method",c("value","breaks","step")))),
         column(width=6, uiOutput("cut.args"))
   )   )
   
@@ -59,24 +42,24 @@
         verbatimTextOutput("cut.min"),
         verbatimTextOutput("cut.max"),
         if (length(input$cut.method)>0)
-          if (input$cut.method==2)
+          if (input$cut.method=="breaks")
             tagList(
-              textInput("cut.breaks",.IGoR$s1("Breaks (séparés par des virgules) :")),
-              checkboxInput("cut.breaks.right",.IGoR$s5("Borne supérieure comprise"),TRUE)
+              textInput("cut.breaks",.IGoR$s1(.IGoR$Z$cut$breaks)),
+              checkboxInput("cut.breaks.right",.IGoR$s5(.IGoR$Z$cut$breaks.right),TRUE)
             )
           else
-          if (input$cut.method==3)
-            numericInput("cut.step",.IGoR$s1("Taille des tranches"),NA)
+          if (input$cut.method=="step")
+            numericInput("cut.step",.IGoR$s1(.IGoR$Z$cut$step),NA)
   )   )
 
   output$cut.min <- renderText(
     if (.isNotEmpty(input$cut.column))
-      paste("Valeur minimum :",min(get(input$main.data,envir=.GlobalEnv)[[input$cut.column]]))
+      paste(.IGoR$Z$cut$min, min(get(input$main.data,envir=.GlobalEnv)[[input$cut.column]]))
   )
 
   output$cut.max <- renderText(
     if (.isNotEmpty(input$cut.column))
-      paste("Valeur maximum :",max(get(input$main.data,envir=.GlobalEnv)[[input$cut.column]]))
+      paste(.IGoR$Z$cut$max, max(get(input$main.data,envir=.GlobalEnv)[[input$cut.column]]))
   )
   
   output$cut.plot1 <- renderUI(
@@ -87,10 +70,10 @@
     .IGoR$textarea("cut", "mutate(column=cut(column,breaks))", 4,
       if ((length(input$cut.method)>0)&&.isNotEmpty(input$cut.column)&&.isNotEmpty(input$cut.new))
         .IGoR$command2(
-          if (input$cut.method==1)
+          if (input$cut.method=="value")
             glue("mutate({input$cut.new} = factor({input$cut.column}))")
           else
-          if ((input$cut.method==2)&&(length(input$cut.breaks.right)>0)) {
+          if ((input$cut.method=="breaks")&&(length(input$cut.breaks.right)>0)) {
             b <- if (length(input$cut.breaks)>0) str_replace_all(input$cut.breaks," ","") else ""
             if (str_length(b)>0) b <- paste0(.collapse(as.numeric(str_split(b,",")[[1]])),", ")
             if (input$cut.breaks.right)
@@ -98,7 +81,7 @@
             else glue("mutate({input$cut.new} = cut({input$cut.column}, c(min({input$cut.column}), {b}max({input$cut.column})+1), right=FALSE))")
           }
           else
-          if ((input$cut.method==3)&&.isNotNA(input$cut.step))
+          if ((input$cut.method=="step")&&.isNotNA(input$cut.step))
             glue("mutate({input$cut.new} = cut({input$cut.column}, seq(min({input$cut.column})-1,max({input$cut.column})+{input$cut.step},{input$cut.step})))")
   ) )   )
 

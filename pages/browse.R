@@ -1,43 +1,34 @@
 
 ### 21/07/2019 1.03.0
-### 07/08/2019 1.04.0: dropdown buttons
+### 07/08/2019 1.04.1: dropdown buttons
+### 07/08/2019 1.04.2: toString
+### 09/08/2019 1.04.2: Externalisation des libellés en français
 
 .IGoR$page$browse$ui <- function()
-  div(id = "bloc_browse",
+  .IGoR$ui(page="browse",icon="view",command=FALSE,
     fluidRow(
-      column(width=4, 
-        img(src="images/view.png", height = "48px"),
-        h3(span("Visualisation d'une observation", style="color: blue"))
-      ),
-      column(width=8, 
-        p("Cette page permet de ",span("visualiser une table observation par observation", style='color: blue'), 
-          " de la même façon que le ", em("fsbrowse")," de SAS (mais en mieux).",
-          "Elle reprend les facilités de sélection de variables et d'observations présentes dans les pages d'extraction de tables.",
-          "L'affichage peut être partagé entre variables de type caractère sélectionnées sur leur nom (par exemple pour identifier les observations) ",
-          "et variables sélectionnées sur leurs caractéristiques."
-    ) ) ),
-    hr(),
+      column(width=6,
+        box(width='100%',
+          column(width=4, uiOutput("browse.row.type")),
+          column(width=8, 
+             uiOutput("browse.row"),
+             textOutput("browse.row.comment")
+    ) ) ) ),
     fluidRow(
       column(width=1,
-        .IGoR$dropdownButton(page="browse_cols",title="Variables",
-           uiOutput("browse.ids"),
-           .IGoR$select.ui("browse", box=FALSE,
-                           buttons.title=.IGoR$s2("Afficher les variables..."), selected=3)),
-        .IGoR$dropdownButton(page="browse_rows",title="Observations",
-          uiOutput("browse.where"),
+        .IGoR$dropdownButton(page="browse_cols",title=.IGoR$Z$any$vars,
+          uiOutput("browse.ids"),
+          .IGoR$select.ui("browse", box=FALSE,
+                          buttons.title=.IGoR$s2(.IGoR$Z$browse$vars), selected=3)),
+        .IGoR$dropdownButton(page="browse_rows",title=.IGoR$Z$any$rows,
+          uiOutput("browse.where")
+        ),
+        .IGoR$dropdownButton(page="browse_page", title=.IGoR$Z$any$layout,
           fluidRow(
-            column(width=4, radioButtons("browse.row.type",.IGoR$s2("Afficher l'observation..."), 
-                                        c("de numéro :"=1,"de nom :"=3,"de premier identifiant :"=2))),
-            column(width=8, 
-              uiOutput("browse.row"),
-              textOutput("browse.row.comment")
-        ) ) ),
-        .IGoR$dropdownButton(page="browse_page", title="Mise en page",
-          fluidRow(
-            column(width=6, sliderInput("browse.n",.IGoR$s2("Nombre de colonnes"),1,4,3)),
+            column(width=6, sliderInput("browse.ncols",.IGoR$s2(.IGoR$Z$browse$ncols),1,4,3)),
             column(width=6,
-              checkboxInput("browse.label",.IGoR$s4("Utiliser les libellés de variable"),FALSE),
-              checkboxInput("browse.sort",.IGoR$s4("Trier les variables par leur nom"),FALSE)
+              checkboxInput("browse.label",.IGoR$s4(.IGoR$Z$browse$label),FALSE),
+              checkboxInput("browse.sort", .IGoR$s4(.IGoR$Z$browse$sort), FALSE)
       ) ) ) ),                     
       column(width=11, htmlOutput("browse.html"))
   ) )
@@ -93,7 +84,7 @@
         br(),
         do.call(tags$table,
                 list(style = "border: 1px solid black; padding: 1%; width: 100%",
-                     f(.data,.row,if (length(input$browse.n)==0) 3 else input$browse.n)))
+                     f(.data,.row,if (length(input$browse.ncols)==0) 3 else input$browse.ncols)))
       )         
   }
 
@@ -126,16 +117,16 @@
       i <- 
         if (length(input$browse.row.type)==0) 1
         else
-        if ((input$browse.row.type==1)&&(length(input$browse.row)>0)) input$browse.row
+        if ((input$browse.row.type=='no')&&(length(input$browse.row)>0)) input$browse.row
         else 
-        if ((input$browse.row.type==2)&&(length(input$browse.ids)>0)&&(length(input$browse.value1)>0))
-          which(df()$ids[input$browse.ids[1]]==input$browse.value1)
+        if ((input$browse.row.type=='id')&&(length(input$browse.ids)>0)&&(length(input$browse.row.value)>0))
+          which(df()$ids[input$browse.ids[1]]==input$browse.row.value)
         else
-        if ((input$browse.row.type==3)&&(length(input$browse.row.name)>0))
+        if ((input$browse.row.type=='name')&&(length(input$browse.row.name)>0))
           which(df()$ids["row.names(.)"]==input$browse.row.name)
         else 1
       if (length(i)>1) {
-        output$browse.row.comment <- renderText(sprintf("Il y a %d observations correspondant à cet identifiant.",length(i)))
+        output$browse.row.comment <- renderText(sprintf(.IGoR$Z$browse$msg.nobs,length(i)))
         i[1]
       } else {
         output$browse.row.comment <- renderText("")
@@ -148,32 +139,36 @@
   output$browse.where <- renderUI(
     if ((length(input$main.data)>0)&&.IGoR$test$meta)
       tagList(
-        textInput(.IGoR$do.sync(input,"browse.where"),.IGoR$s3(.IGoR$FILTER), width='100%'),
+        textInput(.IGoR$do.sync(input,"browse.where"),.IGoR$s3(.IGoR$Z$any$where), width='100%'),
         verbatimTextOutput("browse.comment")
   )   )
+
+  output$browse.row.type <- renderUI(
+    radioButtons("browse.row.type",.IGoR$s2(.IGoR$Z$any$row), 
+                 .IGoR$Znames("browse","row.type",c("no","name",if (.isNotEmpty(input$browse.ids)) "id"))
+  ) )
   
   output$browse.row <- renderUI(
     if ((length(input$main.data)>0)&&.IGoR$test$meta
       &&(length(input$browse.row.type)>0)) {
       df <- df()
-      tagList(
-        strong(glue("parmi {.p('observation',nrow(df$data))}.")),
-        if (input$browse.row.type==1) 
-          sliderInput("browse.row","",1,nrow(df$data),1,step=1,round=TRUE)
-        else 
-        if ((input$browse.row.type==2)&&(length(input$browse.ids)>0))
-          textInput("browse.value1",input$browse.ids[1],iconv(df$ids[1,input$browse.ids[1]],from="UTF-8"))
-        else
-        if (input$browse.row.type==3)
-          textInput("browse.row.name","row.names(.)",df$ids[1,"row.names(.)"])
-      )
+      if (input$browse.row.type=='no')
+        sliderInput("browse.row","",1,nrow(df$data),1,step=1,round=TRUE)
+      else
+      if ((input$browse.row.type=='id')&&(length(input$browse.ids)>0))
+        textInput("browse.row.value",.IGoR$s2(input$browse.ids[1]),iconv(df$ids[1,input$browse.ids[1]],from="UTF-8"))
+      else
+      if (input$browse.row.type=='name')
+        if (nrow(df$ids)<=.IGoR$MAXROWNAMES)
+        selectizeInput("browse.row.name",.IGoR$s2("row.names(.)"),choices=df$ids$`row.names(.)`)
+        else textInput("browse.row.name",.IGoR$s2("row.names(.)"),df$ids[1,"row.names(.)"])
     }
   )
   
   output$browse.ids <- renderUI(
     if ((length(input$main.data)>0)&&.IGoR$test$meta)
-      selectizeInput(.IGoR$do.sync(input,"browse.ids"),.IGoR$s3("Variables d'identification"),
-                   multiple=TRUE,  options = list(placeholder = '<colonnes de type caractère>'),
+      selectizeInput(.IGoR$do.sync(input,"browse.ids"),.IGoR$s3(.IGoR$Z$browse$ids),
+                   multiple=TRUE,  options = list(placeholder = .IGoR$Z$any$cols.chr),
                    choices=.columns(input$main.data,"character"))
   )
 

@@ -1,12 +1,8 @@
 
-.IGoR$page$col$ui <- function()
-  .IGoR$gUI("col","Distribution d'une variable qualitative",
-    p("La fonction ", code("gf_col"), " du package ", strong("ggformula"), "permet de construire un graphique de ",
-      span("barres de taille proportionnelle à une variable quantitative", style="color:blue"), " supposée être un dénombrement sur une donnée qualitative.", br(),
-      "La page permet de mettre en vis à vis une seconde variable de cumuls."
-    ),
-    dropdown=TRUE
-  )
+### 10/08/2019 1.04.2: Externalisation des libellés en français
+
+.IGoR$page$col$ui <- function() .IGoR$ui(page="col", graphics=TRUE)
+
 
 .IGoR$page$col$sv <- function(input, output, session) {
   
@@ -20,24 +16,16 @@
         column(width=6,
           box(width='100%',
             fluidRow(
-		          column(width=6,
-				        selectizeInput("col.X", label=.IGoR$s1(.IGoR$QALVARX1),
-                           choices=c(.IGoR$DISCOLV,.columns(input$main.data,"discrete")))),
-			        column(width=6,
-				        selectizeInput("col.reorder", .IGoR$s3("Trier par :"),
-                           choices=c(.IGoR$NUMCOLV,.columns(input$main.data,"numeric"))))
+		          column(width=6, selectizeInput("col.X", .IGoR$s1(.IGoR$Z$any$var.qual.x), choices=.discrete(input))),
+			        column(width=6, selectizeInput("col.reorder", .IGoR$s3(.IGoR$Z$col$reorder), choices=.numeric(input)))
             ),
-            .IGoR$s1("Ordonnées"),
+            .IGoR$s1(.IGoR$Z$any$y),
             fluidRow(
-              column(width=6,
-                selectizeInput("col.N", .IGoR$s1("Données cumulées"),
-                           choices=c(.IGoR$NUMCOLV,.columns(input$main.data,"numeric")))),
-              column(width=6, selectizeInput("col.N.color",.IGoR$s2("Couleur"),choices=.IGoR$COLORS))
+              column(width=6, selectizeInput("col.N", .IGoR$s1(.IGoR$Z$col$var.N), choices=.numeric(input))),
+              column(width=6, selectizeInput("col.N.color", .IGoR$s2(.IGoR$Z$any$color), choices=.IGoR$COLORS))
             ),
             fluidRow(
-              column(width=6,
-                selectizeInput("col.M", .IGoR$s3("Données cumulées en vis à vis"),
-                           choices=c(.IGoR$NUMCOLV,.columns(input$main.data,"numeric")))),
+              column(width=6, selectizeInput("col.M", .IGoR$s3(.IGoR$Z$col$var.M), choices=.numeric(input))),
               column(width=6, uiOutput("col.M.color"))
         ) ) ),
         column(width=6, uiOutput("col.save.control"))
@@ -45,11 +33,11 @@
   
   output$col.dropdown <- renderUI(
     .IGoR$dropdownButton(page="col",
-      checkboxInput("col.coordflip",.IGoR$s4("Barres horizontales"),FALSE)
+      checkboxInput("col.coordflip",.IGoR$s4(.IGoR$Z$col$coordflip),FALSE)
   ) )
   
   output$col.M.color <- renderUI(
-    if (.isNotEmpty(input$col.M)) selectizeInput("col.M.color",.IGoR$s2("Couleur"),.IGoR$COLORS)
+    if (.isNotEmpty(input$col.M)) selectizeInput("col.M.color",.IGoR$s2(.IGoR$Z$any$color), choices=.IGoR$COLORS)
   )
   
   output$col.command2 <- renderUI(

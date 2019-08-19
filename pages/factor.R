@@ -1,24 +1,9 @@
 
+### 12/08/2019 1.04.2: Externalisation des libellés en français
+
 ### TODO : Les noms de colonnes invalides ne sont pas gérés et doivent être quotés manuellement.
 
-.IGoR$page$factor$ui <- function()
-  div(id = "bloc_factor",
-    fluidRow(
-      column(width=4, 
-        img(src="images/rename.png", height = "46px"),
-        h3(span("Conversion de variables d'un type vers un autre", style="color: blue"))
-      ),
-      column(width=8, 
-        p("Les fonctions de la famille", code("mutate"), " du package ", strong("dplyr"), "permettent aussi de ",
-          span("changer le type d'une variable ou d'un ensemble de variables", style="color:blue"),".",
-          "Les variables modifiées peuvent remplacer les anciennes, ou, si on ne réutilise pas leur nom, venir compléter la table résultat.",br(),
-          "En R, il n'est généralement pas possible de modifier un objet existant, aussi tout ce que fait la fonction c'est créer une nouvelle table ",
-          "contenant les données de l'ancienne table modifiées sur les variables sélectionnées.", br(),
-          em("NOTE : si le nom de la table résultat est celui de la table courante, la page se réinitialise dès que la modification a fonctionné.")
-    ) ) ),
-    uiOutput("factor.control"),
-    .IGoR$commandBox("factor")
-  )
+.IGoR$page$factor$ui <- function() .IGoR$ui(page="factor", icon="rename", control=TRUE)
 
 
 .IGoR$page$factor$sv <- function(input, output, session) {
@@ -29,20 +14,17 @@
     output$factor.comment <- renderText("")
     if ((length(input$main.data)>0)&&.IGoR$test$meta)
       fluidRow(
-        column(width=6, .IGoR$select.ui("factor",buttons.title=.IGoR$s2("Changer le type des variables..."))),
+        column(width=6, .IGoR$select.ui("factor",buttons.title=.IGoR$s2(.IGoR$Z$factor$factor))),
         column(width=6,
           .IGoR$load.ui("factor",input$main.data),
           box(width='100%',
             column(width=6, 
-              selectizeInput("factor.class.out",.IGoR$s2("vers le type :"),
-                             choices=c("énumération (facteur)"="factor",
-                                       "caractère"="as.character",
-                                       "numérique double précision"="as.double",
-                                       "numérique entier"="as.integer",
-                                       "booléen"="as.logical",
-                                       "date"="as.Date"))),
+              selectizeInput("factor.class.out",.IGoR$s2(.IGoR$Z$factor$class),
+                choices=c('' %>% {names(.)<- .IGoR$Z$factor$class.none;.},
+                         .IGoR$Znames("factor","class",c("factor","as.character","as.double","as.integer","as.logical","as.Date"))))
+            ),
             column(width=6,
-              checkboxInput("factor.short",.IGoR$s5("Réutiliser les noms"),TRUE),
+              checkboxInput("factor.short",.IGoR$s5(.IGoR$Z$factor$short),TRUE),
               uiOutput("factor.empty")
       ) ) ) )
   })
@@ -54,12 +36,12 @@
        ||((input$factor.type==2)
         &&((.isEQ(input$factor.class,"character")&&!input$factor.drop)
          ||(.isNE(input$factor.class,"character")&&input$factor.drop)))))
-      checkboxInput("factor.empty",.IGoR$s5("Mettre 'valeur manquante' pour les chaînes vides"),TRUE)
+      checkboxInput("factor.empty",.IGoR$s5(.IGoR$Z$factor$empty),TRUE)
   )
 
   output$factor.command2 <- renderUI(
-    .IGoR$textarea("factor", "mutate(column=factor(column))", 4, 
-      if ((length(input$factor.type)>0)&&(length(input$factor.short)>0)&&(length(input$factor.class.out)>0)) {
+    .IGoR$textarea("factor", "mutate(column=as...(column))", 4, 
+      if ((length(input$factor.type)>0)&&.isNotEmpty(input$factor.class.out)) {
         na <- if ((input$factor.class.out=="factor")
                 &&((input$factor.type!=2)
                  ||((input$factor.type==2)
@@ -68,9 +50,9 @@
                 &&.isTRUE(input$factor.empty)) ", exclude=''" else ""
         .IGoR$command2(
           "mutate",
-          if (!input$factor.short) {
+          if (!.isTRUE(input$factor.short)) {
             old <- .IGoR$select.columns(input,output,"factor")
-            if (length(old)==0) "() # Aucune variable à transformer!"
+            if (length(old)==0) paste0("() # ",.IGoR$Z$factor$nop)
             else glue("({.collapse(paste0(old,'=',input$factor.class.out,'(',old,na,')'))})")
           }
           else
@@ -103,10 +85,10 @@
         n <- y %>%
              filter((old=="factor")&!(new %in% c("factor","character"))) %>%
              count() %>% pull(n)
-        if (m==0) "NOTE : Il n'y a aucune variable à convertir."
+        if (m==0) .IGoR$Z$factor$msg.nop
         else paste0(
-          glue("NOTE : Il y aura {.p('changement',m,FALSE)} de type."),
-          if (n>0) "\nATTENTION : Convertir une variable facteur en autre chose que du caractère peut conduire à des résultats inattendus."
+          sprintf(.IGoR$Z$factor$msg.result,m),
+          if (n>0) paste0("\n",.IGoR$Z$factor$msg.factor)
         )
       }
   ))
