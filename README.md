@@ -34,4 +34,5 @@ IGoR a été conçu afin d'en faciliter l'extension.<br>
 - *init.R* contient tout ce qui pourrait être modifiable par l'utilisateur,<br>
 - *all.R* contient toutes les fonctions partagées entre les différentes pages de l'application,<br>
 - *dashboard.R* contient les éléments définissant l'interface générale : la structure de l'application dashboard et la liste des menus,<br>
+- *IGoR.json* contient l'ensemble des libellés et textes utilisés dans l'application, ceci afin de faciliter la mise à jour de la documentation intégrée et l'éventuelle traduction dans une langue régionale...
 - chacune des pages est gérée par un seul fichier source contenant à la fois la définition de l'interface (l'"ui") et la définition des traitements (le "server"). La première est souvent réduite au strict nécessaire en raison de la versatilité d'IGoR : beaucoup d'éléments de l'interface graphique sont dynamiques et constituent en pratique l'essentiel de la définition des traitements.
