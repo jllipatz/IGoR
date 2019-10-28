@@ -3,6 +3,7 @@
 ### 19/07/2019 1.03.0: Ajout du type 'json'
 ### 27/07/2019 1.02.0: Ajout du paramètre 'compress' pour le type 'fst'
 ### 09/08/2019 1.04.2: Externalisation des libellés en français
+### 28/10/2019 1.04.4: Ajout du type 'ods'; libellé du champ nom de fichier
 
 .IGoR$page$export$ui <- function()
   .IGoR$ui(page="export",
@@ -48,6 +49,7 @@
                                      "feather"="feather",
                               "Excel Open XML"="xlsx",
                                        "DBase"="dbf",
+                                        "Calc"="ods",
                       "Comma Separated Values"="csv",
                                         "JSON"="json"))
       else
@@ -70,7 +72,7 @@
     fileinfo <- parseSavePath(volumes, input$export)
   
     output$export.file <- renderUI(
-      textInput("export.file",.IGoR$s1(.IGoR$Z$any$path),fileinfo$datapath))
+      textInput("export.file",.IGoR$s1(.IGoR$Z$export$path),fileinfo$datapath))
   })
   
   output$export.command1 <- renderText(

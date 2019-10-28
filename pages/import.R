@@ -10,6 +10,7 @@
 ### 12/07/2019 1.02.0: Ajout du parametre 'encoding' pour le type 'csv'
 ### 19/07/2019 1.03.0: Ajout du type 'json'
 ### 09/08/2019 1.04.2: Externalisation des libellés en français
+### 28/10/2019 1.04.4: Selection des feuilles des fichiers Excel par leur nom
 
 .IGoR$page$import$ui <- function()
   .IGoR$ui(page="import",
@@ -47,8 +48,9 @@
     shinyFileChoose(input, "import",
                     roots = .IGoR$volumes, defaultPath='', defaultRoot='wd',
                     filetypes=c('csv',
-                                "Excel open XML"='xlsx','xls','ods','dbf','json',
-                                "SAS"='sas7bdat',
+                    "Excel open XML"='xlsx','xls','dbf','json',
+                              "Calc"="ods",
+                               "SAS"='sas7bdat',
                                 'fst','feather',
                                 'funcamp',
                                 'rds','rData'))
@@ -90,13 +92,14 @@
         if (type=="dbf")
           checkboxInput("import.dbf",.IGoR$s5(.IGoR$Z$any$stringsAsFactors),FALSE)
         else 
-        if (type %in% c("xls","xlsx"))
+        if (type %in% c("xls","xlsx")) 
           fluidRow(
-            column(width=6, numericInput("import.xls.sheet",  .IGoR$s2(.IGoR$Z$import$xls.sheet), 1)),
+            column(width=6, selectizeInput("import.xls.sheet",.IGoR$s2(.IGoR$Z$import$xls.sheet), 
+                                           readxl::excel_sheets(input$import.file))),
             column(width=4, radioButtons("import.xls.type","",.IGoR$Znames("import","xls.type",c("skip","insee"))),
                             uiOutput("import.xls.names")),
             column(width=2, uiOutput("import.xls.skip"))
-         )
+          )
         else
         if (type=="ods")
           fluidRow(
@@ -114,7 +117,7 @@
                uiOutput("import.fst.parms")
             ),
             column(width=6,
-              radioButtons("import.fst.filter",.IGoR$Z$import$fst.filter, .IGoR$Znames("import","fst.filter",c("all","range","where")))
+              radioButtons("import.fst.filter",.IGoR$Z$import$fst.filter, .IGoR$Znames("import","fst.filter",c("all","range","where")), inline=TRUE)
           ) )
         else
         if (type=="feather")
@@ -198,14 +201,14 @@
           )
         else
         if ((type %in% c("xlsx","xls"))&&.isEQ(input$import.xls.type,"insee")) # --- from insee.fr : get column labels ----
-          paste0("   (function (file, sheet=1) {\n",
+          paste0("   (function (file, sheet) {\n",
                  "     df <- import(file,  sheet=sheet, skip=5)\n",
                  "     Map(function(x) attr(df[[x[2]]],'label')<<- x[1],\n",
                  "         import(file, sheet=sheet, skip=4, n_max=2, col_names=FALSE))\n",
                  "     df\n",
                  "   })",
                  glue("(\"{input$import.file}\""),
-                 if (.isNE(input$import.xls.sheet,1)) glue(", {input$import.xls.sheet}"),
+                 if (.isNE(input$import.xls.sheet,1)) glue(", \"{input$import.xls.sheet}\""),
                  ")"
           )
         else # --- Calls to 'rio::import' --------------------------------------------------------------------------
@@ -220,7 +223,7 @@
               xls      =,
               xlsx     = 
                 paste0(
-                  if (.isNE(input$import.xls.sheet,1)) glue(", sheet={input$import.xls.sheet}"),
+                  if (.isNE(input$import.xls.sheet,1)) glue(", sheet=\"{input$import.xls.sheet}\""),
                   if (.isFALSE(input$import.xls.names)) ", col_names=FALSE",
                   if (.isNotNA(input$import.xls.skip)) glue(", skip={input$import.xls.skip}")
                 ),
