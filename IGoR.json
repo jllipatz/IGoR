@@ -387,7 +387,7 @@
    "max": "Valeur maximum"
  },
  "mutate":{
-   "menu.title": "Créer/modifier une variable",
+   "menu.title": "Créer une variable",
    "page.title": "Créer ou remplacer une variable",
    "info":[
      "La fonction <code>mutate</code> du package <strong>dplyr</strong> permet de",
