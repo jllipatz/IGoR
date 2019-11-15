@@ -1,5 +1,6 @@
 ### 05/07/2019 1.01.4: Initialisation correcte du "home", sauvegarde automatique en mode batch
 ### 12/08/2019 1.04.2: Externalisation des libellés en français
+### 13/11/2019 1.04.5: Test préalable de la version de R
 
 .ui <- dashboardPage(
   skin = "blue", 
@@ -87,6 +88,8 @@
     )) # dashboardSidebar
   ,
   body = dashboardBody(
+    if (paste0(version$major,'.',version$minor)<"3.4.0")
+      tags$script(paste0('window.onload = alert("',.IGoR$Z$dashboard$msg.version,'");')),
     div(id = "form",
         tags$script(
           'function checkifrunning() {

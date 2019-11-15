@@ -1,4 +1,4 @@
-{"version": "version 1.04.4 (FR)",
+{"version": "version 1.04.5 (FR)",
  "any":{
    "table": "<table>",
    "all": "<toutes>",
@@ -119,6 +119,7 @@
    "merge":      "Enrichir",
    "statistics": "Statistiques",
    "graphics":   "Graphiques",
+   "msg.version": "ATTENTION: La version de R que vous utilisez est antérieure à la 3.4, ce sera à vos risques et périls!",
    "quit":       "Quitter",
    "quit.cancel": "Annuler",
    "quit.ok":     "Confirmer",
@@ -261,6 +262,7 @@
    "vars": "Variables à conserver :",
    "expr": "Lignes à conserver :",
    "rdata.load": "Restaurer la table",
+   "csv.dec": "Virgule pour séparer les décimales",
    "xls.type.skip": "Sauter les premières lignes",
    "xls.type.insee": "En tête format insee.fr (5 lignes)",
    "xls.sheet": "Feuille",
