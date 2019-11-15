@@ -1,8 +1,3 @@
-###
-### Les fondamentaux : 
-###       dictionnaire
-###       %>%
-###       fonctions
 
 ### 18/06/2019 1.01.1: Ajout du type 'feather'
 ### 19/06/2019 1.01.1: Ajout du parametre 'from' pour le type 'fst'
@@ -11,6 +6,7 @@
 ### 19/07/2019 1.03.0: Ajout du type 'json'
 ### 09/08/2019 1.04.2: Externalisation des libellés en français
 ### 28/10/2019 1.04.4: Selection des feuilles des fichiers Excel par leur nom
+### 15/11/2019 1.04.5: Séparateur de décimales pour letype 'csv'
 
 .IGoR$page$import$ui <- function()
   .IGoR$ui(page="import",
@@ -86,7 +82,8 @@
         type <- input$import.file %>% str_extract("(?<=\\.)[^.]+$") %>% str_to_lower()
         if (type=="csv")
           fluidRow(
-            column(width=4, encoding.ui())
+            column(width=4, encoding.ui()),
+            column(width=4, checkboxInput("import.csv.dec",.IGoR$Z$import$csv.dec,FALSE))
           )
         else 
         if (type=="dbf")
@@ -216,7 +213,10 @@
             glue("import(\"{input$import.file}\""),
             switch(type,
               csv      = 
-                if (.isNotEmpty(input$import.encoding)) glue(", encoding=\"{input$import.encoding}\""),
+                paste0(
+                  if (.isNotEmpty(input$import.encoding)) glue(", encoding=\"{input$import.encoding}\""),
+                  if (.isTRUE(input$import.csv.dec)) ", dec=','"
+                ),
               dbf      = glue(", as.is={.isFALSE(input$import.dbf)}"), # PB rio 0.5.16 default should be TRUE
               sas7bdat = 
 				        if (.isNotEmpty(input$import.encoding)) glue(", encoding=\"{input$import.encoding}\""),
