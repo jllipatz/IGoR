@@ -235,7 +235,7 @@
    "menu.title": "Créer une table ex nihilo",
    "page.title": "Créer une table ex nihilo",
    "info":[
-     "La fonction <code>read.table</code> est la fonction standard permettant de lire des fichiers texte avec séparateurs ou ",
+     "La fonction <code>read.table</code> est la fonction standard permettant de lire des fichiers texte avec séparateurs",
      "dont les champs sont séparés par un nombre quelconque d'espaces.", 
      "Elle est utilisée ici dans sa capacité à lire à l'intérieur d'une chaîne de caractères comme s'il s'agissait d'un fichier.<br>",
      "La fonction devine le type des colonnes à créer en fonction des données qui lui sont fournies.<br>",
