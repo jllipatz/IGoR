@@ -1,7 +1,8 @@
 
-### 25/07/2019 1.03.0 : Mode assisté (keep quiet: temperature was over 35°C!)
+### 25/07/2019 1.03.0: Mode assisté (keep quiet: temperature was over 35°C!)
 ### 12/08/2019 1.04.2: Externalisation des libellés en français
 ### 14/08/2019 1.04.3: row_number
+### 02/12/2019 1.04.6: désactivation du group-by lors d'un deuxième passage
 
 .IGoR$page$filter$ui <- function() .IGoR$ui(page="filter", control=TRUE)
 
@@ -100,6 +101,7 @@
         || (input$filter.type==1)
         ||((input$filter.type==2)&&(length(input$filter.fun)>0)&&(substr(input$filter.fun,2,2)=='f'))
          ) .IGoR$group.ui(input,"filter", box=FALSE)
+      else if (length(input$filter.group)>0) hidden(textInput("filter.group","",""))
   )
                                   
   output$filter.command2<- renderUI(
