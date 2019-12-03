@@ -10,6 +10,8 @@
 ### 06/08/2019 1.04.0: dropdown buttons
 ### 13/08/2019 1.04.2: Externalisation des libellés en français
 
+.version <- paste0(version$major,".",version$minor)
+
 .IGoR$MAXROWNAMES = 100              # Maximum rows number for a row.names menu ('browse','view')
 .IGoR$Z.FILE      = "IGoR.json"      # File containing translatable titles and texts
 .IGoR$COLORS      = c("black","red","green","blue","white","yellow","pink")
@@ -472,10 +474,12 @@ NL <- ' %>%\n   '
 ## dplyr grouping
 ## Used by 'distinct', filter', 'mutate', 'summarise'
 .IGoR$group_by <- function(input,page)
-  if (length(._(input,page,group))>0) paste0(glue("group_by({.collapse(._(input,page,group))})"),NL)
+  if ((length(._(input,page,group))>0)&&(nchar(._(input,page,group))>0)) 
+    paste0(glue("group_by({.collapse(._(input,page,group))})"),NL)
 
 .IGoR$ungroup  <- function(input,page,n=0)
-  if (length(._(input,page,group))>n) paste0(NL,"ungroup()")
+  if ((length(._(input,page,group))>n)&&(nchar(._(input,page,group)[1])>0))
+    paste0(NL,"ungroup()")
 
 ## dplyr variables selection
 ## Used by 'factor', 'gather', 'mutate2', 'rename', 'skim', 'summarise'
