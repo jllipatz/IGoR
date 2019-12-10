@@ -156,7 +156,7 @@
    "graphics.options": "Options du graphique",
    "graphics.save": "Sauvegarder le graphique",
    "graphics.save.as": "Sauvegarder le graphique sous",
-   "msg.warning": " # *** Maître! Etes vous sûr de vouloir employer %s?",
+   "msg.warning": " # *** Maîtr(ess)e! Etes vous sûr de vouloir employer %s?",
    "msg.result": "NOTE : La table '%s' comporte %d ligne(s) et %d colonne(s)."
  },
  "contents":{
@@ -599,9 +599,9 @@
    "sep": "Séparer les milliers",
    "save": "Sauvegarder le tableau",
    "save.as": "Sauvegarder le tableau sous",
-   "msg.error0": "*** Maître! Y aurait-il une colonne sans modalité autre que valeur manquante?",
-   "msg.error1": "*** Maître! Y aurait-il trop de modalités dans une des colonnes?",
-   "msg.error2": "*** Maître: Y aurait-il une colonne avec une modalité de longueur nulle?"
+   "msg.error0": "*** Maîtr(ess)e! Y aurait-il une colonne sans modalité autre que valeur manquante?",
+   "msg.error1": "*** Maîtr(ess)e! Y aurait-il trop de modalités dans une des colonnes?",
+   "msg.error2": "*** Maîtr(ess)e: Y aurait-il une colonne avec une modalité de longueur nulle?"
  },
  "bar":{
    "menu.title": "Barres (données individuelles)",
