@@ -22,7 +22,6 @@
    "col.discrete": "<colonne (hors type 'double')>",
    "cols.discrete": "<colonnes (hors type 'double')>",
    "col.numeric": "<colonne de type numerique>",
-   "cols.discrete": "<colonnes (hors type 'double')>",
    "old.var": "Variable à convertir",
    "new.col": "Colonne à créer ou remplacer",
    "where": "Restreindre aux observations vérifiant la condition",
@@ -45,8 +44,6 @@
      "make.names":   "Standardiser",
 	 "str_to_lower": "Mettre en minuscules",
 	 "str_to_upper": "Mettre en majuscules",
-	 "str_extract":  "Extraire l'expression régulière",
-	 "str_replace":  "Remplacer l'expression régulière",
 	 ".renumber":    "Numéroter",
 	 ".prefix":      "Préfixer",
 	 ".suffix":      "Suffixer",
@@ -601,7 +598,9 @@
    "digits": "Décimales :",
    "sep": "Séparer les milliers",
    "save": "Sauvegarder le tableau",
-   "save.as": "Sauvegarder le tableau sous"
+   "save.as": "Sauvegarder le tableau sous",
+   "msg.error0": "*** Maître! Y aurait-il une variable sans modalité autre que valeur manquante?",
+   "msg.error1": "*** Maître! Y aurait-il trop de modalités dans une des variables?"
  },
  "bar":{
    "menu.title": "Barres (données individuelles)",
