@@ -2,6 +2,7 @@
 ### 07/08/2019 1.04.2: str_split, just for the fun!
 ### 12/08/2019 1.04.2: Externalisation des libellés en français
 ### 14/08/2019 1.04.3: row_number, identity, possibilité d'ajouter un label
+### 10/12/2019 1.04.6: Remplacement d'une modalité
 
 ### BUG coalesce(a,0) ne marche pas si a est "integer", faire coalesce(a,0L)
 ### TODO Possibilité d'effacer le label?
@@ -84,6 +85,7 @@
               str_split="c1c< str_split",
              str_detect="c1c< str_detect",
              str_length="c0 : str_length",
+                replace="i2c>>",
                coalesce="p1c= coalesce")
               else
               if (is.numeric(c))
@@ -94,7 +96,8 @@
                     min="n0 : min",
                   first="m0 : first",
                    last="m0 : last",
-               coalesce="p1n= coalesce",
+                replace="i2n>>",
+               coalesce="p1n>=coalesce",
                  format="x1c: sprintf")
               else
          c(as.character="f0 : as.character"),
@@ -126,7 +129,7 @@
           ))
         else
           numericInput("mutate.num.arg1", .IGoR$s2(
-                 if (substr(input$mutate.fun,4,4)=="-") .IGoR$Z$any$from
+                 if (substr(input$mutate.fun,4,4)==">") .IGoR$Z$any$from
             else if (substr(input$mutate.fun,4,4)=="=") .IGoR$Z$any$by
             else ""),
             switch(substring(input$mutate.fun,6),
@@ -147,7 +150,9 @@
           )
         else
           numericInput("mutate.num.arg2", .IGoR$s2(
-            if (substr(input$mutate.fun,5,5)=="-") .IGoR$Z$any$to else ""),
+                 if (substr(input$mutate.fun,5,5)=="=") .IGoR$Z$any$by
+            else if (substr(input$mutate.fun,5,5)==">") .IGoR$Z$any$into
+            else if (substr(input$mutate.fun,5,5)=="-") .IGoR$Z$any$to else ""),
             NULL
           )
   )  
@@ -185,10 +190,24 @@
           else if (input$mutate.type==2)
             if (substring(input$mutate.fun,6)=="identity") input$mutate.old
             else
-            if ((substring(input$mutate.fun,1,1)=='x')&&(length(input$mutate.chr.arg1)>0))
-              if (.isTRUE(input$mutate.pipe))
-                   glue("{input$mutate.old} %>% {substring(input$mutate.fun,6)}(\"{input$mutate.chr.arg1}\",.)")
-              else glue("{substring(input$mutate.fun,6)}(\"{input$mutate.chr.arg1}\",{input$mutate.old})")
+            if (substring(input$mutate.fun,1,1)=='i')
+                if ((substr(input$mutate.fun,3,3)=="c")&&(length(input$mutate.chr.arg1)>0)&&(length(input$mutate.chr.arg2)>0))
+                  if (.isTRUE(input$mutate.pipe))
+                       glue("{input$mutate.old} %>% ifelse(.==\"{input$mutate.chr.arg1}\",\"{input$mutate.chr.arg2}\",.)") 
+                  else glue("ifelse({input$mutate.old}==\"{input$mutate.chr.arg1}\",\"{input$mutate.chr.arg2}\",{input$mutate.old})")
+                else
+                if ((substr(input$mutate.fun,3,3)=="n")&&(length(input$mutate.num.arg1)>0)&&(length(input$mutate.num.arg2)>0))
+                  if (.isTRUE(input$mutate.pipe))
+                       glue("{input$mutate.old} %>% ifelse(.=={input$mutate.num.arg1},{input$mutate.num.arg2},.)") 
+                  else glue("ifelse({input$mutate.old}=={input$mutate.num.arg1},{input$mutate.num.arg2},{input$mutate.old})")
+                else ""
+            else
+            if (substring(input$mutate.fun,1,1)=='x')
+              if (length(input$mutate.chr.arg1)>0)
+                if (.isTRUE(input$mutate.pipe))
+                     glue("{input$mutate.old} %>% {substring(input$mutate.fun,6)}(\"{input$mutate.chr.arg1}\",.)")
+                else glue("{substring(input$mutate.fun,6)}(\"{input$mutate.chr.arg1}\",{input$mutate.old})")
+              else ""
             else
               paste0(
                 if (.isTRUE(input$mutate.pipe))
