@@ -3,6 +3,7 @@
 ### 14/06/2019 1.01.1: Justification des comptages avec séparateurs des milliers
 ### 04/08/2019 1.03.3: Transformation optionnelle en facteurs
 ### 12/08/2019 1.04.2: Externalisation des libellés en français
+### 10/12/2019 1.04.6: Messages d'erreur en clair
 
 ### TODO Offrir la possibilité de convertir le résultat en data.frame
 ### TODO Protéger contre les modalités de facteur sous forme de chaine vide 'attempt to use zero-length variable name'
@@ -186,6 +187,10 @@ observeEvent(input$tabular.command2,
         if (nchar(input$tabular.command2)>0) {
           x <- tryCatch(eval(parse(text=paste0(input$main.data,' %>% ',input$tabular.command2))),
                         error=function(e) {
+                          if (e$message %in% c("node stack overflow", "pile de noeuds débordée vers le haut"))
+                            e$message <- paste0(e$message,"\n",.IGoR$Z$tabular$msg.error1)
+                          else if (e$message=="No levels in 'x'!")
+                            e$message <- paste0(e$message,"\n",.IGoR$Z$tabular$msg.error0)
                           output$tabular.comment <- renderText(e$message)
                           NULL
                 })
