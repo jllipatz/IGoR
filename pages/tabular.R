@@ -191,6 +191,8 @@ observeEvent(input$tabular.command2,
                             e$message <- paste0(e$message,"\n",.IGoR$Z$tabular$msg.error1)
                           else if (e$message=="No levels in 'x'!")
                             e$message <- paste0(e$message,"\n",.IGoR$Z$tabular$msg.error0)
+                          else if (e$message=="attempt to use zero-length variable name")
+                            e$message <- paste0(e$message,"\n",.IGoR$Z$tabular$msg.error2)
                           output$tabular.comment <- renderText(e$message)
                           NULL
                 })
