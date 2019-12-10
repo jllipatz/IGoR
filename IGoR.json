@@ -39,6 +39,7 @@
      "none.fun":     "<fonction>",
 	 "none.op":      "<operateur>",
 	 "identity":     "Copier à l'identique",
+	 "replace":      "Remplacer une modalité",
 	 "coalesce":     "Remplacer les valeurs manquantes...",
 	 "na.locf":      "Propager les valeurs non manquantes",
      "make.names":   "Standardiser",
