@@ -85,7 +85,7 @@
               str_split="c1c< str_split",
              str_detect="c1c< str_detect",
              str_length="c0 : str_length",
-                replace="i2c>>",
+                replace="i2c>>ifelse",
                coalesce="p1c= coalesce")
               else
               if (is.numeric(c))
@@ -96,7 +96,7 @@
                     min="n0 : min",
                   first="m0 : first",
                    last="m0 : last",
-                replace="i2n>>",
+                replace="i2n>>ifelse",
                coalesce="p1n>=coalesce",
                  format="x1c: sprintf")
               else
@@ -134,6 +134,7 @@
             else ""),
             switch(substring(input$mutate.fun,6),
               quantile=.5,
+              ifelse=,
               coalesce=0
           ))
   )
