@@ -1,0 +1,1 @@
+1.05.0 : Splash screen, déplacement de la défintion des menus vers init.R pour customisation éventuelle. 
