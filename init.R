@@ -25,6 +25,21 @@ library(gglorenz)       # 0.1.0  page 'lorenz'
 library(sp)             # 1.3-1  page 'spplot'
 library(latticeExtra)   # 0.6-28 page 'spplot'
 
+.IGoR <- list(
+  volumes = c(D='D:/',U='U:/',V='V:/',W='W:/',Z='Z:/'),  # Volumes visibles sous les navigateurs de fichiers
+  menus= list(
+#      manage=c("import","contents","view","browse","distinct","create","tables","export"),
+      manage=c("contents","view","browse","distinct","create","import","export","tables"),
+      update=c("rename","factor","cut","mutate","mutate2"),
+     extract=c("slice","filter","select"),
+     reshape=c("summarise","gather","spread","arrange"),
+       merge=c("join","fuzzyjoin","labels"),
+  statistics=c("skim","tabular"),
+    graphics=c("bar","col","histogram","boxplot","pie","points","bin2d","lorenz","spplot")
+))
+
+## Fonctions utiles
+
 `%not in%` <- Negate(`%in%`)
 
 ## Définition utile à la page 'Tableaux'
@@ -60,13 +75,11 @@ nanopop <- data.frame(age=c( 20, 30, 40, 50, 60, 20, 30, 40, 50, 60, NA),
                       sexe=c("M","M","M","M","M","F","F","F","F","F","F"),
                       poids=c(  1,  1,  1,  1,  3,  6,  2,  2,  2,  2,  1))
 
-## Volumes visibles sous les navigateurs de fichiers
-.IGoR <- list(
-  volumes = c(D='D:/',U='U:/',V='V:/',W='W:/',Z='Z:/'),
-  page=list())
-
 ## désactivation des histogrammes de skimr qui ne s'affichent pas correctement
 skim_with(numeric=list(hist=NULL), integer=list(hist=NULL))
+
+## largeur de l'écran pour les aperçus de table
+options(width=200)
 
 ## Import des fonds de carte (https://gadm.org/data.html, version juin 2018)
 ## ces fonds ne contiennent que la métropole
@@ -79,4 +92,7 @@ skim_with(numeric=list(hist=NULL), integer=list(hist=NULL))
 # fra2018.sp <- getData(name="GADM", country="FRA", level=0)
 # save(com2018.sp,can2018.sp,dep2018.sp,reg2018.sp,fra2018.sp,file="data/geo_GADM2018.RData")
 # detach("package:raster")
+
+.IGoR$page=list() # Sera rempli plus tard avec le contenu du répertoire 'pages'
+
 

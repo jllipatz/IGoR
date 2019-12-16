@@ -1,6 +1,7 @@
 ### 05/07/2019 1.01.4: Initialisation correcte du "home", sauvegarde automatique en mode batch
 ### 12/08/2019 1.04.2: Externalisation des libellés en français
 ### 13/11/2019 1.04.5: Test préalable de la version de R
+### 04/12/2019 1.04.6: Externalisation du menu dans init.R
 
 .ui <- dashboardPage(
   skin = "blue", 
@@ -29,67 +30,31 @@
     imageOutput("main.igor",height='128px'),  # Permet la surimpression du champ suivant
     tags$div(id = "loading", tags$script('$("#loading").hide()')),
     uiOutput("main.data"),
-    sidebarMenu(id = "menu",
-                width = "400",
-                menuItem(.IGoR$Z$dashboard$manage,
-                         menuSubItem(.IGoR$Z$contents$menu.title,  tabName="contents"),
-                         menuSubItem(.IGoR$Z$view$menu.title,      tabName="view"),
-                         menuSubItem(.IGoR$Z$browse$menu.title,    tabName="browse"),
-                         menuSubItem(.IGoR$Z$distinct$menu.title,  tabName="distinct"),
-                         menuSubItem(.IGoR$Z$create$menu.title,    tabName="create"),
-                         menuSubItem(.IGoR$Z$import$menu.title,    tabName="import"),
-                         menuSubItem(.IGoR$Z$export$menu.title,    tabName="export"),
-                         menuSubItem(.IGoR$Z$tables$menu.title,    tabName="tables")
-                ),
-                menuItem(.IGoR$Z$dashboard$update,
-                         menuSubItem(.IGoR$Z$rename$menu.title,    tabName="rename"),
-                         menuSubItem(.IGoR$Z$factor$menu.title,  tabName="factor"),
-                         menuSubItem(.IGoR$Z$cut$menu.title, 	     tabName="cut"),
-                         menuSubItem(.IGoR$Z$mutate$menu.title,    tabName="mutate"),
-                         menuSubItem(.IGoR$Z$mutate2$menu.title,   tabName="mutate2")
-                ),
-                menuItem(.IGoR$Z$dashboard$extract,
-                         menuSubItem(.IGoR$Z$slice$menu.title,     tabName="slice"),
-                         menuSubItem(.IGoR$Z$filter$menu.title,    tabName="filter"),
-                         menuSubItem(.IGoR$Z$select$menu.title,    tabName="select")
-                ),
-                menuItem(.IGoR$Z$dashboard$reshape,
-                         menuSubItem(.IGoR$Z$summarise$menu.title, tabName="summarise"),
-                         menuSubItem(.IGoR$Z$gather$menu.title,    tabName="gather"),
-                         menuSubItem(.IGoR$Z$spread$menu.title,    tabName="spread"),
-                         menuSubItem(.IGoR$Z$arrange$menu.title,   tabName="arrange")
-                ),
-                menuItem(.IGoR$Z$dashboard$merge,
-                         menuSubItem(.IGoR$Z$join$menu.title,      tabName="join"),
-                         menuSubItem(.IGoR$Z$fuzzyjoin$menu.title, tabName="fuzzyjoin"),
-                         menuSubItem(.IGoR$Z$labels$menu.title,    tabName="labels")
-                ),
-                menuItem(.IGoR$Z$dashboard$statistics,
-                         menuSubItem(.IGoR$Z$skim$menu.title,      tabName="skim"),
-                         menuSubItem(.IGoR$Z$tabular$menu.title,   tabName="tabular")
-                ),
-                menuItem(.IGoR$Z$dashboard$graphics,
-                         menuSubItem(.IGoR$Z$bar$menu.title,       tabName="bar"),
-                         menuSubItem(.IGoR$Z$col$menu.title,       tabName="col"),
-                         menuSubItem(.IGoR$Z$histogram$menu.title, tabName="histogram"),
-                         menuSubItem(.IGoR$Z$boxplot$menu.title, 	 tabName="boxplot"),
-                         menuSubItem(.IGoR$Z$pie$menu.title,       tabName="pie"),
-                         menuSubItem(.IGoR$Z$points$menu.title,    tabName="points"),
-                         menuSubItem(.IGoR$Z$bin2d$menu.title,     tabName="bin2d"),
-                         menuSubItem(.IGoR$Z$lorenz$menu.title,    tabName="lorenz"),
-                         menuSubItem(.IGoR$Z$spplot$menu.title,    tabName="spplot")
-                ),
-                menuItem(
-                  actionButton("main.quit", .IGoR$Z$dashboard$quit,
-                               style = "background-color:rgb(34, 45, 50);border-color:rgb(34, 45, 50);color:white;width:32%;text-align: center;"
-                  )),
-                useShinyjs(),
-                extendShinyjs(text = "shinyjs.closeWindow = function() { window.close(); }", functions = c("closeWindow"))
+    do.call(sidebarMenu,
+            append(
+              list(id = "menu",
+                width = "400"),
+              append(
+                map2(unname(.IGoR$menus), names(.IGoR$menus),
+                     function(l,n) do.call(menuItem,
+                                           append(.IGoR$Z$dashboard[[n]],
+                                                  map(l, function(x) menuSubItem(.IGoR$Z[[x]]$menu.title,tabName=x))
+                ))),
+                list(
+                  menuItem(
+                    actionButton("main.quit", .IGoR$Z$dashboard$quit,
+                                 style = "background-color:rgb(34, 45, 50);border-color:rgb(34, 45, 50);color:white;width:32%;text-align: center;"
+                    )),
+                  useShinyjs(),
+                  extendShinyjs(text = "shinyjs.closeWindow = function() { window.close(); }", functions = c("closeWindow"))
+              )))
     )) # dashboardSidebar
   ,
   body = dashboardBody(
     if (paste0(version$major,'.',version$minor)<"3.4.0")
       tags$script(paste0('window.onload = alert("',.IGoR$Z$dashboard$msg.version,'");')),
+    div(id = "splash_screen", img(src = "images/R_logo.png"),
+        style = "text-align:center; padding-top:250px;  padding-bottom:300px;"),
     div(id = "form",
         tags$script(
           'function checkifrunning() {
@@ -126,7 +91,9 @@
 
 
 .server <- function(input, output, session){
-
+  
+  hide("splash_screen", anim = TRUE, animType = "fade", time = 3)
+  
   .IGoR$volumes <<- c(home=fs::path_expand("~"), wd=getwd(), .IGoR$volumes)
 
   output$main.igor <- renderImage(list(src="images/igor.jpg"),deleteFile = FALSE)
