@@ -3,6 +3,7 @@
 ### 15/07/2019 1.02.1: Corrections (na.rm, noms en clairs), ajout des dénombrements
 ### 31/07/2019 1.03.1: AJout du comptage d'une modalité
 ### 12/08/2019 1.04.2: Externalisation des libellés en français
+### 19/12/2019 1.05.1: Correction min max sur données pondérées
 
 .IGoR$page$summarise$ui <- function() .IGoR$ui(page="summarise", control=TRUE)
 
@@ -57,8 +58,8 @@
         p90=glue("wtd.quantile(.,p=.90,w={w}{na1})"),
         sd=glue("sqrt(wtd.var(.,w={w}{na1}))"),
         var=glue("wtd.var(.,w={w}{na1})"),
-        min="min{na2}",
-        max="max{na2}",
+        min=glue("min{na2}"),
+        max=glue("max{na2}"),
         first="first",
         last="last")[i]
   }

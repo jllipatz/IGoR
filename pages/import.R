@@ -7,6 +7,7 @@
 ### 09/08/2019 1.04.2: Externalisation des libellés en français
 ### 28/10/2019 1.04.4: Selection des feuilles des fichiers Excel par leur nom
 ### 15/11/2019 1.04.5: Séparateur de décimales pour letype 'csv'
+### 19/11/2019 1.05.1: Tri des colonnes des fichiers fst et feather
 
 .IGoR$page$import$ui <- function()
   .IGoR$ui(page="import",
@@ -110,7 +111,7 @@
             column(width=6,
                selectizeInput("import.columns", .IGoR$s3(.IGoR$Z$import$vars),
                              multiple = TRUE, options = list(placeholder = .IGoR$Z$any$all),
-                             choices = metadata_fst(input$import.file)$columnNames),
+                             choices = sort(metadata_fst(input$import.file)$columnNames)),
                uiOutput("import.fst.parms")
             ),
             column(width=6,
@@ -122,7 +123,7 @@
             column(width=6,
               selectizeInput("import.columns", .IGoR$s3(.IGoR$Z$import$vars),
                              multiple = TRUE, options = list(placeholder = .IGoR$Z$any$all),
-                             choices = attr(feather_metadata(input$import.file)$types,'names'))
+                             choices = sort(attr(feather_metadata(input$import.file)$types,'names')))
             ),
             column(width=6,
                uiOutput("import.feather.parms"),

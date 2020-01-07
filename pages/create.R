@@ -1,6 +1,7 @@
 
 ### 28/06/2019 1.01.2: Protection contre les noms de table incorrects
 ### 09/08/2019 1.04.2: Externalisation des libellés en français
+### 20/12/2019 1.05.1: Correction de la dynamique de na.strings
 
 .IGoR$page$create$ui <- function()
   .IGoR$ui(page="create",
@@ -32,8 +33,9 @@
   output$create.command3 <- renderText(
     .IGoR$create.command3 <<- glue("\", stringsAsFactors={input$create.factors}{na.strings()})"))
   
-  observeEvent({input$create.command2;input$create.out;input$create.columns;input$create.factors},
+  observeEvent({input$create.command2;input$create.out;input$create.columns;input$create.na.strings;input$create.factors},
     output$create.comment <- renderText({
+      output$create.preview <- NULL
       t <- make.names(input$create.out)
       b <- "create.load"
       s <- paste0(glue(command1),'\n',input$create.command2,glue(.IGoR$create.command3))
