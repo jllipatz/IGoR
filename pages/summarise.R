@@ -4,6 +4,8 @@
 ### 31/07/2019 1.03.1: AJout du comptage d'une modalité
 ### 12/08/2019 1.04.2: Externalisation des libellés en français
 ### 19/12/2019 1.05.1: Correction min max sur données pondérées
+### 09/01/2020 1.05.2: Correction quantiles sur données non pondérées
+###                    Ajout d'un message en cas de moyenne sur données de type caractère
 
 .IGoR$page$summarise$ui <- function() .IGoR$ui(page="summarise", control=TRUE)
 
@@ -36,10 +38,10 @@
         sum=glue("sum{na2}"),
         mean=glue("mean{na2}"),
         median=glue("median{na2}"),
-        q1="quantile(.,p=.25{na1})",
-        q3="quantile(.,p=.75{na1})",
-        p10="quantile(.,p=.10{na1})",
-        p90="quantile(.,p=.90{na1})",
+        q1=glue("quantile(.,p=.25{na1})"),
+        q3=glue("quantile(.,p=.75{na1})"),
+        p10=glue("quantile(.,p=.10{na1})"),
+        p90=glue("quantile(.,p=.90{na1})"),
         sd=glue("sd{na2}"),
         var=glue("var{na2}"),
         min=glue("min{na2}"),
@@ -138,11 +140,16 @@
   
   observeEvent(input$summarise.command2, 
     .IGoR$try(input,output,"summarise",
-      .fn=function(x) {
-        l <- setdiff(colnames(x),isolate(input$summarise.group))
-        n <- length(l)/length(isolate(input$summarise.funs))
-        sprintf(.IGoR$Z$summarise$msg.result,n)
-      }
+      .fn=function(x) isolate({
+        d <- get(input$main.data,envir=.GlobalEnv)[,.IGoR$select.columns(input,output,"summarise")]
+        l <- setdiff(colnames(x),input$summarise.group)
+        n <- length(l)/length(input$summarise.funs)
+        paste(
+         if (("character" %in% Map(class,d))&&("mean" %in% input$summarise.funs)) .IGoR$Z$summarise$msg.error1,
+         sprintf(.IGoR$Z$summarise$msg.result,n),
+         sep='\n'
+        )
+      })
   ))
   
 }
