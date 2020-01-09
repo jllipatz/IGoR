@@ -1,4 +1,4 @@
-﻿{"version": "version 1.05.1 (FR)",
+{"version": "version 1.05.2 (FR)",
  "any":{
    "table": "<table>",
    "all": "<toutes>",
@@ -126,6 +126,7 @@
  },
  "all":{
    "main.data": "Table courante",
+   "freemem": "Mémoire libre",
    "copy": "Copier le code",
    "select.1": "sélectionnées...",
    "select.2": "du type...",
@@ -157,7 +158,7 @@
    "graphics.options": "Options du graphique",
    "graphics.save": "Sauvegarder le graphique",
    "graphics.save.as": "Sauvegarder le graphique sous",
-   "msg.warning": " # *** Maîtr(ess)e! Etes vous sûr de vouloir employer %s?",
+   "msg.warning": " # *** Maître(sse)! Etes vous sûr de vouloir employer %s?",
    "msg.result": "NOTE : La table '%s' comporte %d ligne(s) et %d colonne(s)."
  },
  "contents":{
@@ -479,7 +480,8 @@
    "funs": "Calculer",
    "names": "Intitulés en clair",
    "value": "Valeur :",
-   "msg.result": "NOTE : Il y a %d variable(s) à cumuler."
+   "msg.result": "NOTE : Il y a %d variable(s) à cumuler.",
+   "msg.error1": "*** Maître(sse): R ne fait des moyennes que sur des colonnes numériques!"
 },
  "gather":{
    "menu.title": "Transposer en format long",
@@ -600,9 +602,9 @@
    "sep": "Séparer les milliers",
    "save": "Sauvegarder le tableau",
    "save.as": "Sauvegarder le tableau sous",
-   "msg.error0": "*** Maîtr(ess)e! Y aurait-il une colonne sans modalité autre que valeur manquante?",
-   "msg.error1": "*** Maîtr(ess)e! Y aurait-il trop de modalités dans une des colonnes?",
-   "msg.error2": "*** Maîtr(ess)e: Y aurait-il une colonne avec une modalité de longueur nulle?"
+   "msg.error0": "*** Maître(sse)! Y aurait-il une colonne sans modalité autre que valeur manquante?",
+   "msg.error1": "*** Maître(sse)! Y aurait-il trop de modalités dans une des colonnes?",
+   "msg.error2": "*** Maître(sse): Y aurait-il une colonne avec une modalité de longueur nulle?"
  },
  "bar":{
    "menu.title": "Barres (données individuelles)",
