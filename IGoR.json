@@ -1,4 +1,4 @@
-{"version": "version 1.05.2 (FR)",
+{"version": "version 1.05.3 (FR)",
  "any":{
    "table": "<table>",
    "all": "<toutes>",
@@ -578,7 +578,7 @@
  },
  "tabular":{
    "menu.title": "Tableaux",
-   "page.title": "Distribution d'une variable qualitative",
+   "page.title": "Tableaux sur variables qualitatives",
    "info":[
      "Le package <strong>tables</strong> est directement inspiré par la <em>PROC TABULATE</em> de SAS.",
 	 "A partir de variables qualitatives qui doivent impérativement être du type 'énumération', la fonction <code>tabular</code> produit des", 
@@ -600,6 +600,8 @@
    "Z.fun": "Fonction statistique",
    "digits": "Décimales :",
    "sep": "Séparer les milliers",
+   "all": "Ajouter le total",
+   "all.heading": "Libellés des totaux en clair",
    "save": "Sauvegarder le tableau",
    "save.as": "Sauvegarder le tableau sous",
    "msg.error0": "*** Maître(sse)! Y aurait-il une colonne sans modalité autre que valeur manquante?",
