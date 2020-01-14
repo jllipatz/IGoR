@@ -6,6 +6,7 @@
 ### 19/12/2019 1.05.1: Correction min max sur données pondérées
 ### 09/01/2020 1.05.2: Correction quantiles sur données non pondérées
 ###                    Ajout d'un message en cas de moyenne sur données de type caractère
+### 14/01/2020 1.05.3: Simplification des comptages sans pondération
 
 .IGoR$page$summarise$ui <- function() .IGoR$ui(page="summarise", control=TRUE)
 
@@ -33,7 +34,7 @@
     na1 <- if (has.na) na0 else ""
     na2 <- if (has.na) glue("(.{na0})") else ""
     if (w=='')
-      c(n="{n()}",
+      c(n="n()",
         v=glue("sum({value})"),
         sum=glue("sum{na2}"),
         mean=glue("mean{na2}"),

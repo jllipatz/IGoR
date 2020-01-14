@@ -4,6 +4,8 @@
 ### 04/08/2019 1.03.3: Transformation optionnelle en facteurs
 ### 12/08/2019 1.04.2: Externalisation des libellés en français
 ### 10/12/2019 1.04.6: Messages d'erreur en clair
+### 14/01/2020 1.05.3: Résolution d'un conflit sur 'html'
+###                    Ajout d'options sur les totaux
 
 ### TODO Offrir la possibilité de convertir le résultat en data.frame
 ### TODO Protéger contre les modalités de facteur sous forme de chaine vide 'attempt to use zero-length variable name'
@@ -57,11 +59,13 @@
             ),
             fluidRow(
               column(width=6, uiOutput("tabular.X")),
-              column(width=6, uiOutput("tabular.X.nest"))
+              column(width=6, uiOutput("tabular.X.all"),
+                              uiOutput("tabular.X.nest"))
             ),
             fluidRow(
               column(width=6, uiOutput("tabular.Y")),
-              column(width=6, uiOutput("tabular.Y.nest"))
+              column(width=6, uiOutput("tabular.Y.all"),
+                              uiOutput("tabular.Y.nest"))
             ), 
             hr(),
             fluidRow(
@@ -72,6 +76,9 @@
             column(width=6,radioButtons("tabular.type",.IGoR$s2(.IGoR$Z$tabular$type),.IGoR$Znames("tabular","type",c("count","all","row","col","var")))),
             column(width=6,uiOutput("tabular.args"))
           ),
+          box(width='100%',
+            checkboxInput("tabular.all.heading",.IGoR$s4(.IGoR$Z$tabular$all.heading),FALSE)
+          ),
           uiOutput("tabular.save.control")
   )   ) )
   
@@ -81,7 +88,12 @@
                    options = list(placeholder = .IGoR$any[[if (.isTRUE(input$tabular.factor)) "cols.discrete" else "cols.fct"]]),
                    choices = .columns(input$main.data,     if (.isTRUE(input$tabular.factor)) "discrete"      else "factor")
   ) )
-
+  
+  output$tabular.X.all <- renderUI(
+    if (length(input$tabular.X)>0)
+      checkboxInput("tabular.X.all",.IGoR$s4(.IGoR$Z$tabular$all),TRUE)
+  )
+  
   output$tabular.X.nest <- renderUI(
     if (length(input$tabular.X)>1)
       checkboxInput("tabular.X.nest",.IGoR$s5(.IGoR$Z$tabular$nest),TRUE)
@@ -93,6 +105,11 @@
                    options = list(placeholder = .IGoR$any[[if (.isTRUE(input$tabular.factor)) "cols.discrete" else "cols.fct"]]),
                    choices = .columns(input$main.data,     if (.isTRUE(input$tabular.factor)) "discrete"      else "factor")
   ) )
+  
+  output$tabular.Y.all <- renderUI(
+    if (length(input$tabular.Y)>0)
+      checkboxInput("tabular.Y.all",.IGoR$s4(.IGoR$Z$tabular$all),TRUE)
+  )
   
   output$tabular.Y.nest <- renderUI(
     if (length(input$tabular.Y)>1)
@@ -134,6 +151,7 @@
   output$tabular.command2 <- renderUI(
     .IGoR$textarea("tabular", "tabular(...)", 2, 
       if (length(input$tabular.type)>0) {
+        all <- if (.isTRUE(input$tabular.all.heading)) "Heading('Total')*1" else "1"
         z <- if (input$tabular.type=='var')
                if (.isNotEmpty(input$tabular.Z)&&(length(input$tabular.Z.fun)>0))
                  paste0(input$tabular.Z,'*',
@@ -152,15 +170,17 @@
                  paste(input$tabular.Y,
                        collapse=if (!.isTRUE(input$tabular.Y.nest)) '+' else '*')
                else input$tabular.Y,
-               '+1')
+               if (.isTRUE(input$tabular.Y.all)) paste0('+',all)
+             )
         x <- if (length(input$tabular.X)==0) ""
              else paste0(
                if (length(input$tabular.X)>1)
                  paste(input$tabular.X,
                        collapse=if (!.isTRUE(input$tabular.X.nest)) '+' else '*')
                else input$tabular.X,
-               '+1')
-        if ((nchar(z)==0)&&(nchar(x)==0)) z <- "1"
+               if (.isTRUE(input$tabular.X.all)) paste0('+',all)
+             )
+        if ((nchar(z)==0)&&(nchar(x)==0)) z <- all
         else if ((nchar(z)>0)&&(nchar(x)>0)) x <- glue("*({x})")
         x <- paste0(z,x)
         if ((input$tabular.type=='count')&&.isTRUE(input$tabular.sep))
@@ -198,7 +218,7 @@ observeEvent(input$tabular.command2,
                 })
           if (!is.null(x)) {
            output$tabular.comment <- renderText("")
-           html(x,options=htmloptions(pad=TRUE, HTMLleftpad=TRUE))
+           Hmisc::html(x,options=htmloptions(pad=TRUE, HTMLleftpad=TRUE))
           }
 })))
   
