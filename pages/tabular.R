@@ -5,7 +5,7 @@
 ### 12/08/2019 1.04.2: Externalisation des libellés en français
 ### 10/12/2019 1.04.6: Messages d'erreur en clair
 ### 14/01/2020 1.05.3: Résolution d'un conflit sur 'html'
-###                    Ajout d'options sur les totaux
+### 16/01/2020 1.05.3: Ajout d'options sur les totaux, sur les titres
 
 ### TODO Offrir la possibilité de convertir le résultat en data.frame
 ### TODO Protéger contre les modalités de facteur sous forme de chaine vide 'attempt to use zero-length variable name'
@@ -22,30 +22,39 @@
   .IGoR$bServer(input,output,"tabular")
   
   wtd.percent <- function (x,y) 100*sum(x)/sum(y)
+
+  statsv <- c("n","all","row","col","mean","median","q1","q3","p10","p90","min","max") %>%
+  {names(.) <- .; .} %>% .IGoR$Zrename()
+  
+  statNames <- function(l) names(statsv)[Vectorize(function (x) which(x==statsv))(l)]
   
   stat <- function(.i,.w) glue(
     if (nchar(.w)==0) 
-      c(count="",
+      c(n="",
         all="Percent('all')",
         row="Percent('row')",
         col="Percent('col')",
         mean="mean",
         median="median",
-        q1="Heading('q1')*quantile*Arguments(p=.25)",
-        q3="Heading('q3')*quantile*Arguments(p=.75)",
-        p10="Heading('p10')*quantile*Arguments(p=.1)",
-        p90="Heading('p90')*quantile*Arguments(p=.9)")[.i]
+        q1="quantile*Arguments(p=.25)",
+        q3="quantile*Arguments(p=.75)",
+        p10="quantile*Arguments(p=.1)",
+        p90="quantile*Arguments(p=.9)",
+        min="min",
+        max="max")[.i]
     else 
-      c(count="sum*{.w}",
+      c(n="sum*{.w}",
         all="Percent('all',fn=wtd.percent)*{.w}",
         row="Percent('row',fn=wtd.percent)*{.w}",
         col="Percent('col',fn=wtd.percent)*{.w}",
-        mean="Heading('mean')*wtd.mean*Arguments(w={.w})",
-        median="Heading('median')*wtd.quantile*Arguments(p=.5,w={.w})",
-        q1="Heading('q1')*wtd.quantile*Arguments(p=.25,w={.w})",
-        q3="Heading('q3')*wtd.quantile*Arguments(p=.75,w={.w})",
-        p10="Heading('p10')*wtd.quantile*Arguments(p=.1,w={.w})",
-        p90="Heading('p90')*wtd.quantile*Arguments(p=.9,w={.w})")[.i]
+        mean="wtd.mean*Arguments(w={.w})",
+        median="wtd.quantile*Arguments(p=.5,w={.w})",
+        q1="wtd.quantile*Arguments(p=.25,w={.w})",
+        q3="wtd.quantile*Arguments(p=.75,w={.w})",
+        p10="wtd.quantile*Arguments(p=.1,w={.w})",
+        p90="wtd.quantile*Arguments(p=.9,w={.w})",
+        min="min",
+        max="max")[.i]
   )
 
   output$tabular.control <- renderUI(
@@ -73,11 +82,11 @@
         ) ) ),
         column(width=6,
           box(width='100%',
-            column(width=6,radioButtons("tabular.type",.IGoR$s2(.IGoR$Z$tabular$type),.IGoR$Znames("tabular","type",c("count","all","row","col","var")))),
+            column(width=6,radioButtons("tabular.type",.IGoR$s2(.IGoR$Z$tabular$type),.IGoR$Znames("tabular","type",c("n","all","row","col","var")))),
             column(width=6,uiOutput("tabular.args"))
           ),
           box(width='100%',
-            checkboxInput("tabular.all.heading",.IGoR$s4(.IGoR$Z$tabular$all.heading),FALSE)
+            checkboxInput("tabular.heading",.IGoR$s4(.IGoR$Z$tabular$heading),FALSE)
           ),
           uiOutput("tabular.save.control")
   )   ) )
@@ -120,14 +129,14 @@
     if (.isEQ(input$tabular.type,'var')&&(length(input$tabular.W)>0))
       tagList(
         selectizeInput("tabular.Z", .IGoR$s1(.IGoR$Z$tabular$Z), .numeric(input)),
-        selectizeInput("tabular.Z.fun", .IGoR$s1(.IGoR$Z$tabular$Z.fun), 
+        selectizeInput("tabular.Z.funs", .IGoR$s1(.IGoR$Z$tabular$Z.funs), 
                   multiple=TRUE, options = list(placeholder = .IGoR$Z$any$funs),
-                  choices=.IGoR$Zrename(c(mean=stat("mean",input$tabular.W),
-                                        median=stat("median",input$tabular.W),
-                                            q1=stat("q1",input$tabular.W),
-                                            q3=stat("q3",input$tabular.W),
-                                           p10=stat("p10",input$tabular.W),
-                                           p90=stat("p90",input$tabular.W),
+                  choices=.IGoR$Zrename(c(mean="mean",
+                                        median="median",
+                                            q1="q1",
+                                            q3="q3",
+                                           p10="p10",
+                                           p90="p90",
                                            min="min",
                                            max="max")))
         )
@@ -151,19 +160,32 @@
   output$tabular.command2 <- renderUI(
     .IGoR$textarea("tabular", "tabular(...)", 2, 
       if (length(input$tabular.type)>0) {
-        all <- if (.isTRUE(input$tabular.all.heading)) "Heading('Total')*1" else "1"
+        all <- if (.isTRUE(input$tabular.heading)) glue('Heading("{.IGoR$Z$tabular$all.heading}")*1') else "1"
         z <- if (input$tabular.type=='var')
-               if (.isNotEmpty(input$tabular.Z)&&(length(input$tabular.Z.fun)>0))
-                 paste0(input$tabular.Z,'*',
-                        if (length(input$tabular.Z.fun)>1)
-                             paste0('(',paste(input$tabular.Z.fun, collapse='+'),')')
-                        else input$tabular.Z.fun
+               if (.isNotEmpty(input$tabular.Z)&&(length(input$tabular.Z.funs)>0)) {
+                 h <- paste0('Heading("',
+                             if (.isTRUE(input$tabular.heading)) statNames(input$tabular.Z.funs)
+                             else input$tabular.Z.funs,
+                             '")*')
+                 g <- map_chr(input$tabular.Z.funs,function(x) stat(x,input$tabular.W))
+                 f <- paste0(
+                   if (.isTRUE(input$tabular.heading)) h else ifelse(str_detect(g,'\\*'),h,''),
+                   g
                  )
+                 paste0(input$tabular.Z,'*',
+                        if (length(input$tabular.Z.funs)==1) f
+                        else paste0('(',paste(f, collapse='+'),')')
+                 )
+               }
                else ""
              else 
-              stat(input$tabular.type,input$tabular.W)
-        if ((input$tabular.type %in% c('col','row','all'))&&(length(input$tabular.digits)>0))
-          z <- paste0(z,glue("*Format(partial(sprintf,\"%.{input$tabular.digits}f\")())*Justify(r)"))
+              paste0(
+                if ((input$tabular.type!='n')&&.isTRUE(input$tabular.heading))
+                  glue('Heading("{statNames(input$tabular.type)}")*'),
+                stat(input$tabular.type,input$tabular.W),
+                if ((input$tabular.type!='n')&&(length(input$tabular.digits)>0))
+                  glue('*Format(partial(sprintf,"%.{input$tabular.digits}f")())*Justify(r)')
+              )
         y <- if (length(input$tabular.Y)==0) ""
              else paste0(
                if (length(input$tabular.Y)>1)
