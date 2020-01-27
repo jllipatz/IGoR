@@ -1,4 +1,4 @@
-{"version": "version 1.05.3 (FR)",
+{"version": "version 1.05.5 (FR)",
  "any":{
    "table": "<table>",
    "all": "<toutes>",
@@ -71,8 +71,8 @@
 	 "belongsTo":    "appartient à",
 	 "isGT":         "est supérieur à",
 	 "isGE":         "est supérieur ou égal à",
-	 "isEQ.stat":    "est égal au calcul de",
-	 "isGT.stat":    "est supérieur au calcul de",
+	 "isEQ.stat":    "est égal à la statistique...",
+	 "isGT.stat":    "est supérieur à la statistique...",
 	 "plus":         "plus",
 	 "minus":        "moins",
 	 "times":        "fois",
@@ -114,7 +114,7 @@
  },
  "dashboard":{
    "manage":     "Gérer les tables",
-   "update":     "Recoder",
+   "update":     "Gérer les variables",
    "extract":    "Extraire",
    "reshape":    "Restructurer",
    "merge":      "Enrichir",
@@ -176,9 +176,12 @@
      "La classe d'une variable conditionne les usages qui pourront être faits de ses données.<br>",
      "Le <em>'label'</em> est un héritage de SAS et est utilisé pour enrichir les graphiques,",
 	 "il peut être positionné dans la page <em>créer/modifier une variable</em> du sous-menu <em>Recoder</em>."],
-   "name":  "Nom",
-   "class": "Classe",
-   "label": "Label"
+   "columns": {
+     "position": "Position",
+     "name":  "Nom",
+     "class": "Classe",
+     "label": "Label"},
+   "sort": "Trier par"
  },
  "view":{
    "menu.title": "Visualiser les données",
