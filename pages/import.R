@@ -5,9 +5,10 @@
 ### 12/07/2019 1.02.0: Ajout du parametre 'encoding' pour le type 'csv'
 ### 19/07/2019 1.03.0: Ajout du type 'json'
 ### 09/08/2019 1.04.2: Externalisation des libellés en français
-### 28/10/2019 1.04.4: Selection des feuilles des fichiers Excel par leur nom
+### 28/10/2019 1.04.4: Sélection des feuilles des fichiers Excel par leur nom
 ### 15/11/2019 1.04.5: Séparateur de décimales pour letype 'csv'
 ### 19/11/2019 1.05.1: Tri des colonnes des fichiers fst et feather
+### 24/01/2020 1.05.4: Correction d'un bug de rafraichissement avec fst
 
 .IGoR$page$import$ui <- function()
   .IGoR$ui(page="import",
@@ -178,7 +179,7 @@
     .IGoR$textarea("import", "import(parms)", 6,
       if (.isFile(input$import.file)) {
         type <- input$import.file %>% str_extract("(?<=\\.)[^.]+$") %>% str_to_lower()
-        if ((type=="fst")&&.isNotEmpty(input$import.expr))            # --- Use 'fst' connection -------------------
+        if ((type=="fst")&&.isEQ(input$import.fst.filter,'where')&&.isNotEmpty(input$import.expr))            # --- Use 'fst' connection -------------------
           .IGoR$command2(
             glue("fst(\"{input$import.file}\")"),NL,
             glue(".[{expr('.',TRUE)},{.collapse2(input$import.columns)}]"), .IGoR$look(input$import.expr),
