@@ -26,14 +26,14 @@ library(sp)             # 1.3-1  page 'spplot'
 library(latticeExtra)   # 0.6-28 page 'spplot'
 
 .IGoR <- list(
-  volumes = c(D='D:/',U='U:/',V='V:/',W='W:/',Z='Z:/'),  # Volumes visibles sous les navigateurs de fichiers
+  volumes = c(D='D:/',U='U:/',V='V:/',W='W:/',X='X:/',Z='Z:/'),  # Volumes visibles sous les navigateurs de fichiers
   menus= list(
 #      manage=c("import","contents","view","browse","distinct","create","tables","export"),
       manage=c("contents","view","browse","distinct","create","import","export","tables"),
       update=c("rename","factor","cut","mutate","mutate2"),
      extract=c("slice","filter","select"),
      reshape=c("summarise","gather","spread","arrange"),
-       merge=c("join","fuzzyjoin","labels"),
+       merge=c("join","fuzzyjoin","labels","rbind"),
   statistics=c("skim","tabular"),
     graphics=c("bar","col","histogram","boxplot","pie","points","bin2d","lorenz","spplot")
 ))

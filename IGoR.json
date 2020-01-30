@@ -1,4 +1,4 @@
-{"version": "version 1.05.5 (FR)",
+{"version": "version 1.06.0 (FR)",
  "any":{
    "table": "<table>",
    "all": "<toutes>",
@@ -572,6 +572,17 @@
    "data.levels": "Variable donnant les codes (levels)",
    "data.labels": "Variable donnant les libellés (labels)"
  },
+ "rbind":{
+   "menu.title": "Concaténation",
+   "page.title": "Concaténation de tables à la table courante",
+   "info":[
+     "La fonction <code>bind_rows</code> du package <strong>dplyr</strong> permet de mettre bout à bout deux tables ou plus.",
+	 "Avec deux tables, la table résultat contiendra les données de la première suivie des données de la seconde.",
+	 "Le contenu de chaque colonne sera issu des colonnes de même nom dans les deux tables,",
+	 "et si une colonne d'une table n'est pas présente dans l'autre, les données seront mises à valeur manquante."],
+   "data": "Ajouter la table",
+   "msg.result": "Le résultat aura %d+(%s)=%d colonnes."
+ },
  "skim":{
    "menu.title": "Analyse rapide",
    "page.title": "Analyse rapide de la table courante",
@@ -679,8 +690,8 @@
    "facet": "Faire un graphique par modalité de"
  },
   "points":{
-   "menu.title": "Nuage de points",
-   "page.title": "Nuage de points",
+   "menu.title": "Nuage de points / courbes",
+   "page.title": "Nuage de points et tracé de courbe",
    "info":[
      "La fonction <code>gf_points</code> du package <strong>ggformula</strong> produit des graphiques de",
      "<span style='color:blue'>nuages de points</span> construits sur deux variables quantitatives. Elle est complétée par la fonction <code>gf_line</code>",
