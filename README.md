@@ -1,6 +1,8 @@
 # IGoR
 "Shiny interface for running R code in simple situations"
 
+<img src="IGoR.png" />
+
 IGoR (prononcer "Aïe gore", pour "I go R" : je deviens R), est une interface graphique de prise en main de fonctions simples de manipulation de tables de données sous R.
 Inspiré par Rcmdr, IGoR est un générateur de code qui, à partir d'éléments fournis sous une interface construite avec Shiny, délivre le code nécessaire en utilisant au maximum le **tidyverse**.
 Autour de ce dernier, les packages **rio** et **ggformula** apportent leurs capacités de prise en main rapide des fonctions d'entrée/sortie ou de production de graphiques.
