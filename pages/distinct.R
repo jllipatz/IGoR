@@ -1,6 +1,7 @@
 ### 03/06/2019         Correction de l'affichage des modalités pour les chaînes de caractères
 ### 12/07/2019 1.02.0: Ajout d'une option de passage par summarise
 ### 09/08/2019 1.04.2: Externalisation des libellés en français
+### 30/01/2020 1.06.0: Rétablissement de la prise en compte du tri des modalités
 
 .IGoR$page$distinct$ui <- function()
   .IGoR$ui(page="distinct",
@@ -26,6 +27,7 @@
     if (.isEQ(input$distinct.type,"count")) 
       textInput("distinct.name",.IGoR$s2(.IGoR$Z$distinct$count.var),"n")
     else
+    if (length(input$distinct.group)==1)
       checkboxInput("distinct.sort",.IGoR$s5(.IGoR$Z$distinct$sort),TRUE))
   
   output$distinct.group <- renderUI(
@@ -48,7 +50,7 @@
               )
             else glue("count({.collapse(input$distinct.group)})")
           else glue("distinct({.collapse(input$distinct.group)})"),
-          if ((input$distinct.type==1)&&.isTRUE(input$distinct.sort))
+          if ((input$distinct.type=="list")&&(length(input$distinct.group)==1)&&.isTRUE(input$distinct.sort))
             paste0(NL,glue("arrange({.collapse(input$distinct.group)})"))
   ) )   )
   
