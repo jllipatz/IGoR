@@ -9,6 +9,7 @@
 ### 15/11/2019 1.04.5: Séparateur de décimales pour letype 'csv'
 ### 19/11/2019 1.05.1: Tri des colonnes des fichiers fst et feather
 ### 24/01/2020 1.05.4: Correction d'un bug de rafraichissement avec fst
+### 30/01/2020 1.06.0: Rétablissement du contournement pour les extractions fst d'une seule colonne
 
 .IGoR$page$import$ui <- function()
   .IGoR$ui(page="import",
@@ -183,7 +184,7 @@
           .IGoR$command2(
             glue("fst(\"{input$import.file}\")"),NL,
             glue(".[{expr('.',TRUE)},{.collapse2(input$import.columns)}]"), .IGoR$look(input$import.expr),
-            if (length(input$import.fst.columns)==1) # PB fst 0.8.8 drop=FALSE ne marche pas
+            if (length(input$import.columns)==1) # PB fst 0.8.8 drop=FALSE ne marche pas
               paste0(NL,glue("data.frame({input$import.columns}=., stringsAsFactors=FALSE)"))
           )
         else
