@@ -1,6 +1,7 @@
 
 ### 27/07/2019 1.03.0: Ajout du paramétrage des graduations horizontales
-### 11/08/2019 1.04.2: Externalisation des libellés en fran?ais
+### 11/08/2019 1.04.2: Externalisation des libellés en français
+### 05/02/2020 1.06.1: Ajout de l'option 'conserver les proportions'
 
 .IGoR$page$points$ui <- function() .IGoR$ui(page="points", graphics=TRUE)
 
@@ -51,7 +52,8 @@
         .IGoR$hr(),
         strong(.IGoR$Z$any$x),
         fluidRow(
-          column(width=6, uiOutput("points.scale"))
+          column(width=6, uiOutput("points.scale")),
+          column(width=6, checkboxInput("points.fixed",.IGoR$s3(.IGoR$Z$points$fixed),FALSE))
         )
   )   )
   
@@ -129,6 +131,7 @@
           x2 <- max(x,na.rm=TRUE)
           paste0(NL,glue("gf_refine(scale_x_continuous(breaks=seq({x1},{x2},{scale})))")) 
         },
+        if (.isTRUE(input$points.fixed)) paste0(NL,"gf_refine(coord_fixed())"),
  		    .IGoR$gTitleCmd(input,"points",X=TRUE,Y=TRUE,
  		      c(.IGoR$gLabel.arg(input,"points","size.column", "size"),
  		        .IGoR$gLabel.arg(input,"points","color.column","color"),
