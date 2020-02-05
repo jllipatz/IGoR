@@ -1,4 +1,4 @@
-{"version": "version 1.06.0 (FR)",
+{"version": "version 1.06.1 (FR)",
  "any":{
    "table": "<table>",
    "all": "<toutes>",
@@ -709,7 +709,8 @@
    "type.var": "En fonction de la variable...",
    "type.all": "Uniforme",
    "shape": "Forme des points en fonction de la variable qualitative",
-   "scale": "Intervalle des graduations"
+   "scale": "Intervalle des graduations",
+   "fixed": "Conserver les proportions"
  },
   "bin2d":{
    "menu.title": "Carte de densité",
