@@ -9,6 +9,7 @@
 ### 01/08/2019 1.03.2: Introduction des styles pour les titres des champs
 ### 06/08/2019 1.04.0: dropdown buttons
 ### 13/08/2019 1.04.2: Externalisation des libellés en français
+### 13/02/2020 1.06.2: Réécriture de l'appel à ShinyFileSave pour corriger un bug de synchronisation
 
 .version <- paste0(version$major,".",version$minor)
 
@@ -52,8 +53,9 @@
 ## The user interface builder
 ##
 .IGoR$ui <- function(..., page, icon=page, 
-                     control=graphics, command=TRUE, 
-                     graphics=FALSE, subtitle=TRUE)
+                     command=TRUE, 
+                     graphics=FALSE, subtitle=TRUE,
+                     control=graphics, save=graphics|(page=="tabular"))
   div(id=paste0("div_",page),
     fluidRow(
       column(width=4,
@@ -61,13 +63,18 @@
         h3(span(.IGoR$Z[[page]]$page.title, style="color: blue"))
       ),
       column(width=8, 
-        HTML(paste(.IGoR$Z[[page]]$info,collapse=" "))
+        HTML(paste0("<p align='justify'>",paste(.IGoR$Z[[page]]$info,collapse=" ")))
     ) ),
     hr(),
     if (control) uiOutput(paste0(page,".control")),
     ...,
     if (command) .IGoR$commandBox(page),
-    if (graphics)
+# Button is designed to be hidden, but when hidden, activating it activates the file dialog twice
+#    if (save) extendShinyjs(text = paste0("shinyjs.",page,"SaveButton=function(){ $('#",page,"SaveButton').click(); }")),
+    if (save) shinySaveButton(paste0(page,"SaveButton"), label=.IGoR$Z$any$browse, 
+                       title=if (graphics) .IGoR$Z$all$graphics.save.as else .IGoR$Z$tabular$save.as,
+                       filetype=if (graphics) list(png="png") else (html="html")),
+     if (graphics)
       fluidRow(
         column(width=1,
           .IGoR$dropdownButton(page=paste0(page,"_titles"), width=NULL, title=.IGoR$Z$all$titles,
@@ -608,11 +615,11 @@ NL <- ' %>%\n   '
  
 .IGoR$gSaveCmd <- function(input,page)
   if (.isTRUE(input[[paste0(page,".save")]])) {
-    f <- parseSavePath(.IGoR$volumes,input[[page]])$datapath
+    f <- parseSavePath(.IGoR$volumes,input[[paste0(page,"SaveButton")]])$datapath
     if (.isNotEmpty(f)) paste0(NL,"{",glue("ggsave(\"{f}\",device='png')","; .}"))
   }
 
-## Gestion des élements standard des pages graphiques
+## Gestion des éléments standard des pages graphiques
 .IGoR$gServer <- function(input,output,page) {
   
   .IGoR$bServer(input,output,page)
@@ -629,12 +636,22 @@ NL <- ' %>%\n   '
                    .IGoR$do1(input,output,page,paste(input$main.data,'%>%',input[[paste0(page,".command2")]]))
                ) )
   
-  output[[paste0(page,".save")]] <- renderUI(
-    if (.isTRUE(input[[paste0(page,".save")]]))
-      shinySaveButton(page, .IGoR$Z$any$browse, .IGoR$Z$all$graphics.save.as, filetype=list(png="png"))
-  )
+  .IGoR$saveButton(input,output,page)
   
-  shinyFileSave(input,page, roots=.IGoR$volumes, defaultPath='', defaultRoot='home')
+}
+
+
+## Save file server is permanent, so the button must be permanent too.
+## To simulate a conditional button, the button is hidden and a click is simulated when necessary
+## Used in graphics pages and in 'tabular'.
+.IGoR$saveButton <- function(input,output,page){
+  
+  shinyFileSave(input,paste0(page,"SaveButton"), roots=.IGoR$volumes, defaultRoot='home')
+  
+  observe(
+    if (.isTRUE(input[[paste0(page,".save")]]))
+      eval(parse(text=paste0("js$",page,"SaveButton()")))
+  )
   
 }
 
