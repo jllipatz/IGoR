@@ -69,7 +69,7 @@
     if (control) uiOutput(paste0(page,".control")),
     ...,
     if (command) .IGoR$commandBox(page),
-# Button is designed to be hidden, but when hidden, activating it activates the file dialog twice
+    # Button is designed to be hidden, but when hidden, activating it activates the file dialog twice
 #    if (save) extendShinyjs(text = paste0("shinyjs.",page,"SaveButton=function(){ $('#",page,"SaveButton').click(); }")),
     if (save) shinySaveButton(paste0(page,"SaveButton"), label=.IGoR$Z$any$browse, 
                        title=if (graphics) .IGoR$Z$all$graphics.save.as else .IGoR$Z$tabular$save.as,
@@ -648,10 +648,10 @@ NL <- ' %>%\n   '
   
   shinyFileSave(input,paste0(page,"SaveButton"), roots=.IGoR$volumes, defaultRoot='home')
   
-  observe(
-    if (.isTRUE(input[[paste0(page,".save")]]))
-      eval(parse(text=paste0("js$",page,"SaveButton()")))
-  )
+  # observe(
+  #   if (.isTRUE(input[[paste0(page,".save")]]))
+  #     eval(parse(text=paste0("js$",page,"SaveButton()")))
+  # )
   
 }
 
