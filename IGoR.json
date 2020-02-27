@@ -1,4 +1,4 @@
-{"version": "version 1.06.2 (FR)",
+{"version": "version 1.06.3 (FR)",
  "any":{
    "table": "<table>",
    "all": "<toutes>",
@@ -267,6 +267,7 @@
    "vars": "Variables à conserver :",
    "expr": "Lignes à conserver :",
    "rdata.load": "Restaurer la table",
+   "csv.chars": "Ne rien convertir",
    "csv.dec": "Virgule pour séparer les décimales",
    "xls.type.skip": "Sauter les premières lignes",
    "xls.type.insee": "En tête format insee.fr (5 lignes)",
