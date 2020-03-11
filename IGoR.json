@@ -574,8 +574,8 @@
    "data.labels": "Variable donnant les libellés (labels)"
  },
  "rbind":{
-   "menu.title": "Concaténation",
-   "page.title": "Concaténation de tables à la table courante",
+   "menu.title": "Empilement",
+   "page.title": "Ajout de tables à la fin de la table courante",
    "info":[
      "La fonction <code>bind_rows</code> du package <strong>dplyr</strong> permet de mettre bout à bout deux tables ou plus.",
 	 "Avec deux tables, la table résultat contiendra les données de la première suivie des données de la seconde.",
