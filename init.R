@@ -35,7 +35,7 @@ library(latticeExtra)   # 0.6-28 page 'spplot'
      reshape=c("summarise","gather","spread","arrange"),
        merge=c("join","fuzzyjoin","labels","rbind"),
   statistics=c("skim","tabular"),
-    graphics=c("bar","col","histogram","boxplot","pie","points","bin2d","lorenz","spplot")
+    graphics=c("bar","col","histogram","boxplot","pie","line","points","bin2d","lorenz","spplot")
 ))
 
 ## Fonctions utiles
@@ -94,5 +94,13 @@ options(width=200)
 # detach("package:raster")
 
 .IGoR$page=list() # Sera rempli plus tard avec le contenu du répertoire 'pages'
+
+## Personnalisations
+##   La variable système IGoR peut être positionnée
+##   depuis le .bat par : set IGoR=D:/h2izgk/PALETTES/IGoR/startup.R
+##   depuis RStudio par : Sys.setenv(IGoR="D:/h2izgk/PALETTES/IGoR/startup.R")
+## 1.07
+startup <- Sys.getenv("IGoR")
+if (startup!="") source(startup)
 
 

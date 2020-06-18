@@ -1,4 +1,4 @@
-{"version": "version 1.06.3 (FR)",
+{"version": "version 1.07.1(FR)",
  "any":{
    "table": "<table>",
    "all": "<toutes>",
@@ -267,8 +267,9 @@
    "vars": "Variables à conserver :",
    "expr": "Lignes à conserver :",
    "rdata.load": "Restaurer la table",
-   "csv.chars": "Ne rien convertir",
+   "csv.chars": "Conserver en caractères",
    "csv.dec": "Virgule pour séparer les décimales",
+   "csv.nrows": "Limiter aux premières lignes :",
    "xls.type.skip": "Sauter les premières lignes",
    "xls.type.insee": "En tête format insee.fr (5 lignes)",
    "xls.sheet": "Feuille",
@@ -690,8 +691,18 @@
 	 "conditionnés par les modalités d'une autre variable (qualitative). Cette fonctionnalité est disponible ici."],
    "facet": "Faire un graphique par modalité de"
  },
+  "line":{
+   "menu.title": "Courbes",
+   "page.title": "Tracé de courbe",
+   "info":[
+     "La fonction <code>gf_line</code> du package <strong>ggformula</strong> permet de tracer des",
+     "<span style='color:blue'>courbes</span>.<br>",
+	 "Il est ici possible de lisser les données par ajustment polynomial autour de chaque point."],	 
+   "loess": "Lisser la courbe",
+   "group": "Une courbe par modalité de"
+ },
   "points":{
-   "menu.title": "Nuage de points / courbes",
+   "menu.title": "Nuage de points",
    "page.title": "Nuage de points et tracé de courbe",
    "info":[
      "La fonction <code>gf_points</code> du package <strong>ggformula</strong> produit des graphiques de",
