@@ -12,6 +12,7 @@
 ### 30/01/2020 1.06.0: Rétablissement du contournement pour les extractions fst d'une seule colonne
 ### 20/02/2020 1.06.2: Ajout du type 'rda'
 ### 27/02/2020 1.06.3: Ajout de paramètre à la lecture de csv
+### 16/06/2020 1.07.1: Ajout de paramètres à la lecture de csv; Gestion des noms de fichiers manuels
 
 .IGoR$page$import$ui <- function()
   .IGoR$ui(page="import",
@@ -66,6 +67,8 @@
     box(width='100%',
       column(width=8, {
         type <- input$import.file %>% str_extract("(?<=\\.)[^.]+$") %>% str_to_lower()
+        if (is.na(type)) NULL  # Occurs at dot when typing in the file name
+        else
         if (type=="rdata") {
           attach(input$import.file)
           l <- ls(pos=2)
@@ -82,75 +85,83 @@
   encoding.ui <- function () selectizeInput("import.encoding",.IGoR$s3(.IGoR$Z$import$encoding), choices=c("","UTF-8"))
 
   output$import.parms <- renderUI(
-    if (.isFile(input$import.file))
-      box(width='100%', {
-        type <- input$import.file %>% str_extract("(?<=\\.)[^.]+$") %>% str_to_lower()
-        if (type=="csv")
-          fluidRow(
-            column(width=4, encoding.ui()),
-            column(width=4,
-                   checkboxInput("import.csv.chars",.IGoR$Z$import$csv.chars,FALSE),
-                   uiOutput("import.csv.dec")
-          ))
-        else
-        if (type=="dbf")
-          checkboxInput("import.dbf",.IGoR$s5(.IGoR$Z$any$stringsAsFactors),FALSE)
-        else
-        if (type %in% c("xls","xlsx"))
-          fluidRow(
-            column(width=6, selectizeInput("import.xls.sheet",.IGoR$s2(.IGoR$Z$import$xls.sheet),
-                                           readxl::excel_sheets(input$import.file))),
-            column(width=4, radioButtons("import.xls.type","",.IGoR$Znames("import","xls.type",c("skip","insee"))),
-                            uiOutput("import.xls.names")),
-            column(width=2, uiOutput("import.xls.skip"))
-          )
-        else
-        if (type=="ods")
-          fluidRow(
-            column(width=6, numericInput("import.xls.sheet", .IGoR$s2(.IGoR$Z$import$xls.sheet), 1)),
-            column(width=4, checkboxInput("import.xls.names",.IGoR$s5(.IGoR$Z$import$header), TRUE)),
-            column(width=2, numericInput("import.xls.skip",  .IGoR$s3(.IGoR$Z$import$xls.type.skip), NA))
-          )
-        else
-        if (type=="fst")
-          fluidRow(
-            column(width=6,
-               selectizeInput("import.columns", .IGoR$s3(.IGoR$Z$import$vars),
-                             multiple = TRUE, options = list(placeholder = .IGoR$Z$any$all),
-                             choices = sort(metadata_fst(input$import.file)$columnNames)),
-               uiOutput("import.fst.parms")
-            ),
-            column(width=6,
-              radioButtons("import.fst.filter",.IGoR$Z$import$fst.filter, .IGoR$Znames("import","fst.filter",c("all","range","where")), inline=TRUE)
-          ) )
-        else
-        if (type=="feather")
-          fluidRow(
-            column(width=6,
-              selectizeInput("import.columns", .IGoR$s3(.IGoR$Z$import$vars),
-                             multiple = TRUE, options = list(placeholder = .IGoR$Z$any$all),
-                             choices = sort(attr(feather_metadata(input$import.file)$types,'names')))
-            ),
-            column(width=6,
-               uiOutput("import.feather.parms"),
-               checkboxInput("import.feather.filter",.IGoR$s3(.IGoR$Z$import$feather.where),FALSE)
+    if (.isFile(input$import.file)) {
+      type <- input$import.file %>% str_extract("(?<=\\.)[^.]+$") %>% str_to_lower()
+      if (!is.na(type)) # Occurs at dot when typing in the file name
+        box(width='100%',
+          if (type=="csv")
+            list(
+              fluidRow(
+                column(width=6,
+                       selectizeInput("import.columns", .IGoR$s3(.IGoR$Z$import$vars),
+                                      multiple = TRUE, options = list(placeholder = .IGoR$Z$any$all),
+                                      choices = sort(colnames(data.table::fread(input$import.file,nrows=0))))),
+                column(width=3, numericInput("import.csv.nrows",.IGoR$s3(.IGoR$Z$import$csv.nrows),Inf))
+              ),
+              fluidRow(
+                column(width=3, checkboxInput("import.csv.chars",.IGoR$s5(.IGoR$Z$import$csv.chars),FALSE)),
+                column(width=3, uiOutput("import.csv.dec")),
+                column(width=3, encoding.ui())
+              ))
+          else
+          if (type=="dbf")
+            checkboxInput("import.dbf",.IGoR$s5(.IGoR$Z$any$stringsAsFactors),FALSE)
+          else
+          if (type %in% c("xls","xlsx"))
+            fluidRow(
+              column(width=6, selectizeInput("import.xls.sheet",.IGoR$s2(.IGoR$Z$import$xls.sheet),
+                                             readxl::excel_sheets(input$import.file))),
+              column(width=4, radioButtons("import.xls.type","",.IGoR$Znames("import","xls.type",c("skip","insee"))),
+                              uiOutput("import.xls.names")),
+              column(width=2, uiOutput("import.xls.skip"))
+            )
+          else
+          if (type=="ods")
+            fluidRow(
+              column(width=6, numericInput("import.xls.sheet", .IGoR$s2(.IGoR$Z$import$xls.sheet), 1)),
+              column(width=4, checkboxInput("import.xls.names",.IGoR$s5(.IGoR$Z$import$header), TRUE)),
+              column(width=2, numericInput("import.xls.skip",  .IGoR$s3(.IGoR$Z$import$xls.type.skip), NA))
+            )
+          else
+          if (type=="fst")
+            fluidRow(
+              column(width=6,
+                 selectizeInput("import.columns", .IGoR$s3(.IGoR$Z$import$vars),
+                               multiple = TRUE, options = list(placeholder = .IGoR$Z$any$all),
+                               choices = sort(metadata_fst(input$import.file)$columnNames)),
+                 uiOutput("import.fst.parms")
+              ),
+              column(width=6,
+                radioButtons("import.fst.filter",.IGoR$Z$import$fst.filter, .IGoR$Znames("import","fst.filter",c("all","range","where")), inline=TRUE)
             ) )
-		    else
-		    if (type=="sas7bdat")
-		      fluidRow(
-		        column(width=4, encoding.ui())
-		      )
-        else
-        if (type=="funcamp") # --- This is a non standard extension for funcamp use only!
-          fluidRow(          # funcamp files are just fst files with another file extension
-            column(width=4,  # to disable any access not using the 'id' variable as record key
-              textInput("import.funcamp.id",.IGoR$s2(.IGoR$Z$import$funcamp.key),0)
-          ) )
-  }))
+          else
+          if (type=="feather")
+            fluidRow(
+              column(width=6,
+                selectizeInput("import.columns", .IGoR$s3(.IGoR$Z$import$vars),
+                               multiple = TRUE, options = list(placeholder = .IGoR$Z$any$all),
+                               choices = sort(attr(feather_metadata(input$import.file)$types,'names')))
+              ),
+              column(width=6,
+                 uiOutput("import.feather.parms"),
+                 checkboxInput("import.feather.filter",.IGoR$s3(.IGoR$Z$import$feather.where),FALSE)
+              ) )
+		      else
+		      if (type=="sas7bdat")
+		        fluidRow(
+		          column(width=2, encoding.ui())
+		        )
+          else
+          if (type=="funcamp") # --- This is a non standard extension for funcamp use only!
+            fluidRow(          # funcamp files are just fst files with another file extension
+              column(width=4,  # to disable any access not using the 'id' variable as record key
+                textInput("import.funcamp.id",.IGoR$s2(.IGoR$Z$import$funcamp.key),0)
+            ) )
+    )})
   
   output$import.csv.dec <- renderUI(
     if (.isFALSE(input$import.csv.chars))
-      checkboxInput("import.csv.dec",.IGoR$Z$import$csv.dec,FALSE)
+      checkboxInput("import.csv.dec",.IGoR$s5(.IGoR$Z$import$csv.dec),FALSE)
   )
 
   output$import.xls.names <- renderUI(
@@ -189,13 +200,7 @@
     .IGoR$textarea("import", "import(parms)", 6,
       if (.isFile(input$import.file)) {
         type <- input$import.file %>% str_extract("(?<=\\.)[^.]+$") %>% str_to_lower()
-        if ((type=="fst")&&.isEQ(input$import.fst.filter,'where')&&.isNotEmpty(input$import.expr))            # --- Use 'fst' connection -------------------
-          .IGoR$command2(
-            glue("fst(\"{input$import.file}\")"),NL,
-            glue(".[{expr('.',TRUE)},{.collapse2(input$import.columns)}]"), .IGoR$look(input$import.expr),
-            if (length(input$import.columns)==1) # PB fst 0.8.8 drop=FALSE ne marche pas
-              paste0(NL,glue("data.frame({input$import.columns}=., stringsAsFactors=FALSE)"))
-          )
+        if (is.na(type)) NULL  # Occurs at dot when typing in the file name
         else
         if ((type=="funcamp")&&.isNotEmpty(input$import.funcamp.id))
           .IGoR$command2(
@@ -203,29 +208,40 @@
             glue(".[.$id=={input$import.funcamp.id},grepl('^[^.]',names(.))]")
           )
         else
-        if ((type=="feather")&&.isNotEmpty(input$import.expr))                # --- Use 'feather' connection --------------
-          .IGoR$command2(
+        if ((type=="fst")&&.isEQ(input$import.fst.filter,'where')&&.isNotEmpty(input$import.expr))
+          .IGoR$command2(      # --- Use 'fst' connection -------------------
+            glue("fst(\"{input$import.file}\")"),NL,
+            glue(".[{expr('.',TRUE)},{.collapse2(input$import.columns)}]"), .IGoR$look(input$import.expr),
+            if (length(input$import.columns)==1) # PB fst 0.8.8 drop=FALSE ne marche pas
+              paste0(NL,glue("data.frame({input$import.columns}=., stringsAsFactors=FALSE)"))
+          )
+        else
+        if ((type=="feather")&&.isNotEmpty(input$import.expr))                
+          .IGoR$command2(      # --- Use 'feather' connection --------------
             glue("feather(\"{input$import.file}\")"),NL,
             glue(".[{expr('.',FALSE)},{.collapse2(input$import.columns)}]")
           )
         else
-        if ((type %in% c("xlsx","xls"))&&.isEQ(input$import.xls.type,"insee")) # --- from insee.fr : get column labels ----
-          paste0("   (function (file, sheet) {\n",
-                 "     df <- import(file,  sheet=sheet, skip=5)\n",
-                 "     Map(function(x) attr(df[[x[2]]],'label')<<- x[1],\n",
-                 "         import(file, sheet=sheet, skip=4, n_max=2, col_names=FALSE))\n",
-                 "     df\n",
-                 "   })",
-                 glue("(\"{input$import.file}\""),
-                 if (.isNE(input$import.xls.sheet,1)) glue(", \"{input$import.xls.sheet}\""),
-                 ")"
-          )
+        if ((type %in% c("xlsx","xls"))&&.isEQ(input$import.xls.type,"insee")) 
+          .IGoR$command2(      # --- from insee.fr : get column labels ----
+            paste0("(function (file, sheet) {\n",
+                   "     df <- import(file,  sheet=sheet, skip=5)\n",
+                   "     Map(function(x) attr(df[[x[2]]],'label')<<- x[1],\n",
+                   "         import(file, sheet=sheet, skip=4, n_max=2, col_names=FALSE))\n",
+                   "     df\n",
+                   "   })",
+                   glue("(\"{input$import.file}\""),
+                   if (.isNE(input$import.xls.sheet,1)) glue(", \"{input$import.xls.sheet}\""),
+                   ")"
+          ))
         else # --- Calls to 'rio::import' --------------------------------------------------------------------------
           .IGoR$command2(
             glue("import(\"{input$import.file}\""),
             switch(type,
               csv      =
                 paste0(
+                  if (.isNotEmpty(input$import.columns))  glue(", select=c({.collapse1(input$import.columns)})"),
+                  if (.isNE(input$import.csv.nrows,Inf))  glue(", nrows={input$import.csv.nrows}"),
                   if (.isNotEmpty(input$import.encoding)) glue(", encoding=\"{input$import.encoding}\""),
                   if (.isFALSE(input$import.csv.chars)&&.isTRUE(input$import.csv.dec)) ", dec=','",
                   if (.isTRUE(input$import.csv.chars)) ", colClasses=\"character\""
