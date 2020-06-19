@@ -96,12 +96,13 @@
                        selectizeInput("import.columns", .IGoR$s3(.IGoR$Z$import$vars),
                                       multiple = TRUE, options = list(placeholder = .IGoR$Z$any$all),
                                       choices = sort(colnames(data.table::fread(input$import.file,nrows=0))))),
-                column(width=3, numericInput("import.csv.nrows",.IGoR$s3(.IGoR$Z$import$csv.nrows),Inf))
+                column(width=3, numericInput("import.csv.nrows",.IGoR$s3(.IGoR$Z$import$csv.nrows),Inf)),
+                column(width=3, encoding.ui())
               ),
               fluidRow(
                 column(width=3, checkboxInput("import.csv.chars",.IGoR$s5(.IGoR$Z$import$csv.chars),FALSE)),
                 column(width=3, uiOutput("import.csv.dec")),
-                column(width=3, encoding.ui())
+                column(width=6)
               ))
           else
           if (type=="dbf")
