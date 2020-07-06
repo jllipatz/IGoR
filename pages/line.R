@@ -1,5 +1,6 @@
 ### 2020/04/04
 ###   IGoR.json, init.R updated
+### 02/07/2020 1.08.0: ajout d'un filtre sur les NA pour les lissages; color ne groupait pas sur les integer
 
 .IGoR$page$line$ui <- function() .IGoR$ui(page="line", graphics=TRUE)
 
@@ -23,7 +24,7 @@
               column(width=6, uiOutput("line.Y.label"))
             ),
             fluidRow(
-              column(width=6, selectizeInput("line.group", .IGoR$s1(.IGoR$Z$line$group), .discrete(input))),
+              column(width=6, selectizeInput("line.group", .IGoR$s1(.IGoR$Z$line$group), .enum(input))),
               column(width=6, uiOutput("line.group.label"))
         ) ) ),
         column(width=6,
@@ -60,11 +61,12 @@
           if (.isFALSE(input$line.loess))
                glue ("gf_line({input$line.Y} ~ {input$line.X}{color})")
           else paste0(
+                 glue("filter(!is.na({input$line.Y}))"),NL,
                  .IGoR$group_by(input,"line"),
                  glue("mutate(..y=loess(.{pronoun}${input$line.Y} ~ {x}{span})$fitted)"),
                  .IGoR$ungroup(input,"line"),NL,
-                 glue("gf_line(..y ~ {input$line.X}{color}, linetype = 'dashed')"),NL,
-                 glue("gf_point({input$line.Y} ~ {input$line.X}{color})")
+                 glue("gf_point({input$line.Y} ~ {input$line.X}{color})"),NL,
+                 glue("gf_line(..y ~ {input$line.X}{color}, linetype = 'dashed')")
                ),
           .IGoR$gTitleCmd(input,"line",X=TRUE,Y=TRUE,
             c(.IGoR$gLabel.arg(input,"line","group","color")
