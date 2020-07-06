@@ -10,6 +10,7 @@
 ### 06/08/2019 1.04.0: dropdown buttons
 ### 13/08/2019 1.04.2: Externalisation des libellés en français
 ### 13/02/2020 1.06.2: Réécriture de l'appel à ShinyFileSave pour corriger un bug de synchronisation
+### 03/07/2020 1.08.0: Rajout d'un type enum pour la page 'line'
 
 .version <- paste0(version$major,".",version$minor)
 
@@ -26,10 +27,12 @@
 .IGoR$CHRCOLV     = '' %>% {names(.)<- .IGoR$Z$any$col.chr     ; .}
 .IGoR$QALCOLV     = '' %>% {names(.)<- .IGoR$Z$any$col.discrete; .}
 .IGoR$NUMCOLV     = '' %>% {names(.)<- .IGoR$Z$any$col.numeric ; .}
+.IGoR$ENUMCOLV    = '' %>% {names(.)<- .IGoR$Z$any$col.enum    ; .}
 
 .column   <- function(input) c(.IGoR$COLV,.columns(input$main.data))
 .discrete <- function(input,none=.IGoR$QALCOLV) c(none,.columns(input$main.data,"discrete"))
 .numeric  <- function(input,none=.IGoR$NUMCOLV) c(none,.columns(input$main.data,"numeric"))
+.enum     <- function(input,none=.IGoR$ENUMCOLV) c(none,.columns(input$main.data,c("factor","character")))
 
 .IGoR$Znames <- function(page,item,items) {
   names(items)<- Vectorize(function(x) .IGoR$Z[[page]][[paste0(item,'.',x)]])(items)
@@ -52,8 +55,8 @@
 ##
 ## The user interface builder
 ##
-.IGoR$ui <- function(..., page, icon=page, 
-                     command=TRUE, 
+.IGoR$ui <- function(..., page, icon=page,
+                     command=TRUE,
                      graphics=FALSE, subtitle=TRUE,
                      control=graphics, save=graphics|(page=="tabular"))
   div(id=paste0("div_",page),
@@ -62,7 +65,7 @@
         img(src=paste0("images/",icon,".png"), height = "48px"),
         h3(span(.IGoR$Z[[page]]$page.title, style="color: blue"))
       ),
-      column(width=8, 
+      column(width=8,
         HTML(paste0("<p align='justify'>",paste(.IGoR$Z[[page]]$info,collapse=" ")))
     ) ),
     hr(),
@@ -71,7 +74,7 @@
     if (command) .IGoR$commandBox(page),
     # Button is designed to be hidden, but when hidden, activating it activates the file dialog twice
 #    if (save) extendShinyjs(text = paste0("shinyjs.",page,"SaveButton=function(){ $('#",page,"SaveButton').click(); }")),
-    if (save) shinySaveButton(paste0(page,"SaveButton"), label=.IGoR$Z$any$browse, 
+    if (save) shinySaveButton(paste0(page,"SaveButton"), label=.IGoR$Z$any$browse,
                        title=if (graphics) .IGoR$Z$all$graphics.save.as else .IGoR$Z$tabular$save.as,
                        filetype=if (graphics) list(png="png") else (html="html")),
      if (graphics)
@@ -103,7 +106,7 @@
 .IGoR$commandBox <- function(page)
   tagList(
     box(width=12, collapsible=TRUE,
-      column(width=2, 
+      column(width=2,
         imageOutput(paste0(page,".R"), height='128px'),
         actionButton(paste0(page,".copy"),.IGoR$Z$all$copy)
       ),
@@ -122,8 +125,8 @@
     tags$style(type="text/css",
                "textarea {font-family: 'Courier New'; width: 100%; background: rgb(245,245,245); border-color: rgb(204,204,204); }"),
     tags$textarea(id=paste0(page,".command2"), spellcheck='false',
-                  placeholder=placeholder, rows=rows, 
-                  text)    
+                  placeholder=placeholder, rows=rows,
+                  text)
   )
 
 ## Widget to create the output table
@@ -138,10 +141,10 @@
                            title=.IGoR$s2(.IGoR$Z$any$titleh), suffix=".label") {
   id <- paste0(page,".",var,suffix)
   div_id <- str_replace_all(id,'\\.','_')
-  tagList(			    
+  tagList(
     tags$head(
       tags$style(type="text/css",
-        paste0("#",div_id," label{ display: table-cell; text-align: center; vertical-align: middle; } 
+        paste0("#",div_id," label{ display: table-cell; text-align: center; vertical-align: middle; }
                 #",div_id," .form-group { display: table-row;}"))),
     tags$div(id=div_id, textInput(id,title,value))
   )
@@ -169,7 +172,7 @@
     selectizeInput(paste0(page,".group"), label=.IGoR$s3(.IGoR$Z$any$group),
                    multiple = TRUE, options = list(placeholder = .IGoR$Z$any$cols.discrete),
                    choices = .columns(input$main.data,"discrete"))
-  
+
   if (box) box(width='100%', f()) else f()
 }
 
@@ -187,7 +190,7 @@
                        .IGoR$Znames("all","select",c(1,if (buttons.class) 2,if (buttons.all) 3,4:7,if (buttons.range) 0)),
                        selected=selected)),
         column(width=6,
-          if (drop) 
+          if (drop)
                checkboxInput(paste0(page,".drop"),.IGoR$s4(.IGoR$Z$any$drop),FALSE)
           else uiOutput(paste0(page,".drop")),
           uiOutput(paste0(page,".columns.what")),     # Auxiliary input field for type 1,2, 4:7 selections
@@ -195,7 +198,7 @@
       ) ),
       verbatimTextOutput(paste0(page,".columns.why")) # Messages from type 7 selection
     )
-  
+
   if (box) box(width='100%', title=title, f()) else f()
 }
 
@@ -205,7 +208,7 @@
     if (length(._(input,page,type))>0)
       if (((._(input,page,type)==1)&&(length(._(input,page,columns))>0))   # selection by list (allows no selection)
         ||((._(input,page,type)>=4)&&.isNotEmpty(._(input,page,pattern)))  # selection by name
-      ) 
+      )
         checkboxInput(paste0(page,".drop"),.IGoR$s4(.IGoR$Z$any$drop),FALSE)
   )
 
@@ -225,7 +228,7 @@
         selectizeInput(paste0(page,".columns"),"",
                        multiple = TRUE,  options = list(placeholder = if (columns.all) .IGoR$Z$any$all else .IGoR$Z$any$cols),
                        choices = .columns(input$main.data))
-        
+
       }
       else
       if (._(input,page,type)==2)
@@ -254,7 +257,7 @@
     y <- attr(get(x,.GlobalEnv),"created")
     if (is.null(y)) 0 else y
   })
-  
+
   l <- ls(envir=.GlobalEnv)
   l <- l[f(l)]
   t <- data.frame(name=l,time=g(l),stringsAsFactors=FALSE)
@@ -272,13 +275,13 @@
   if (.sort) c <- sort(c)
   names(c) <- c
   c
-} 
+}
 
 .collapse  <- function(x) paste(x,collapse=', ')
 .collapse1 <- function(x) paste(ifelse(is.na(x),"NA",paste0('"',x,'"')),collapse=', ')
-.collapse2 <- function(x) 
+.collapse2 <- function(x)
   if (length(x)==0) ""    else if (length(x)==1) paste0('"',x,'"') else paste0("c(",.collapse1(x),")")
-.collapse3 <- function(x) 
+.collapse3 <- function(x)
   if (length(x)==0) "c()" else if (length(x)==1) paste0('"',x,'"') else paste0("c(",.collapse1(x),")")
 
 .isTRUE     <- function (x) (length(x)>0)&&x
@@ -307,7 +310,7 @@ as_tibble <- function(.data) if ("tbl_df" %in% class(.data)) .data else dplyr::a
   eval(parse(text=glue("attr({.table},'{a}')<- Sys.time()")),envir=.GlobalEnv)
 }
 
-# Appelé par les fonctions d'import de table 
+# Appelé par les fonctions d'import de table
 .IGoR$do <- function(input,output,.page,.command)
   isolate({
     t <- make.names(input[[paste0(.page,".out")]])
@@ -322,7 +325,7 @@ as_tibble <- function(.data) if ("tbl_df" %in% class(.data)) .data else dplyr::a
       eval(bquote(.IGoR$log <- add_row(.IGoR$log,time=Sys.time(),page=.(.page),command=.(.command))) ,envir=.GlobalEnv)
       shinyjs::disable(paste0(.page,".load"))
       if (t==input$main.data)
-        eval(quote(.IGoR$test$meta <- .IGoR$test$meta+1), envir=.GlobalEnv)      
+        eval(quote(.IGoR$test$meta <- .IGoR$test$meta+1), envir=.GlobalEnv)
       eval(quote(.IGoR$test$list <- .IGoR$test$list+1), envir=.GlobalEnv)
       .IGoR$newTable(input,output,t,.select=TRUE)
       d <- get(t,envir=.GlobalEnv)
@@ -379,7 +382,7 @@ as_tibble <- function(.data) if ("tbl_df" %in% class(.data)) .data else dplyr::a
       x <- tryCatch(
              eval(parse(text=glue("{input$main.data} %>% {.subset} %>%\n{s}")),envir=.GlobalEnv),
              error=function(e) e)
-      if (is.data.frame(x)) { 
+      if (is.data.frame(x)) {
         output[[b]] <- renderUI(actionButton(b,.IGoR$buttonName(input,.page)))
         shinyjs::enable(b)
         shinyjs::show(b)
@@ -398,7 +401,7 @@ as_tibble <- function(.data) if ("tbl_df" %in% class(.data)) .data else dplyr::a
 .IGoR$buttonName <- function(input,.page)
   if (make.names(input[[paste0(.page,".out")]]) %not in% .IGoR$tables) "Créer la table" else "Remplacer"
 
-.IGoR$renderTables <- function(input,output) 
+.IGoR$renderTables <- function(input,output)
   output$main.data <-   renderUI({
     eval(quote(.IGoR$tables <- .tables()),envir=.GlobalEnv)
     selectizeInput("main.data", label = .IGoR$Z$all$main.data,
@@ -418,9 +421,9 @@ as_tibble <- function(.data) if ("tbl_df" %in% class(.data)) .data else dplyr::a
 NL <- ' %>%\n   '
 
 .IGoR$rLogo <- function(input,output,.page) {
-  
+
   output[[paste0(.page,".R")]] <- renderImage(list(src="images/R_logo.png"),deleteFile = FALSE)
-  
+
   observeEvent(input[[paste0(.page,".copy")]], {
     text <- paste(glue(.IGoR[[paste0(.page,".command1")]]),
                   input[[paste0(.page,".command2")]],
@@ -438,35 +441,35 @@ NL <- ' %>%\n   '
 
 ## Fonctions pour les pages créant une nouvelle table
 .IGoR$aServer <- function(input,output,.page,.signal=TRUE) {
-  
+
   .IGoR$rLogo(input,output,.page)
-  
+
   output[[paste0(.page,".command1")]] <- renderText(
-    if (length(input$main.data)>0) 
+    if (length(input$main.data)>0)
       eval(bquote(.IGoR[[.(paste0(.page,".command1"))]] <-
                   .(glue("{make.names(input[[paste0(.page,'.out')]])} <- {input$main.data} %>%"))),
                   envir=.GlobalEnv)
   )
-  
+
   observeEvent(input[[paste0(.page,".load")]], isolate(.IGoR$do2(input,output,.page,.signal=.signal)))
 
 }
 
 .IGoR$aaServer <- function(input,output,.page,.signal=TRUE) {
-  
+
   .IGoR$aServer(input,output,.page,.signal)
-  
+
   observeEvent(input[[paste0(.page,".command2")]], .IGoR$try(input,output,.page))
-  
+
 }
 
 ## Fonctions pour les pages ne créant pas de nouvelle table
 .IGoR$bServer <- function(input,output,.page) {
-  
+
   .IGoR$rLogo(input,output,.page)
-  
+
   output[[paste0(.page,".command1")]] <- renderText(
-    if (length(input$main.data)>0) 
+    if (length(input$main.data)>0)
       eval(bquote(.IGoR[[.(paste0(.page,".command1"))]] <-
                     .(glue("{input$main.data} %>%"))),
            envir=.GlobalEnv)
@@ -481,7 +484,7 @@ NL <- ' %>%\n   '
 ## dplyr grouping
 ## Used by 'distinct', filter', 'mutate', 'summarise'
 .IGoR$group_by <- function(input,page)
-  if ((length(._(input,page,group))>0)&&(nchar(._(input,page,group))>0)) 
+  if ((length(._(input,page,group))>0)&&(nchar(._(input,page,group))>0))
     paste0(glue("group_by({.collapse(._(input,page,group))})"),NL)
 
 .IGoR$ungroup  <- function(input,page,n=0)
@@ -495,10 +498,10 @@ NL <- ' %>%\n   '
   if (._(input,page,type)==1)
     if (vars)
       .IGoR$columns(input,page)
-    else 
+    else
       if ((length(._(input,page,columns))==0)||(length(._(input,page,drop))==0)) ""
       else .collapse(if (._(input,page,drop)) paste0('-',._(input,page,columns)) else ._(input,page,columns))
-  else 
+  else
   if ((._(input,page,type)>3)&&(length(._(input,page,pattern))>0)) {
     f <- if (._(input,page,type)==4) "starts_with"
     else if (._(input,page,type)==5) "ends_with"
@@ -525,13 +528,13 @@ NL <- ' %>%\n   '
 .IGoR$select.columns <- function(input,output,page) {
   why <- ""
   l0 <- .columns(input$main.data,.sort=FALSE)
-  l1 <- 
+  l1 <-
     if (length(._(input,page,type))==0) l0
     else
     if (._(input,page,type)==1) ._(input,page,columns)
     else
     if ((._(input,page,type)==2)&&(length(._(input,page,class))>0))
-      .columns(input$main.data,._(input,page,class),.sort=FALSE) 
+      .columns(input$main.data,._(input,page,class),.sort=FALSE)
     else
     if (._(input,page,type)==3) l0
     else
@@ -549,18 +552,18 @@ NL <- ' %>%\n   '
 }
 
 .IGoR$vServer <- function(input,output,page) {
-  
+
   .IGoR$aServer(input,output,page)
-  
+
   .IGoR$select.what(input,output,page)
-  
+
 }
 
 ## Functions for 'join' and 'fuzzy join'
 .IGoR$jServer <- function (input,output,page) {
 
   .IGoR$aServer(input,output,page)
-  
+
   output[[paste0(page,".data")]]<- renderUI({
     .IGoR$test$list
     fluidRow(
@@ -575,7 +578,7 @@ NL <- ' %>%\n   '
                      multiple = TRUE, options = list(placeholder = .IGoR$Z$any$cols.discrete),
                      choices = .columns(._(input,page,data),"discrete")
   )    )
- 
+
   output[[paste0(page,".columns")]]<- renderUI(
    if ((length(input$main.data)>0)&&.IGoR$test$meta)
      fluidRow(
@@ -583,9 +586,9 @@ NL <- ' %>%\n   '
        column(width=6, selectizeInput(paste0(page,".columns"), .IGoR$s1(.IGoR$Z$all$join.keys),
                                       multiple = TRUE, options = list(placeholder = .IGoR$Z$any$cols.discrete),
                                       choices = .columns(input$main.data,"discrete"))
- )   ) ) 
- 
- 
+ )   ) )
+
+
 }
 
 ## Fonctions pour les pages graphiques
@@ -612,7 +615,7 @@ NL <- ' %>%\n   '
           labels)
   if (length(l)>0) paste0(NL,glue("gf_labs({paste(l,collapse=', ')})"))
  }
- 
+
 .IGoR$gSaveCmd <- function(input,page)
   if (.isTRUE(input[[paste0(page,".save")]])) {
     f <- parseSavePath(.IGoR$volumes,input[[paste0(page,"SaveButton")]])$datapath
@@ -621,23 +624,23 @@ NL <- ' %>%\n   '
 
 ## Gestion des éléments standard des pages graphiques
 .IGoR$gServer <- function(input,output,page) {
-  
+
   .IGoR$bServer(input,output,page)
-  
+
   output[[paste0(page,"..plot")]] <- renderUI({
     h <- input[[paste0(page,".height")]]*100
     if (is.na(h)||(h<100)) h <- 400
     plotOutput(paste0(page,".plot"),height=sprintf("%dpx",h))
   })
-  
+
   observeEvent(input[[paste0(page,".command2")]],
                output[[paste0(page,".plot")]] <- renderPlot(
                  if (.isNotEmpty(input[[paste0(page,".command2")]]))
                    .IGoR$do1(input,output,page,paste(input$main.data,'%>%',input[[paste0(page,".command2")]]))
                ) )
-  
+
   .IGoR$saveButton(input,output,page)
-  
+
 }
 
 
@@ -645,14 +648,14 @@ NL <- ' %>%\n   '
 ## To simulate a conditional button, the button is hidden and a click is simulated when necessary
 ## Used in graphics pages and in 'tabular'.
 .IGoR$saveButton <- function(input,output,page){
-  
+
   shinyFileSave(input,paste0(page,"SaveButton"), roots=.IGoR$volumes, defaultRoot='home')
-  
+
   # observe(
   #   if (.isTRUE(input[[paste0(page,".save")]]))
   #     eval(parse(text=paste0("js$",page,"SaveButton()")))
   # )
-  
+
 }
 
 ## Widgets within dropdownButtons are not refreshed until they are shown,
