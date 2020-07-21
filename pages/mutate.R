@@ -4,6 +4,7 @@
 ### 14/08/2019 1.04.3: row_number, identity, possibilité d'ajouter un label
 ### 10/12/2019 1.04.6: Remplacement d'une modalité
 ### 02/07/2020 1.08.0: lag, lead, fonctions date; réécriture pour plus de souplesse et de lisibilité
+### 21/07/2020 1.08.1: Bugs mineurs dans la table des fonctions
 
 ### BUG coalesce(a,0) ne marche pas si a est "integer", faire coalesce(a,0L)
 ### TODO : Avec identity, en cas de label il est recopié. Possibilité de l'effacer?
@@ -46,14 +47,14 @@
      str_split    str_split    character 1    c        ?    -    F      -
      str_detect   str_detect   character 1    c        ?    -    F      -
      str_length   str_length   character 0    -        -    -    F      -
-     ifelse       -            character 2    c        <    >    T      -
+     ifelse       -            character 2    c        <    >    F      -
      coalesce     coalesce     character 1    c        >    -    F      -
      min          min          numeric   0    -        -    -    T      F
      max          max          numeric   0    -        -    -    T      F
      sum          sum          numeric   0    -        -    -    T      F
      mean         mean         numeric   0  -          -    -    T      F
      quantile     quantile     numeric   1    n        x    -    T      F
-     ifelse       -            numeric   2    n        <    =    T      -
+     ifelse       -            numeric   2    n        <    =    F      -
      coalesce     coalesce     numeric   1    n        <    -    F      -
      sprintf      -            numeric   1    c        x    -    F      -
      min          min          Date      0    -        -    -    T      F
@@ -62,7 +63,7 @@
      month        month        Date      0    -        -    -    F      -
      day          day          Date      0    -        -    -    F      -
      wday         wday         Date      0    -        -    -    F      -"
-    ,header=TRUE, na.strings='-') %>% 
+    ,header=TRUE, na.strings='-', stringsAsFactors=FALSE) %>% 
     mutate(menuId=row_number())
   
   functionsMenu <- function(class) {
