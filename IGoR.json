@@ -1,4 +1,4 @@
-{"version": "version 1.08.1(FR)",
+{"version": "version 1.09.9(FR)",
  "any":{
    "table": "<table>",
    "all": "<toutes>",
@@ -533,7 +533,22 @@
      "En R, le tri est un préalable inutile à la plupart des traitements : il n'est gère utile que pour la présentation de résultats..."],
    "desc": "Ordre décroissant pour les variables"
  },
- "join":{
+ "union":{
+   "menu.title": "Opérations ensemblistes",
+   "page.title": "Opérations sur deux tables de même structure",
+   "info":[
+     "Le package <strong>dplyr</strong> offre une extension aux tables de données des fonctions ensemblistes du noyau R :",
+	 "<code>union</code>, <code>intersect</code>,<code>setdiff</code>, respectivement union, intersection et différence.<br>",
+	 "- Ces opérations considèrent les tables de données comme des ensembles au sens mathématique du terme.",
+     "Il n'y a pas de doublon dans un ensemble : les doublons potentiels sont donc systématiquement retirés du résultat.<br>",
+	 "- Ces opérations n'ont un sens qu'entre ensembles d'objets de même type : les tables impliquées doivent donc avoir la même structure.<br>",
+     "<em>NOTE : la page se réinitialise dès que l'opération a fonctionné.</em>"],
+   "type": "Collecter...",
+   "type.union": "l'ensemble des lignes des deux tables",
+   "type.intersect": "l'ensemble des lignes communes aux deux tables",
+   "type.setdiff": "l'ensemble des lignes de la première table n'apparaissant pas dans la seconde"
+ },
+"join":{
    "menu.title": "Jointure sur égalité",
    "page.title": "Jointure de deux tables sur égalité de clés",
    "info":[

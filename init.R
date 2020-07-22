@@ -4,6 +4,10 @@ library(shinyjs)        # 1.0
 library(shinyFiles)     # >=0.7.2, problème avec les versions antérieures
 library(shinyWidgets)   # 0.4.8
 
+library(lubridate)      # 1.7.4  Usage marginal, 
+                        # A charger avant dplyr : conflit sur union, intersect,setdiff
+                        # conflit réglé avec la 1.7.9 et 1.0.0 de dplyr
+
 library(purrr)          # 0.2.5
 library(tidyr)          # 0.8.2
 library(dplyr)          # >=0.7.8, problème avec la 0.7.4
@@ -12,8 +16,6 @@ library(glue)           # 1.3.0
 
 library(rio)            # 0.5.16
 library(ggformula)      # >=0.9.0, pour 'layer_factory'
-
-library(lubridate)      # 1.7.4  Usage marginal
 
 library(zoo)            # 1.8-4  page 'mutate', pour 'na.locf'
 library(fst)            # 0.8.8  pages 'import', 'export'
@@ -33,7 +35,7 @@ library(latticeExtra)   # 0.6-28 page 'spplot'
       update=c("rename","factor","cut","mutate","mutate2"),
      extract=c("slice","filter","select"),
      reshape=c("summarise","gather","spread","arrange"),
-       merge=c("join","fuzzyjoin","labels","rbind"),
+       merge=c("join","fuzzyjoin","labels","rbind","union"),
   statistics=c("skim","tabular"),
     graphics=c("bar","col","histogram","boxplot","pie","line","points","bin2d","lorenz","spplot")
 ))
