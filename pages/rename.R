@@ -1,6 +1,7 @@
 
 ### 12/07/2019 1.02.0: Protection contre les noms de colonne incorrects
 ### 10/08/2019 1.04.2: Externalisation des libellés en français
+### 24/07/2020 1.09.1: Suppression de message d'erreur quand un des champs 'start' ou 'end' est à NA
 
 .IGoR$page$rename$ui <- function() .IGoR$ui(page="rename", control=TRUE)
 
@@ -58,7 +59,7 @@
            ))
           .IGoR$command2( 
             if (input$rename.type==0) 
-              if (is.null(input$rename.end)||is.null(input$rename.start)) ""
+              if (!(.isNotNA(input$rename.end)&&.isNotNA(input$rename.start))) ""
               else {
                 m <- input$rename.end - input$rename.start + 1
                 s <- glue(
