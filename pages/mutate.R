@@ -5,6 +5,7 @@
 ### 10/12/2019 1.04.6: Remplacement d'une modalité
 ### 02/07/2020 1.08.0: lag, lead, fonctions date; réécriture pour plus de souplesse et de lisibilité
 ### 21/07/2020 1.08.1: Bugs mineurs dans la table des fonctions
+### 27/07/2020 1.09.2: Bugs mineur dans la table des fonctions
 
 ### BUG coalesce(a,0) ne marche pas si a est "integer", faire coalesce(a,0L)
 ### TODO : Avec identity, en cas de label il est recopié. Possibilité de l'effacer?
@@ -48,14 +49,14 @@
      str_detect   str_detect   character 1    c        ?    -    F      -
      str_length   str_length   character 0    -        -    -    F      -
      ifelse       -            character 2    c        <    >    F      -
-     coalesce     coalesce     character 1    c        >    -    F      -
+     coalesce     coalesce     character 1    c        =    -    F      -
      min          min          numeric   0    -        -    -    T      F
      max          max          numeric   0    -        -    -    T      F
      sum          sum          numeric   0    -        -    -    T      F
      mean         mean         numeric   0  -          -    -    T      F
      quantile     quantile     numeric   1    n        x    -    T      F
      ifelse       -            numeric   2    n        <    =    F      -
-     coalesce     coalesce     numeric   1    n        <    -    F      -
+     coalesce     coalesce     numeric   1    n        =    -    F      -
      sprintf      -            numeric   1    c        x    -    F      -
      min          min          Date      0    -        -    -    T      F
      max          max          Date      0    -        -    -    T      F
