@@ -10,7 +10,7 @@
     fluidRow(
       column(width=6,
         imageOutput("gather.wide",height='120px'),
-        if (paste0(version$major,version$minor)>="3.6.0") 
+        if (paste0(version$major,version$minor)>="36.0") 
           box(width='100%', checkboxInput("gather.pivot",.IGoR$s2(.IGoR$Z$gather$pivot),FALSE)),
         uiOutput("gather.control")
       ),

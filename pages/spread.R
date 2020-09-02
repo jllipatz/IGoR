@@ -14,7 +14,7 @@
       ),
       column(width=6,
         imageOutput("spread.wide",height='200px'),
-        if (paste0(version$major,version$minor)>="3.6.0") 
+        if (paste0(version$major,version$minor)>="36.0") 
           box(width='100%', checkboxInput("spread.pivot",.IGoR$s2(.IGoR$Z$spread$pivot),FALSE)),
         .IGoR$load.ui("spread")
   ) ) )
