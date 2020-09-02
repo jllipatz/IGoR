@@ -6,9 +6,11 @@
 ### 02/07/2020 1.08.0: lag, lead, fonctions date; réécriture pour plus de souplesse et de lisibilité
 ### 21/07/2020 1.08.1: Bugs mineurs dans la table des fonctions
 ### 27/07/2020 1.09.2: Bugs mineur dans la table des fonctions
+### 03/08/2020 1.10.0: Protection contre les noms de colonnes non normalisés
 
 ### BUG coalesce(a,0) ne marche pas si a est "integer", faire coalesce(a,0L)
 ### TODO : Avec identity, en cas de label il est recopié. Possibilité de l'effacer?
+### BUG: Le champ group_by continue à être utilisé même lorsque ce n'est plus possible
 ### BUG, provenance inconnue
 ### Warning in is.na(x) :
 ###  is.na() applied to non-(list or vector) of type 'closure'
@@ -110,6 +112,11 @@
   output$mutate.expr.what <- renderUI(
     if (length(input$mutate.type)>0)
            if (input$mutate.type==0) textInput("mutate.expr",.IGoR$s1(.IGoR$Z$mutate$expr))
+      else if (input$mutate.type==1) 
+        fluidRow(
+          column(width=4),
+          column(width=4,uiOutput("mutate.group"))
+        )
       else if (input$mutate.type==2)
         tagList(
           fluidRow(
@@ -233,38 +240,39 @@
            )) .IGoR$command2(label())
         else
         .IGoR$command2(
-          .IGoR$group_by(input,"mutate"),
+          if ((input$mutate.type==1)|((input$mutate.type==2)&&fun.groups())) .IGoR$group_by(input,"mutate"),
           "mutate(",
-          input$mutate.new,
+          .name(input$mutate.new),
           " = ",
                if (input$mutate.type==0) input$mutate.expr
           else if (input$mutate.type==1) "row_number()"
-          else if (input$mutate.type==2)
-            if (fun.name()=="identity") input$mutate.old
+          else if (input$mutate.type==2) {
+            old <- .name(input$mutate.old)
+            if (fun.name()=="identity") old
             else
             if (fun.name()=="ifelse")
                 if ((fun.type()=="character")&&(length(input$mutate.chr.arg1)>0)&&(length(input$mutate.chr.arg2)>0))
                   if (.isTRUE(input$mutate.pipe))
-                       glue("{input$mutate.old} %>% ifelse(.==\"{input$mutate.chr.arg1}\",\"{input$mutate.chr.arg2}\",.)")
-                  else glue("ifelse({input$mutate.old}==\"{input$mutate.chr.arg1}\",\"{input$mutate.chr.arg2}\",{input$mutate.old})")
+                       glue("{old} %>% ifelse(.==\"{input$mutate.chr.arg1}\",\"{input$mutate.chr.arg2}\",.)")
+                  else glue("ifelse({old}==\"{input$mutate.chr.arg1}\",\"{input$mutate.chr.arg2}\",{input$mutate.old})")
                 else
                 if ((fun.type()=="numeric")&&(length(input$mutate.num.arg1)>0)&&(length(input$mutate.num.arg2)>0))
                   if (.isTRUE(input$mutate.pipe))
-                       glue("{input$mutate.old} %>% ifelse(.=={input$mutate.num.arg1},{input$mutate.num.arg2},.)")
-                  else glue("ifelse({input$mutate.old}=={input$mutate.num.arg1},{input$mutate.num.arg2},{input$mutate.old})")
+                       glue("{old} %>% ifelse(.=={input$mutate.num.arg1},{input$mutate.num.arg2},.)")
+                  else glue("ifelse({old}=={input$mutate.num.arg1},{input$mutate.num.arg2},{input$mutate.old})")
                 else ""
             else
             if (fun.name()=="sprintf")
               if (length(input$mutate.chr.arg1)>0)
                 if (.isTRUE(input$mutate.pipe))
-                     glue("{input$mutate.old} %>% sprintf(\"{input$mutate.chr.arg1}\",.)")
-                else glue("sprintf(\"{input$mutate.chr.arg1}\",{input$mutate.old})")
+                     glue("{old} %>% sprintf(\"{input$mutate.chr.arg1}\",.)")
+                else glue("sprintf(\"{input$mutate.chr.arg1}\",{old})")
               else ""
             else
               paste0(
                 if (.isTRUE(input$mutate.pipe))
-                     paste0(input$mutate.old," %>% ",fun.fun(),'(')
-                else paste0(fun.name(),'(',input$mutate.old),
+                     paste0(old," %>% ",fun.fun(),'(')
+                else paste0(fun.name(),'(',old),
                 # Contournement d'un pb sur 'first', 'last'; Error in mutate_impl(.data, dots) : bad value
                 if (.isTRUE(input$mutate.pipe)&&(fun.name() %in% c("first","last"))) '.',
                 if (fun.args()>0)
@@ -289,12 +297,13 @@
                   ),
               ')'
               )
+            }
             else if (input$mutate.type==3)
               if (substr(input$mutate.op,1,1)==" ")
-                   glue("{substring(input$mutate.op,2)}({input$mutate.old1},{input$mutate.old2})")
-              else glue("{input$mutate.old1} {input$mutate.op} {input$mutate.old2}"),
+                   glue("{substring(input$mutate.op,2)}({.name(input$mutate.old1)},{.name(input$mutate.old2)})")
+              else glue("{.name(input$mutate.old1)} {input$mutate.op} {.name(input$mutate.old2)}"),
             ')',
-            .IGoR$ungroup(input,"mutate"),
+            if ((input$mutate.type==1)|((input$mutate.type==2)&&fun.groups())).IGoR$ungroup(input,"mutate"),
             if (.isNotEmpty(input$mutate.label)) paste0(NL,label())
   ) )   )
 

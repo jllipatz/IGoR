@@ -1,5 +1,6 @@
 
 ### 28/01/2020 1.06.0
+### 03/08/2020 1.10.0: Prise en compte de la modification de .collapse
 
 .IGoR$page$rbind$ui <- function()
   .IGoR$ui(page="rbind",
@@ -28,7 +29,7 @@
     .IGoR$textarea("rbind", "bind_rows(tables)", 2,
       if (.isNotEmpty(input$rbind.data))
         .IGoR$command2(
-          paste0("bind_rows(",.collapse(input$rbind.data),")")
+          paste0("bind_rows(",.collapse0(input$rbind.data),")")
   )))
   
   observeEvent(input$rbind.command2,

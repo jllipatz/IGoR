@@ -1,8 +1,9 @@
 
 ### 06/08/2019 1.03.3: Ajout de la possibilité de préfixer les noms des nouvelles variables
 ### 10/08/2019 1.04.2: Externalisation des libellés en français
+### 10/08/2020 1.10.0: Protection contre les noms de colonnes non normalisés
+### 01/09/2020 1.10.2: Ajout d'une option d'utilisation de pivot_wider
 
-### BUG: CHRCOLV ne peut pas comporter d'accent : problème d'encodage
 
 .IGoR$page$spread$ui <- function()
   .IGoR$ui(page="spread",
@@ -13,6 +14,8 @@
       ),
       column(width=6,
         imageOutput("spread.wide",height='200px'),
+        if (paste0(version$major,version$minor)>="3.6.0") 
+          box(width='100%', checkboxInput("spread.pivot",.IGoR$s2(.IGoR$Z$spread$pivot),FALSE)),
         .IGoR$load.ui("spread")
   ) ) )
 
@@ -38,7 +41,7 @@
   )   ) )
   
   output$spread.sep <- renderUI(
-    if (.isNotEmpty(input$spread.K))
+    if (.isNotEmpty(input$spread.K)&&.isFALSE(input$spread.pivot))
       checkboxInput("spread.sep",.IGoR$s4(paste0(.IGoR$Z$spread$prefix,input$spread.K,"'")), FALSE)
   )
 
@@ -51,11 +54,19 @@
             ""
           } 
           else
-            .IGoR$command2(
-              "spread(",
-              glue("{input$spread.K},{input$spread.V}"),
-              if (.isTRUE(input$spread.sep)) ", sep=\"\"",
-              ')'
-  )   )     )                 
+            if (.isTRUE(input$spread.pivot))
+                 .IGoR$command2(
+                   "pivot_wider(",
+                   "names_from=", shQuote(input$spread.K),
+                   ", values_from=", shQuote(input$spread.V),
+                   ")"
+                 )
+            else .IGoR$command2(
+                   "spread(",
+                   .name(input$spread.K),
+                   ",", .name(input$spread.V),
+                   if (.isTRUE(input$spread.sep)) ", sep=\"\"",
+                   ")"
+  )   )          )                 
 
 }

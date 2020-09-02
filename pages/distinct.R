@@ -2,6 +2,7 @@
 ### 12/07/2019 1.02.0: Ajout d'une option de passage par summarise
 ### 09/08/2019 1.04.2: Externalisation des libellés en français
 ### 30/01/2020 1.06.0: Rétablissement de la prise en compte du tri des modalités
+### 03/08/2020 1.10.0: Prise en compte de la modification de .collapse
 
 .IGoR$page$distinct$ui <- function()
   .IGoR$ui(page="distinct",
@@ -62,7 +63,7 @@
         else
           if (ncol(x)==1)
                sprintf(.IGoR$Z$distinct$msg.values,nrow(x),
-                       (if (is.character(x[[1]])||is.factor(x[[1]])) .collapse1 else .collapse)(x[[1]]))
+                       (if (is.character(x[[1]])||is.factor(x[[1]])) .collapse1 else .collapse0)(x[[1]]))
           else sprintf(.IGoR$Z$distinct$msg.count,nrow(x)),
       .subset=glue("select({.collapse(input$distinct.group)})")
   ))

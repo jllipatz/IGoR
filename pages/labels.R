@@ -1,6 +1,8 @@
 
 ### 12/08/2019 1.04.2: Externalisation des libellés en français
 ### 30/01/2020 1.06.0: Protection contre les noms de table da passage identiques à des noms de colonne de la table courante
+### 10/08/2020 1.10.0: Protection contre les noms de colonnes non normalisés
+
 
 .IGoR$page$labels$ui <- function() .IGoR$ui(page="labels", control=TRUE)
 
@@ -53,9 +55,9 @@
           d <- if (input$labels.data %not in% .columns(input$main.data)) input$labels.data
           else glue("get(\"{input$labels.data}\",envir=.GlobalEnv)")
           .IGoR$command2(
-            glue("mutate({input$labels.new}=factor({input$labels.old},"),'\n    ',
-            glue("levels={d}${input$labels.data.levels},"),'\n    ',
-            glue("labels={d}${input$labels.data.labels}))"),'\n     '
+            glue("mutate({.name(input$labels.new)}=factor({.name(input$labels.old)},"),'\n    ',
+            glue("levels={d}${.name(input$labels.data.levels)},"),'\n    ',
+            glue("labels={d}${.name(input$labels.data.labels)}))"),'\n     '
           )}             
   ) )   
                              

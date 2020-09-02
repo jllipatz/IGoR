@@ -1,7 +1,6 @@
 
 ### 12/08/2019 1.04.2: Externalisation des libellés en français
-
-### TODO : Les noms de colonnes invalides ne sont pas gérés et doivent être quotés manuellement.
+### 03/08/2020 1.09.3: Protection contre les noms de colonnes non normalisés
 
 .IGoR$page$factor$ui <- function() .IGoR$ui(page="factor", icon="rename", control=TRUE)
 
@@ -51,9 +50,9 @@
         .IGoR$command2(
           "mutate",
           if (!.isTRUE(input$factor.short)) {
-            old <- .IGoR$select.columns(input,output,"factor")
+            old <- .name(.IGoR$select.columns(input,output,"factor"))
             if (length(old)==0) paste0("() # ",.IGoR$Z$factor$nop)
-            else glue("({.collapse(paste0(old,'=',input$factor.class.out,'(',old,na,')'))})")
+            else glue("({.collapse0(paste0(old,'=',input$factor.class.out,'(',old,na,')'))})")
           }
           else
             paste0(

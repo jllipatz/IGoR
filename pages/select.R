@@ -32,10 +32,10 @@
         .IGoR$command2(
           "select",
           if ((input$select.type==2)&&.isNotEmpty(input$select.class))
-             if (.isTRUE(input$select.drop))
-                  glue("_if(Negate(is.{input$select.class})")
-             else glue("_if(is.{input$select.class}")
-            else paste0("(",.IGoR$select(input,"select")),
+            if (.isTRUE(input$select.drop))
+                glue("_if(Negate(is.{input$select.class})")
+            else glue("_if(is.{input$select.class}")
+          else paste0("(",.IGoR$select(input,"select")),
           if ((((input$select.type==1)&&(length(input$select.columns)>0))
              ||(input$select.type>3))
             &&.isTRUE(input$select.everything)) ", everything()",

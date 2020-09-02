@@ -8,6 +8,7 @@
 ###                    Ajout d'un message en cas de moyenne sur données de type caractère
 ### 14/01/2020 1.05.3: Simplification des comptages sans pondération
 ### 23/01/2020 1.05.4: Correction prise en compte des valeurs manquantes avec min, max pondérés
+### 03/08/2020 1.10.0: Protection contre les noms de colonnes non normalisés
 
 .IGoR$page$summarise$ui <- function() .IGoR$ui(page="summarise", control=TRUE)
 
@@ -23,20 +24,21 @@
     if (w=='')
       c(n="n()",
         v=glue("sum({value})"),
-        sum=glue("sum_NA2_"),
-        mean=glue("mean_NA2_"),
-        median=glue("median_NA2_"),
-        q1=glue("quantile(.,p=.25_NA1_)"),
-        q3=glue("quantile(.,p=.75_NA1_)"),
-        p10=glue("quantile(.,p=.10_NA1_)"),
-        p90=glue("quantile(.,p=.90_NA1_)"),
-        sd=glue("sd_NA2_}"),
-        var=glue("var_NA2_"),
-        min=glue("min_NA2_"),
-        max=glue("max_NA2_"),
+        sum="sum_NA2_",
+        mean="mean_NA2_",
+        median="median_NA2_",
+        q1="quantile(.,p=.25_NA1_)",
+        q3="quantile(.,p=.75_NA1_)",
+        p10="quantile(.,p=.10_NA1_)",
+        p90="quantile(.,p=.90_NA1_)",
+        sd="sd_NA2_}",
+        var="var_NA2_",
+        min="min_NA2_",
+        max="max_NA2_",
         first="first",
         last="last")[i]
-    else 
+    else {
+      w <- .name(w)
       c(n=glue("sum({w})"),
         v=glue("sum({w}*{value})"),
         sum=glue("sum({w})*wtd.mean(.,w={w}_NA1_)"),
@@ -48,10 +50,11 @@
         p90=glue("wtd.quantile(.,p=.90,w={w}_NA1_)"),
         sd=glue("sqrt(wtd.var(.,w={w}_NA1_))"),
         var=glue("wtd.var(.,w={w}_NA1_)"),
-        min=glue("min_NA2_"),
-        max=glue("max_NA2_"),
+        min="min_NA2_",
+        max="max_NA2_",
         first="first",
-      last="last")[i]
+        last="last")[i]
+      }
   
   statna <- function(i,w,na.rm) {
     j <- case_when(i %in% c('n','v','first','last') ~ 0, # na.rm doesn't make sense
@@ -125,7 +128,7 @@
                else input$summarise.funs %>%
                       ifelse(.=="v",paste0("v",suffix()),.)) %>%
                       make.names()
-        fn <- .collapse(
+        fn <- .collapse0(
                 if (.isTRUE(input$summarise.names))
                      paste0('\"',nm,'\"=',f1)
                 else ifelse(str_detect(f1,"[()]"),paste0('\"',nm,'\"=',f1),f1))

@@ -1,5 +1,6 @@
 
 ### 10/08/2019 1.04.2: Externalisation des libellés en français
+### 03/08/2020 1.10.0: Prise en compte de la modification de .collapse
 
 .IGoR$page$join$ui <- function()
   .IGoR$ui(page="join",
@@ -31,10 +32,11 @@
   output$join.command2 <- renderUI(
     .IGoR$textarea("join", "...join(table,columns)", 4,
       if (.isNotEmpty(input$join.data)
+          &&(length(input$join.type)>0)
           &&(length(input$join.columns2)==length(input$join.columns)))
         .IGoR$command2(
           if (length(input$join.columns)>0) {
-            by <- .collapse(
+            by <- .collapse0(
                     ifelse(input$join.columns==input$join.columns2,
                            glue("\"{input$join.columns}\""),
                            glue("\"{input$join.columns}\" = \"{input$join.columns2}\"")

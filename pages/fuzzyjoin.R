@@ -1,6 +1,8 @@
 
 ### 10/08/2019 1.04.2: Externalisation des libellés en français
 
+### BUG: fuzzyjoin ne supporte pas les noms non normalisés, même hors condition.
+
 ### Exemple multi_match_fun = function(x,y) x[,"a"]==y[,"b"] à intégrer
 ### function(x.a,x.b,a.a,y.b,y.c) ... + substitute
 
@@ -73,7 +75,7 @@
           fun <- glue("match_fun={input$fuzzyjoin.fun})") 
         } else {
           by <- glue("multi_by=list(x={.collapse2(input$fuzzyjoin.columns)},y={.collapse2(input$fuzzyjoin.columns2)}),")
-          fun <- glue("multi_match_fun=function (x,y) {expr(input$fuzzyjoin.fun,input$fuzzyjoin.columns,input$fuzzyjoin.columns2)})")
+          fun <- glue("multi_match_fun=function (x,y) {expr(input$fuzzyjoin.fun,.name(input$fuzzyjoin.columns),.name(input$fuzzyjoin.columns2))})")
         }
         .IGoR$command2(
           if (nchar(msg<-.IGoR$look(input$fuzzyjoin.fun))>0) paste0(str_sub(msg,2),"\n   "),

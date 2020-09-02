@@ -3,6 +3,7 @@
 ### 07/08/2019 1.04.1: dropdown buttons
 ### 07/08/2019 1.04.2: toString
 ### 09/08/2019 1.04.2: Externalisation des libellés en français
+### 10/08/2020 1.10.0: Correction de l'affichage des facteurs et des dates
 
 .IGoR$page$browse$ui <- function()
   .IGoR$ui(page="browse",icon="view",command=FALSE,
@@ -60,12 +61,18 @@
           function(i)
             do.call(if (.header) tags$th else tags$tr,
               map(1:.n,
-                function(j)
-                  if (ncol(.data)<(i-1)*.n+j) tagList(tags$td(" "))
-                  else tagList(tags$td(tags$span(style="color:blue",name((i-1)*.n+j))),
-                               if (.class&&!.isTRUE(input$browse.label))
-                                 tags$td(tags$span(style="color:blue",type((i-1)*.n+j))),
-                               tags$td(toString(.data[.row,(i-1)*.n+j])))
+                function(j) {
+                  k <- (i-1)*.n+j
+                  if (ncol(.data)<k) tagList(tags$td(" "))
+                  else tagList(
+                         tags$td(tags$span(style="color:blue",name(k))),
+                         if (.class&&!.isTRUE(input$browse.label))
+                           tags$td(tags$span(style="color:blue",type(k))),
+                          tags$td(
+                            (if (class(.data[[k]]) %in% c("factor","character","Date")) identity else toString)
+                              (.data[.row,k])
+                       )  )
+                }
         )   ) )
     }
       

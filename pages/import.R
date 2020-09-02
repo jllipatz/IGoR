@@ -13,6 +13,9 @@
 ### 20/02/2020 1.06.2: Ajout du type 'rda'
 ### 27/02/2020 1.06.3: Ajout de paramètre à la lecture de csv
 ### 16/06/2020 1.07.1: Ajout de paramètres à la lecture de csv; Gestion des noms de fichiers manuels
+### 19/06/2020 1.07.2: Ajout de paramètres à la lecture de sas
+### 03/08/2020 1.10.0: Protection contre les noms de colonnes non normalisés
+
 
 .IGoR$page$import$ui <- function()
   .IGoR$ui(page="import",
@@ -40,7 +43,7 @@
     else {
       n <- if (fst) metadata_fst(input$import.file)$columnNames
            else attr(feather_metadata(input$import.file)$types,'names')
-      l <- as.list(parse(text=paste0(.data,"$",n)))
+      l <- as.list(parse(text=paste0(.data,"$",.name(n))))
       names(l)<- n
       paste(deparse(do.call(substitute,list(e[[1]],l)),width.cutoff = 130L),
             collapse='\n')
@@ -82,21 +85,37 @@
       column(width=4, uiOutput("import.load"))
     ))
 
-  encoding.ui <- function () selectizeInput("import.encoding",.IGoR$s3(.IGoR$Z$import$encoding), choices=c("","UTF-8"))
+  encoding.ui <- function () selectizeInput("import.encoding",.IGoR$s2(.IGoR$Z$import$encoding), choices=c("","UTF-8"))
 
   output$import.parms <- renderUI(
     if (.isFile(input$import.file)) {
       type <- input$import.file %>% str_extract("(?<=\\.)[^.]+$") %>% str_to_lower()
       if (!is.na(type)) # Occurs at dot when typing in the file name
         box(width='100%',
+            if (type=="sas7bdat")
+              if (packageVersion("haven")>="2.2.0")
+                fluidRow(                
+                  column(width=6,
+                         selectizeInput("import.sas.columns", .IGoR$s2(.IGoR$Z$import$vars),
+                                        multiple = TRUE, options = list(placeholder = .IGoR$Z$any$all),
+                                        choices = sort(colnames(haven::read_sas(input$import.file,n_max=0))))),
+                  column(width=3, numericInput("import.sas.nrows",.IGoR$s2(.IGoR$Z$import$nrows),Inf)),
+                  column(width=3, encoding.ui())
+                )
+              else
+                fluidRow(
+                  column(width=9),
+                  column(width=3, encoding.ui())
+                )
+          else
           if (type=="csv")
             list(
               fluidRow(
                 column(width=6,
-                       selectizeInput("import.columns", .IGoR$s3(.IGoR$Z$import$vars),
+                       selectizeInput("import.csv.columns", .IGoR$s2(.IGoR$Z$import$vars),
                                       multiple = TRUE, options = list(placeholder = .IGoR$Z$any$all),
                                       choices = sort(colnames(data.table::fread(input$import.file,nrows=0))))),
-                column(width=3, numericInput("import.csv.nrows",.IGoR$s3(.IGoR$Z$import$csv.nrows),Inf)),
+                column(width=3, numericInput("import.csv.nrows",.IGoR$s2(.IGoR$Z$import$nrows),Inf)),
                 column(width=3, encoding.ui())
               ),
               fluidRow(
@@ -127,19 +146,19 @@
           if (type=="fst")
             fluidRow(
               column(width=6,
-                 selectizeInput("import.columns", .IGoR$s3(.IGoR$Z$import$vars),
+                 selectizeInput("import.fst.columns", .IGoR$s2(.IGoR$Z$import$vars),
                                multiple = TRUE, options = list(placeholder = .IGoR$Z$any$all),
-                               choices = sort(metadata_fst(input$import.file)$columnNames)),
-                 uiOutput("import.fst.parms")
+                               choices = sort(metadata_fst(input$import.file)$columnNames))
               ),
               column(width=6,
+                uiOutput("import.fst.parms"),
                 radioButtons("import.fst.filter",.IGoR$Z$import$fst.filter, .IGoR$Znames("import","fst.filter",c("all","range","where")), inline=TRUE)
             ) )
           else
           if (type=="feather")
             fluidRow(
               column(width=6,
-                selectizeInput("import.columns", .IGoR$s3(.IGoR$Z$import$vars),
+                selectizeInput("import.feather.columns", .IGoR$s2(.IGoR$Z$import$vars),
                                multiple = TRUE, options = list(placeholder = .IGoR$Z$any$all),
                                choices = sort(attr(feather_metadata(input$import.file)$types,'names')))
               ),
@@ -148,11 +167,6 @@
                  checkboxInput("import.feather.filter",.IGoR$s3(.IGoR$Z$import$feather.where),FALSE)
               ) )
 		      else
-		      if (type=="sas7bdat")
-		        fluidRow(
-		          column(width=2, encoding.ui())
-		        )
-          else
           if (type=="funcamp") # --- This is a non standard extension for funcamp use only!
             fluidRow(          # funcamp files are just fst files with another file extension
               column(width=4,  # to disable any access not using the 'id' variable as record key
@@ -187,7 +201,7 @@
         )
       else
       if (input$import.fst.filter=="where")
-        textInput("import.expr",.IGoR$s3(.IGoR$Z$import$expr))
+        textInput("import.expr",.IGoR$s2(.IGoR$Z$import$expr))
   )
 
   output$import.feather.parms <- renderUI(
@@ -239,17 +253,21 @@
           .IGoR$command2(
             glue("import(\"{input$import.file}\""),
             switch(type,
+              sas7bdat =
+                paste0(
+                  if (.isNotEmpty(input$import.sas.columns))  glue(", col_select={.collapse2(input$import.sas.columns)}"),
+                  if (.isNE(input$import.sas.nrows,Inf))      glue(", n_max={input$import.sas.nrows}"),
+                  if (.isNotEmpty(input$import.encoding)) glue(", encoding=\"{input$import.encoding}\"")
+                ),
               csv      =
                 paste0(
-                  if (.isNotEmpty(input$import.columns))  glue(", select=c({.collapse1(input$import.columns)})"),
-                  if (.isNE(input$import.csv.nrows,Inf))  glue(", nrows={input$import.csv.nrows}"),
+                  if (.isNotEmpty(input$import.csv.columns))  glue(", select={.collapse2(input$import.csv.columns)}"),
+                  if (.isNE(input$import.csv.nrows,Inf))      glue(", nrows={input$import.csv.nrows}"),
                   if (.isNotEmpty(input$import.encoding)) glue(", encoding=\"{input$import.encoding}\""),
                   if (.isFALSE(input$import.csv.chars)&&.isTRUE(input$import.csv.dec)) ", dec=','",
                   if (.isTRUE(input$import.csv.chars)) ", colClasses=\"character\""
                 ),
               dbf      = glue(", as.is={.isFALSE(input$import.dbf)}"), # PB rio 0.5.16 default should be TRUE
-              sas7bdat =
-				        if (.isNotEmpty(input$import.encoding)) glue(", encoding=\"{input$import.encoding}\""),
               xls      =,
               xlsx     =
                 paste0(
@@ -265,12 +283,12 @@
                 ),
               fst      =
                 paste0(
-                  if (length(input$import.columns)>0) glue(", columns={.collapse2(input$import.columns)}"),
+                  if (length(input$import.fst.columns)>0) glue(", columns={.collapse2(input$import.fst.columns)}"),
                   if (.isEQ(input$import.fst.filter,"range")&&(length(input$import.fst.from)>0)) glue(", from={as.character(input$import.fst.from)}"),
                   if (.isEQ(input$import.fst.filter,"range")&&(length(input$import.fst.to)>0))   glue(", to={as.character(input$import.fst.to)}")
                 ),
 				      feather  =
-				        if (length(input$import.columns)>0) glue(", columns={.collapse2(input$import.columns)}"),
+				        if (length(input$import.feather.columns)>0) glue(", columns={.collapse2(input$import.feather.columns)}"),
 				      json     = "",
 				      rds      = "",
               rdata    = glue(", which=\"{input$import.out}\"")),

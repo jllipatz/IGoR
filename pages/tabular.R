@@ -6,9 +6,13 @@
 ### 10/12/2019 1.04.6: Messages d'erreur en clair
 ### 14/01/2020 1.05.3: Résolution d'un conflit sur 'html'
 ### 16/01/2020 1.05.3: Ajout d'options sur les totaux, sur les titres
+### 13/02/2020 1.06.2: Réécriture de l'appel à ShinyFileSave pour corriger un bug de synchronisation
+### 03/08/2020 1.10.0: Protection contre les noms de colonnes non normalisés
+### 17/08/2020 1.10.1: Prise en compte des versions >= 3.6
 
 ### TODO Offrir la possibilité de convertir le résultat en data.frame
 ### TODO Protéger contre les modalités de facteur sous forme de chaine vide 'attempt to use zero-length variable name'
+### TODO Rajouter à la demande les titres des varaibles pris dans l'attribut label
 
 .IGoR$page$tabular$ui <- function()
   .IGoR$ui(page="tabular", control=TRUE, command=FALSE,
@@ -28,8 +32,8 @@
   
   statNames <- function(l) names(statsv)[Vectorize(function (x) which(x==statsv))(l)]
   
-  stat <- function(.i,.w) glue(
-    if (nchar(.w)==0) 
+  stat <- function(i,w) 
+    if (nchar(w)==0) 
       c(n="",
         all="Percent('all')",
         row="Percent('row')",
@@ -41,21 +45,23 @@
         p10="quantile*Arguments(p=.1)",
         p90="quantile*Arguments(p=.9)",
         min="min",
-        max="max")[.i]
-    else 
-      c(n="sum*{.w}",
-        all="Percent('all',fn=wtd.percent)*{.w}",
-        row="Percent('row',fn=wtd.percent)*{.w}",
-        col="Percent('col',fn=wtd.percent)*{.w}",
-        mean="wtd.mean*Arguments(w={.w})",
-        median="wtd.quantile*Arguments(p=.5,w={.w})",
-        q1="wtd.quantile*Arguments(p=.25,w={.w})",
-        q3="wtd.quantile*Arguments(p=.75,w={.w})",
-        p10="wtd.quantile*Arguments(p=.1,w={.w})",
-        p90="wtd.quantile*Arguments(p=.9,w={.w})",
+        max="max")[i]
+    else {
+      w <- .name(w)
+      glue(
+      c(n="sum*{w}",
+        all="Percent('all',fn=wtd.percent)*{w}",
+        row="Percent('row',fn=wtd.percent)*{w}",
+        col="Percent('col',fn=wtd.percent)*{w}",
+        mean="wtd.mean*Arguments(w={w})",
+        median="wtd.quantile*Arguments(p=.5,w={w})",
+        q1="wtd.quantile*Arguments(p=.25,w={w})",
+        q3="wtd.quantile*Arguments(p=.75,w={w})",
+        p10="wtd.quantile*Arguments(p=.1,w={w})",
+        p90="wtd.quantile*Arguments(p=.9,w={w})",
         min="min",
-        max="max")[.i]
-  )
+        max="max")[i]
+      )}
 
   output$tabular.control <- renderUI(
     if ((length(input$main.data>0))&&.IGoR$test$meta)
@@ -88,7 +94,7 @@
           box(width='100%',
             checkboxInput("tabular.heading",.IGoR$s4(.IGoR$Z$tabular$heading),FALSE)
           ),
-          uiOutput("tabular.save.control")
+          .IGoR$save.ui("tabular",.title=.IGoR$Z$tabular$save)
   )   ) )
   
   output$tabular.X <- renderUI(
@@ -148,18 +154,14 @@
       checkboxInput("tabular.sep",.IGoR$s4(.IGoR$Z$tabular$sep),FALSE)
   )
   
-  output$tabular.save.control <- renderUI(if (.isNotEmpty(input$tabular.X)) .IGoR$save.ui("tabular",.title=.IGoR$Z$tabular$save))
-  
-  output$tabular.save <- renderUI(
-    if (.isTRUE(input$tabular.save))
-      shinySaveButton("tabular", .IGoR$Z$any$browse, .IGoR$Z$tabular$save.as, filetype=list(html="html"))
-  )
-  
-  shinyFileSave(input, "tabular", roots=.IGoR$volumes, defaultPath='', defaultRoot='home')
+  .IGoR$saveButton(input,output,"tabular")
 
   output$tabular.command2 <- renderUI(
     .IGoR$textarea("tabular", "tabular(...)", 2, 
       if (length(input$tabular.type)>0) {
+        X <- .name(input$tabular.X)
+        Y <- .name(input$tabular.Y)
+        Z <- .name(input$tabular.Z)
         all <- if (.isTRUE(input$tabular.heading)) glue('Heading("{.IGoR$Z$tabular$all.heading}")*1') else "1"
         z <- if (input$tabular.type=='var')
                if (.isNotEmpty(input$tabular.Z)&&(length(input$tabular.Z.funs)>0)) {
@@ -172,7 +174,7 @@
                    if (.isTRUE(input$tabular.heading)) h else ifelse(str_detect(g,'\\*'),h,''),
                    g
                  )
-                 paste0(input$tabular.Z,'*',
+                 paste0(Z,'*',
                         if (length(input$tabular.Z.funs)==1) f
                         else paste0('(',paste(f, collapse='+'),')')
                  )
@@ -186,20 +188,18 @@
                 if ((input$tabular.type!='n')&&(length(input$tabular.digits)>0))
                   glue('*Format(partial(sprintf,"%.{input$tabular.digits}f")())*Justify(r)')
               )
-        y <- if (length(input$tabular.Y)==0) ""
+        y <- if (length(Y)==0) ""
              else paste0(
-               if (length(input$tabular.Y)>1)
-                 paste(input$tabular.Y,
-                       collapse=if (!.isTRUE(input$tabular.Y.nest)) '+' else '*')
-               else input$tabular.Y,
+               if (length(Y)>1)
+                    paste(Y,collapse=if (!.isTRUE(input$tabular.Y.nest)) '+' else '*')
+               else Y,
                if (.isTRUE(input$tabular.Y.all)) paste0('+',all)
              )
-        x <- if (length(input$tabular.X)==0) ""
+        x <- if (length(X)==0) ""
              else paste0(
-               if (length(input$tabular.X)>1)
-                 paste(input$tabular.X,
-                       collapse=if (!.isTRUE(input$tabular.X.nest)) '+' else '*')
-               else input$tabular.X,
+               if (length(X)>1)
+                    paste(X,collapse=if (!.isTRUE(input$tabular.X.nest)) '+' else '*')
+               else X,
                if (.isTRUE(input$tabular.X.all)) paste0('+',all)
              )
         if ((nchar(z)==0)&&(nchar(x)==0)) z <- all
@@ -216,16 +216,19 @@
           },
           glue("tabular({y} ~ {x}, . )"),
           if (.isTRUE(input$tabular.save)) {
-            f  <- parseSavePath(.IGoR$volumes,input$tabular)$datapath
+            f  <- parseSavePath(.IGoR$volumes,input$tabularSaveButton)$datapath
             if (.isNotEmpty(f)) paste0(NL,"{",glue("Hmisc::html(.,\"{f}\")"),";.}")
           }
         )
       }
 ) )
+  
+render <- if ((version$major<"4")&&(version$minor<"6.0")) renderPrint else renderText
+toHtml <- if ((version$major<"4")&&(version$minor<"6.0")) Hmisc::html else tables::html.tabular
                   
 observeEvent(input$tabular.command2,
     isolate(
-      output$tabular.output <- renderPrint(
+      output$tabular.output <- render(
         if (nchar(input$tabular.command2)>0) {
           x <- tryCatch(eval(parse(text=paste0(input$main.data,' %>% ',input$tabular.command2))),
                         error=function(e) {
@@ -240,7 +243,7 @@ observeEvent(input$tabular.command2,
                 })
           if (!is.null(x)) {
            output$tabular.comment <- renderText("")
-           Hmisc::html(x,options=htmloptions(pad=TRUE, HTMLleftpad=TRUE))
+           toHtml(x,options=htmloptions(pad=TRUE, HTMLleftpad=TRUE))
           }
 })))
   

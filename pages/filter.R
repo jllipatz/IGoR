@@ -2,7 +2,8 @@
 ### 25/07/2019 1.03.0: Mode assisté (keep quiet: temperature was over 35°C!)
 ### 12/08/2019 1.04.2: Externalisation des libellés en français
 ### 14/08/2019 1.04.3: row_number
-### 02/12/2019 1.04.6: désactivation du group-by lors d'un deuxième passage
+### 02/12/2019 1.04.6: Désactivation du group-by lors d'un deuxième passage
+### 03/08/2020 1.09.3: Protection contre les noms de colonnes non normalisés
 
 .IGoR$page$filter$ui <- function() .IGoR$ui(page="filter", control=TRUE)
 
@@ -62,7 +63,7 @@
                               c(isEQ.stat="of ==",
                                 isGT.stat="of >"),
                                      isNA="f  is.na")
-         else if (is.factor(c))    c(isEQ="oc ==",
+         else                      c(isEQ="oc ==",
                                 belongsTo="oC %in%",
                                      isNA="f  is.na")
       ))
@@ -114,6 +115,7 @@
           "filter(",
           {
             drop <- .isTRUE(input$filter.drop)
+            arg1 <- .name(input$filter.arg1)
             e <-   if ((input$filter.type==0)&&.isNotEmpty(input$filter.where))
                 list(drop,TRUE,input$filter.where)
               else if ((input$filter.type==1)&&.isNotNA(input$filter.no))
@@ -129,14 +131,15 @@
                   t <- str_sub(input$filter.fun,2,2)                   # argument type
                   f <- str_sub(input$filter.fun,4)                     # function name
                   if (t==' ')                                          # -- no argument ----------------------------
-                    list(drop,FALSE,glue("{f}({input$filter.arg1})"))  
+                    list(drop,FALSE,glue("{f}({arg1})"))  
                   else {                                               # -- one argument ---------------------------
                     arg2 <- if (t=='f') {                              # --- argument is a statistical function ----
                       s <- str_split(input$filter.arg2,',')[[1]]
                       if (length(s)==1)
-                           glue("{s}({input$filter.arg1})")
-                      else glue("{s[1]}({input$filter.arg1},{s[2]})")
-                    } else input$filter.arg2
+                           glue("{s}({arg1})")
+                      else glue("{s[1]}({arg1},{s[2]})")
+                    } else if (input$filter.type==3) .name(input$filter.arg2) 
+                           else input$filter.arg2
                     q <- if (input$filter.type==3) c('','')            # --- argument quoting ----------------------
                     else switch (t,
                       c = c('"','"'),
@@ -145,12 +148,12 @@
                       C =,
                       N = c('c(',')'))
                     if (c=='f')                                        # --- function call -------------------------
-                      list(drop,FALSE,glue("{f}({input$filter.arg1},{q[1]}{arg2}{q[2]})"))
+                      list(drop,FALSE,glue("{f}({arg1},{q[1]}{arg2}{q[2]})"))
                     else {                                             # --- binary operator -----------------------
                       g <- if (drop) switch(f, "=="="!=", ">"="<=", ">="="<")
                       if (is.null(g))
-                           list(drop,TRUE,glue("{input$filter.arg1} {f} {q[1]}{arg2}{q[2]}"))
-                      else list(FALSE,NA, glue("{input$filter.arg1} {g} {q[1]}{arg2}{q[2]}"))
+                           list(drop,TRUE,glue("{arg1} {f} {q[1]}{arg2}{q[2]}"))
+                      else list(FALSE,NA, glue("{arg1} {g} {q[1]}{arg2}{q[2]}"))
                   } }
                 }
             if (length(e)>0)                                           # negate result if required  ----------------

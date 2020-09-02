@@ -61,7 +61,7 @@
             paste0(NL,glue("gf_col(-{input$col.M} ~ {input$col.X}{cM})"))
           },
           if (.isNotEmpty(input$col.M)) paste0(NL,glue("gf_labs(y=\"{input$col.M}     |     {input$col.N}\")")),
-          if (length(s)>0) paste0(NL,glue("gf_refine({.collapse(s)})")),
+          if (length(s)>0) paste0(NL,glue("gf_refine({.collapse0(s)})")),
 			    .IGoR$gTitleCmd(input,"col"),
           .IGoR$gSaveCmd(input,"col")
         )}

@@ -2,6 +2,7 @@
 ### 12/07/2019 1.02.0: Protection contre les noms de colonne incorrects
 ### 10/08/2019 1.04.2: Externalisation des libellés en français
 ### 24/07/2020 1.09.1: Suppression de message d'erreur quand un des champs 'start' ou 'end' est à NA
+### 03/08/2020 1.10.0: Protection contre les noms de colonnes non normalisés
 
 .IGoR$page$rename$ui <- function() .IGoR$ui(page="rename", control=TRUE)
 
@@ -93,10 +94,10 @@
             else 
             if (input$rename.how=="names") {
               new <- str_split(str_trim(input$rename.names)," +")[[1]] %>% make.names()
-              old <- .IGoR$select.columns(input,output,"rename")
+              old <-.IGoR$select.columns(input,output,"rename")
               n <- length(old) # also for .IGoR$Z$rename$msg.badnames
               if (n==length(new))
-                   glue("rename({.collapse(paste0(new,' = \"',old,'\"'))})")
+                   glue("rename({.collapse0(paste0(new,' = \"',old,'\"'))})")
               else paste0("rename() # ",sprintf(.IGoR$Z$rename$msg.badnames,n))
             }
             else
