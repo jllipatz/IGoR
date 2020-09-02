@@ -23,7 +23,7 @@ Le fichier *init.R* contient tous les élements qui ont trait à la configuratio
 Cette dernière a été construite dans un contexte d'installation système particulier et devra être modifiée manuellement,
 soit pour l'adapter aux disques Windows accessibles, soit pour l'adapter aux chemins UNIX.
 
-IGoR a été développé sous les versions 3.4 et 3.5 de R. Certains packages présentent des lacunes dans des versions antérieures de R.
+IGoR a été initialement développé sous les versions 3.4 et 3.5 de R et ne fonctionne pas sous les versions antérieres de R, certains packages y présentant des lacunes redhibitoires. Depuis sa version 1.10, IGoR fonctionne également sous les versions 3.6 et 4.0 de R.
 
 ## Lancement
 Le mode de fonctionnement conseillé est le lancement de l'application depuis RStudio. Les tables créées par IGoR ou utilisables par lui sont celles présentes dans l'environnement global. Un travail en alternance sous RStudio et sous IGoR est donc envisageable.<br>
