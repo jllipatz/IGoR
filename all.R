@@ -11,6 +11,7 @@
 ### 13/08/2019 1.04.2: Externalisation des libellés en français
 ### 13/02/2020 1.06.2: Réécriture de l'appel à ShinyFileSave pour corriger un bug de synchronisation
 ### 03/07/2020 1.08.0: Rajout d'un type enum pour la page 'line'
+### 03/08/2020 1.10.0: Protection contre les noms de colonnes non normalisés
 
 .version <- paste0(version$major,".",version$minor)
 
@@ -207,6 +208,7 @@
   ._(output,page,drop) <- renderUI(
     if (length(._(input,page,type))>0)
       if (((._(input,page,type)==1)&&(length(._(input,page,columns))>0))   # selection by list (allows no selection)
+        ||(._(input,page,type)==2)
         ||((._(input,page,type)>=4)&&.isNotEmpty(._(input,page,pattern)))  # selection by name
       )
         checkboxInput(paste0(page,".drop"),.IGoR$s4(.IGoR$Z$any$drop),FALSE)
@@ -277,7 +279,10 @@
   c
 }
 
-.collapse  <- function(x) paste(x,collapse=', ')
+.name <- function(x) ifelse(x==make.names(x),x,paste0('`',x,'`'))
+
+.collapse0 <- function(x) paste(x,collapse=', ')
+.collapse  <- function(x) paste(.name(x),collapse=', ')
 .collapse1 <- function(x) paste(ifelse(is.na(x),"NA",paste0('"',x,'"')),collapse=', ')
 .collapse2 <- function(x)
   if (length(x)==0) ""    else if (length(x)==1) paste0('"',x,'"') else paste0("c(",.collapse1(x),")")
@@ -500,7 +505,9 @@ NL <- ' %>%\n   '
       .IGoR$columns(input,page)
     else
       if ((length(._(input,page,columns))==0)||(length(._(input,page,drop))==0)) ""
-      else .collapse(if (._(input,page,drop)) paste0('-',._(input,page,columns)) else ._(input,page,columns))
+      else if (._(input,page,drop)) 
+             .collapse0(paste0('-',.name(._(input,page,columns))))
+        else .collapse(._(input,page,columns))
   else
   if ((._(input,page,type)>3)&&(length(._(input,page,pattern))>0)) {
     f <- if (._(input,page,type)==4) "starts_with"

@@ -1,4 +1,4 @@
-{"version": "version 1.09.2(FR)",
+{"version": "version 1.10.2(FR)",
  "any":{
    "table": "<table>",
    "all": "<toutes>",
@@ -507,10 +507,12 @@
      "La fonction <code>gather</code> du package <strong>tidyr</strong>", 
      "<span style='color:blue'>collecte de l'information stockée en ligne dans différentes colonnes en de l'information stockée en une unique colonne sur plusieurs lignes</span>.",
      "Les noms des colonnes d'origine est conservée dans une seconde colonne de la table résultat.<br>",
-     "Il est possible de transposer un ensemble de variables de types différents, la colonne du résultat prendra un type compatible, généralement 'caractère'."],
+     "Il est possible de transposer un ensemble de variables de types différents, la colonne du résultat prendra un type compatible, généralement 'caractère'.<br>",
+	 "Dans les versions récentes du package, la fonction  <code>pivot_longer</code> apporte des fonctionnalités supplémentaires."],
    "gather": "Transposer les variables...",
    "out.k": "Colonne recevant les noms (K)",
    "out.v": "Colonne recevant les valeurs (V)",
+   "pivot": "Utiliser 'pivot_longer' au lieu de 'gather'",
    "msg.result": "NOTE : Le résultat aura %d colonne(s)."
  },
  "spread":{
@@ -519,9 +521,11 @@
    "info":[
      "La fonction <code>spread</code> du package <strong>tidyr</strong>", 
      "<span style='color:blue'>ventile de l'information stockée sur plusieurs lignes dans une seule colonne en de l'information stockée sur une seule ligne dans différentes colonnes</span>.",
-     "Une seconde colonne indique les noms des différentes colonnes à créer dans la table résultat."],
+     "Une seconde colonne indique les noms des différentes colonnes à créer dans la table résultat.<br>",
+	 "Dans les versions récentes du package, la fonction  <code>pivot_wider</code> apporte des fonctionnalités supplémentaires."],
    "var.k": "Noms des futures colonnes (K)",
    "var.v": "Valeurs des futures colonnes (V)",
+   "pivot": "Utiliser 'pivot_wider' au lieu de 'spread'",
    "prefix": "Préfixer par '"
  },
  "arrange":{

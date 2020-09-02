@@ -7,7 +7,7 @@ library(shinyWidgets)   # 0.4.8
 library(lubridate)      # 1.7.4  Usage marginal, 
                         # A charger avant dplyr : conflit sur union, intersect,setdiff
                         # conflit réglé avec la 1.7.9 et 1.0.0 de dplyr
-
+library(Hmisc)			# wtd.mean, wtd.quantile
 library(purrr)          # 0.2.5
 library(tidyr)          # 0.8.2
 library(dplyr)          # >=0.7.8, problème avec la 0.7.4
