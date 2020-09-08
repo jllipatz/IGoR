@@ -1,4 +1,4 @@
-{"version": "version 1.10.2(FR)",
+{"version": "version 1.10.3(FR)",
  "any":{
    "table": "<table>",
    "all": "<toutes>",
@@ -311,6 +311,11 @@
    "choose": "Exporter sous :",
    "export": "Exporter la table",
    "fst.compress": "Niveau de compression",
+   "csv.function": "Fonction utilisée : <code>fwrite</code> du package <strong>data.table</strong>",
+   "csv.sep": "Séparateur",
+   "csv.sep.comma": "Virgule",
+   "csv.sep.semicolon": "Point-virgule",
+   "csv.quote": "Mettre des quotes autour des chaînes de caractères et facteurs",
    "excel.tables": "Tables à exporter",
    "excel.names": "Préciser le nom des feuilles",
    "excel": "Exporter les tables",
