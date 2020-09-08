@@ -4,6 +4,7 @@
 ### 27/07/2019 1.02.0: Ajout du paramètre 'compress' pour le type 'fst'
 ### 09/08/2019 1.04.2: Externalisation des libellés en français
 ### 28/10/2019 1.04.4: Ajout du type 'ods'; libellé du champ nom de fichier
+### 08/09/2020 1.10.3: Ajout des paramètres 'sep' et 'quote' pour le type 'csv'
 
 .IGoR$page$export$ui <- function()
   .IGoR$ui(page="export",
@@ -63,7 +64,11 @@
   output$export.parms <- renderUI(
     if (.isFile(input$export.file)) 
       switch(get_ext(input$export.file),
-        "fst" = box(width='100%', sliderInput("export.fst.compress", .IGoR$s2(.IGoR$Z$export$fst.compress), 0, 100, 50))
+        fst = box(width='100%', sliderInput("export.fst.compress", .IGoR$s2(.IGoR$Z$export$fst.compress), 0, 100, 50)),
+        csv = box(width='100%', HTML(.IGoR$Z$export$csv.function),
+                column(width=6, radioButtons("export.csv.sep", .IGoR$s5(.IGoR$Z$export$csv.sep),
+                                             choices=c(.IGoR$Z$export$csv.sep.comma,.IGoR$Z$export$csv.sep.semicolon))),
+                column(width=6, checkboxInput("export.csv.quote", .IGoR$s5(.IGoR$Z$export$csv.quote), FALSE)))
   )   )
   
   observe({
@@ -94,7 +99,10 @@
             paste0(
               glue("export(file=\"{input$export.file}\""),
               switch(get_ext(input$export.file),
-                "fst" = if (.isNE(input$export.fst.compress,50)) glue(", compress={input$export.fst.compress}")
+                fst = if (.isNE(input$export.fst.compress,50)) glue(", compress={input$export.fst.compress}"),
+                csv = paste0(
+                      if (.isEQ(input$export.csv.sep,.IGoR$Z$export$csv.sep.semicolon)) ", sep=';'",
+                      if (.isTRUE(input$export.csv.quote)) ", quote=TRUE")
               ),
               ")"
             )
@@ -115,7 +123,7 @@
             t <- if (!str_detect(input$export.file,"\\.RData$")) ".RData" else ""
             glue("save(list=., file=\"{input$export.file}{t}\")")
           }
-  )   ) )
+  ) ) )
   
   observeEvent(input$export.command2, {
     if (.isNotEmpty(input$export.file))
