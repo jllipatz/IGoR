@@ -9,10 +9,10 @@
 ### 13/02/2020 1.06.2: Réécriture de l'appel à ShinyFileSave pour corriger un bug de synchronisation
 ### 03/08/2020 1.10.0: Protection contre les noms de colonnes non normalisés
 ### 17/08/2020 1.10.1: Prise en compte des versions >= 3.6
+### 09/09/2020 1.10.4: Libellés en clair sur les variables
 
 ### TODO Offrir la possibilité de convertir le résultat en data.frame
 ### TODO Protéger contre les modalités de facteur sous forme de chaine vide 'attempt to use zero-length variable name'
-### TODO Rajouter à la demande les titres des varaibles pris dans l'attribut label
 
 .IGoR$page$tabular$ui <- function()
   .IGoR$ui(page="tabular", control=TRUE, command=FALSE,
@@ -155,13 +155,22 @@
   )
   
   .IGoR$saveButton(input,output,"tabular")
-
+  
+  labels <- function (x) 
+    Vectorize(function (x)
+      attr(get(input$main.data,envir=.GlobalEnv)[[x]],'label') %>%
+      {if (is.null(.)) x else paste0('Heading(',shQuote(.),')*',x)}
+    )(x)
+  
   output$tabular.command2 <- renderUI(
     .IGoR$textarea("tabular", "tabular(...)", 2, 
       if (length(input$tabular.type)>0) {
-        X <- .name(input$tabular.X)
-        Y <- .name(input$tabular.Y)
-        Z <- .name(input$tabular.Z)
+        X <- .name(input$tabular.X) %>%
+             {if ((length(.)>0)&&.isTRUE(input$tabular.heading)) labels(.) else .}
+        Y <- .name(input$tabular.Y) %>%
+             {if ((length(.)>0)&&.isTRUE(input$tabular.heading)) labels(.) else .}
+        Z <- .name(input$tabular.Z) %>%
+             {if ((length(.)>0)&&.isTRUE(input$tabular.heading)) labels(.) else .}
         all <- if (.isTRUE(input$tabular.heading)) glue('Heading("{.IGoR$Z$tabular$all.heading}")*1') else "1"
         z <- if (input$tabular.type=='var')
                if (.isNotEmpty(input$tabular.Z)&&(length(input$tabular.Z.funs)>0)) {
