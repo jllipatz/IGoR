@@ -15,6 +15,7 @@
 ### 16/06/2020 1.07.1: Ajout de paramètres à la lecture de csv; Gestion des noms de fichiers manuels
 ### 19/06/2020 1.07.2: Ajout de paramètres à la lecture de sas
 ### 03/08/2020 1.10.0: Protection contre les noms de colonnes non normalisés
+### 30/09/2020 1.10.5: Correction de bug dans la lecture de fichiers fst et feather
 
 
 .IGoR$page$import$ui <- function()
@@ -38,7 +39,8 @@
   .IGoR$rLogo(input,output,"import")
 
   expr <- function(.data, fst=TRUE) {
-    e <- tryCatch(parse(text=input$import.expr),error=identity)
+    x <- if (fst) input$import.fst.expr else input$import.feather.expr
+    e <- tryCatch(parse(text=x),error=identity)
     if (is(e,"condition")) "*** ERREUR ***"
     else {
       n <- if (fst) metadata_fst(input$import.file)$columnNames
@@ -201,12 +203,12 @@
         )
       else
       if (input$import.fst.filter=="where")
-        textInput("import.expr",.IGoR$s2(.IGoR$Z$import$expr))
+        textInput("import.fst.expr",.IGoR$s2(.IGoR$Z$import$expr))
   )
 
   output$import.feather.parms <- renderUI(
     if (.isTRUE(input$import.feather.filter))
-      textInput("import.expr",.IGoR$s3(.IGoR$Z$import$expr))
+      textInput("import.feather.expr",.IGoR$s3(.IGoR$Z$import$expr))
   )
 
   output$import.command1 <- renderText(if (.isFile(input$import.file)) glue(.IGoR$import.command1))
@@ -223,18 +225,18 @@
             glue(".[.$id=={input$import.funcamp.id},grepl('^[^.]',names(.))]")
           )
         else
-        if ((type=="fst")&&.isEQ(input$import.fst.filter,'where')&&.isNotEmpty(input$import.expr))
+        if ((type=="fst")&&.isEQ(input$import.fst.filter,'where')&&.isNotEmpty(input$import.fst.expr))
           .IGoR$command2(      # --- Use 'fst' connection -------------------
             glue("fst(\"{input$import.file}\")"),NL,
-            glue(".[{expr('.',TRUE)},{.collapse2(input$import.columns)}]"), .IGoR$look(input$import.expr),
+            glue(".[{expr('.',TRUE)},{.collapse2(input$import.fst.columns)}]"), .IGoR$look(input$import.fst.expr),
             if (length(input$import.columns)==1) # PB fst 0.8.8 drop=FALSE ne marche pas
-              paste0(NL,glue("data.frame({input$import.columns}=., stringsAsFactors=FALSE)"))
+              paste0(NL,glue("data.frame({input$import.fst.columns}=., stringsAsFactors=FALSE)"))
           )
         else
-        if ((type=="feather")&&.isNotEmpty(input$import.expr))                
+        if ((type=="feather")&&.isNotEmpty(input$import.feather.expr))                
           .IGoR$command2(      # --- Use 'feather' connection --------------
             glue("feather(\"{input$import.file}\")"),NL,
-            glue(".[{expr('.',FALSE)},{.collapse2(input$import.columns)}]")
+            glue(".[{expr('.',FALSE)},{.collapse2(input$import.feather.columns)}]")
           )
         else
         if ((type %in% c("xlsx","xls"))&&.isEQ(input$import.xls.type,"insee")) 
