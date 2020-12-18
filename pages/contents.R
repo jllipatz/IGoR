@@ -18,7 +18,7 @@
       f <- Vectorize(function(nom) attr(df[[nom]],"label") %>% ifelse(is.null(.),NA,.))
       dt <- data.frame(1:ncol(df),
                        colnames(df),
-                       unlist(Map(class,df), use.names=FALSE),
+                       unlist(Map(function (x) class(x)[1],df), use.names=FALSE),
                        f(colnames(df)))
       names(dt) <- .IGoR$Z$contents$columns
       dt[order(dt[[input$contents.sort]]),]
