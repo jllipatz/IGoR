@@ -1,4 +1,4 @@
-{"version": "version 1.10.5(FR)",
+{"version": "version 1.11.0(FR)",
  "any":{
    "table": "<table>",
    "all": "<toutes>",
@@ -591,6 +591,35 @@
      "- soit parce que le calcul d'une <strong>expression impliquant un nombre de variables quelconque</strong> renvoie <em>TRUE</em>.<br>",
      "Le résultat est une table contenant l'intégralité des variables des deux tables. En cas de doublon sur les noms, les variables en cause sont suffixées par '.x' et '.y'.<br>",
      "<em>NOTE : la page se réinitialise dès que la jointure a fonctionné.</em>"],
+   "type":{
+     "function": "Entrée non assistée",
+     "menu": "Fonctions usuelles",
+     "dist": "Distance"
+   },
+   "dist.col": "Distances dans :",
+   "method":{
+     "osa":     "Damerau-Levenshtein retreint",
+	 "dl":      "Damerau-Levenshtein complet",
+     "lv":      "Levenshtein",
+	 "jw":      "Jaro/Jaro-Winker",
+	 "hamming": "Hamming",
+	 "qgram":   "q-gramme",
+	 "cosine":  "q-gramme cosinus",
+	 "soundex": "Phonétique"
+   },
+   "parm.q":   "Taille du q-gramme (q>=1)",
+   "parm.p":   "Coefficient de préfixe (0<=p<=0.25])",
+   "parm.bt":  "'Winkler's boost threshold'",
+   "parm.w.d": "Pénalité pour suppression",
+   "parm.w.i": "Pénalité pour insertion",
+   "parm.w.s": "Pénalité pour substitution",
+   "parm.w.t": "Pénalité pour transposition",
+   "funs":{
+     "startsWith": "commence par",
+	 "contains":   "contient",
+	 "endsWith":   "ce termine par",
+	 "example":    "*** dept corse avant/après"
+   },
    "fun": "Fonction de comparaison des clés",
    "condition": "Condition sur ",
    "and": " et "
