@@ -1,6 +1,7 @@
 
 ### 10/08/2019 1.04.2: Externalisation des libellés en français
 ### 16/12/2020 1.11.0: Traitement spécifique des chaînes de caractères 1-1
+### 15/01/2021 1.11.1: Correction de is.string
 
 ### BUG: fuzzyjoin ne supporte pas les noms non normalisés, même hors condition.
 
@@ -28,8 +29,11 @@
   
   .IGoR$jServer(input,output,"fuzzyjoin")
   
-  is.string <- function(theColumn)
-    "character" %in% class(get(input$main.data,envir=.GlobalEnv)[[theColumn]])
+  is.string <- function(theMainData)
+    ("character" %in% class(
+       if (theMainData) get(input$main.data,envir=.GlobalEnv)[[input$fuzzyjoin.columns]]
+       else        get(input$fuzzyjoin.data,envir=.GlobalEnv)[[input$fuzzyjoin.columns2]]
+    ))
   
   strings <- function(l) {
     n <- names(l)
@@ -59,7 +63,7 @@
   
   output$fuzzyjoin.stringfun <- renderUI(
     if ((length(input$fuzzyjoin.columns)==1)&&(length(input$fuzzyjoin.columns2)==1)
-       &&is.string(input$fuzzyjoin.columns)&&is.string(input$fuzzyjoin.columns2))
+       &&is.string(TRUE)&&is.string(FALSE))
       if (.isEQ(input$fuzzyjoin.funType,"dist"))
         selectizeInput("fuzzyjoin.dist","",choices=strings(.IGoR$Z$fuzzyjoin$method))
       else
@@ -71,7 +75,7 @@
   
   output$fuzzyjoin.dist <- renderUI(
     if ((length(input$fuzzyjoin.columns)==1)&&(length(input$fuzzyjoin.columns2)==1)
-        &&is.string(input$fuzzyjoin.columns)&&is.string(input$fuzzyjoin.columns2)
+        &&is.string(TRUE)&&is.string(FALSE)
         &&.isEQ(input$fuzzyjoin.funType,"dist")
         &&(length(input$fuzzyjoin.dist)>0))
       list(
@@ -84,7 +88,7 @@
   
   output$fuzzyjoin.dist.parm <- renderUI(
     if ((length(input$fuzzyjoin.columns)==1)&&(length(input$fuzzyjoin.columns2)==1)
-        &&is.string(input$fuzzyjoin.columns)&&is.string(input$fuzzyjoin.columns2)
+        &&is.string(TRUE)&&is.string(FALSE)
         &&.isEQ(input$fuzzyjoin.funType,"dist")
         &&(length(input$fuzzyjoin.dist)>0))
       if (input$fuzzyjoin.dist %in% c("qgram","cosine"))
@@ -140,7 +144,7 @@
         max <- ""
         if ((length(input$fuzzyjoin.columns)==1)&&(length(input$fuzzyjoin.columns2)==1)) {
           by <- glue("by=c(\"{input$fuzzyjoin.columns}\"=\"{input$fuzzyjoin.columns2}\")")
-          if (is.string(input$fuzzyjoin.columns)&&is.string(input$fuzzyjoin.columns2))
+          if (is.string(TRUE)&&is.string(FALSE))
             if (length(input$fuzzyjoin.funType)==0) key <- "" # Not ready yet
             else # --- 1-1 strings column, distance ---------------------------
             if (input$fuzzyjoin.funType=="dist") 
@@ -161,7 +165,7 @@
                 if (.isNotEmpty(parm)) parm <- paste0(', ',parm)
                 if (.isNotEmpty(input$fuzzyjoin.dist.col)) 
                   col<- paste0(',\n     ',glue("distance_col=\"{make.names(input$fuzzyjoin.dist.col)}\""))
-                if (!is.na(input$fuzzyjoin.dist.max))
+                if (.isNotNA(input$fuzzyjoin.dist.max))
                   max<- paste0(',\n     ',glue("max_dist={input$fuzzyjoin.dist.max}"))
               }
             else # --- 1-1 strings column, function from menu or input --------
