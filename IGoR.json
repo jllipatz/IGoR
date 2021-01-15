@@ -1,4 +1,4 @@
-{"version": "version 1.11.0(FR)",
+{"version": "version 1.11.1(FR)",
  "any":{
    "table": "<table>",
    "all": "<toutes>",
@@ -597,6 +597,7 @@
      "dist": "Distance"
    },
    "dist.col": "Distances dans :",
+   "dist.max": "Distance maximum :",
    "method":{
      "osa":     "Damerau-Levenshtein retreint",
 	 "dl":      "Damerau-Levenshtein complet",
@@ -608,7 +609,7 @@
 	 "soundex": "Phonétique"
    },
    "parm.q":   "Taille du q-gramme (q>=1)",
-   "parm.p":   "Coefficient de préfixe (0<=p<=0.25])",
+   "parm.p":   "Coeff. de préfixe (0<=p<=0.25])",
    "parm.bt":  "'Winkler's boost threshold'",
    "parm.w.d": "Pénalité pour suppression",
    "parm.w.i": "Pénalité pour insertion",
