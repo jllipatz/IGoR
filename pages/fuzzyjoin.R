@@ -2,6 +2,7 @@
 ### 10/08/2019 1.04.2: Externalisation des libellés en français
 ### 16/12/2020 1.11.0: Traitement spécifique des chaînes de caractères 1-1
 ### 15/01/2021 1.11.1: Correction de is.string
+### 26/01/2021 1.11.2: Correction message sur un champ en multi-variable.
 
 ### BUG: fuzzyjoin ne supporte pas les noms non normalisés, même hors condition.
 
@@ -184,7 +185,7 @@
                  fun <- glue("match_fun={input$fuzzyjoin.fun}")
         }
         else # ------- n-m columns --------------------------------------------
-        if (length(input$fuzzyjoin.fun)==0) key <- "" # Not ready yet
+        if (!.isNotEmpty(input$fuzzyjoin.fun)) key <- "" # Not ready yet
         else {
           by <- glue("multi_by=list(x={.collapse2(input$fuzzyjoin.columns)},y={.collapse2(input$fuzzyjoin.columns2)}),")
           fun <-paste0(
