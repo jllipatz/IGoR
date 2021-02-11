@@ -12,6 +12,8 @@
 ### 13/02/2020 1.06.2: Réécriture de l'appel à ShinyFileSave pour corriger un bug de synchronisation
 ### 03/07/2020 1.08.0: Rajout d'un type enum pour la page 'line'
 ### 03/08/2020 1.10.0: Protection contre les noms de colonnes non normalisés
+### 18/12/2020 1.11.0: .columns: Protection contre les classes multiples
+### 11/02/2021 1.11.3: Ajout de .nameg pour les fonctions graphiques
 
 .version <- paste0(version$major,".",version$minor)
 
@@ -273,13 +275,15 @@
     else if (.class=="discrete") .class <- c("factor","character","integer","logical","Date")
     else if (.class=="double")   .class <- "numeric"
   c <- names(if (missing(.class)) .table
-             else select_if(.table,function (x) class(x) %in% .class))
+             else select_if(.table,function (x) length(intersect(class(x),.class))>0)
+       )
   if (.sort) c <- sort(c)
   names(c) <- c
   c
 }
 
 .name <- function(x) ifelse(x==make.names(x),x,paste0('`',x,'`'))
+.nameg <- function(x) ifelse(x==make.names(x),x,paste0('.$`',x,'`'))
 
 .collapse0 <- function(x) paste(x,collapse=', ')
 .collapse  <- function(x) paste(.name(x),collapse=', ')
@@ -617,8 +621,8 @@ NL <- ' %>%\n   '
   l <-  c(if (.isNotEmpty(._(input,page,title)))    glue("title={shQuote(._(input,page,title))}"),
           if (.isNotEmpty(._(input,page,subtitle))) glue("subtitle={shQuote(._(input,page,subtitle))}"),
 	        if (.isNotEmpty(._(input,page,source)))   glue("caption={shQuote(paste0('Source : ',._(input,page,source)))}"),
-          if (X&&.isNE(._(input,page,X.label),._(input,page,X))) glue("x={shQuote(._(input,page,X.label))}"),
-          if (Y&&.isNE(._(input,page,Y.label),._(input,page,Y))) glue("y={shQuote(._(input,page,Y.label))}"),
+          if (X&&.isNE(._(input,page,X.label),.nameg(._(input,page,X)))) glue("x={shQuote(._(input,page,X.label))}"),
+          if (Y&&.isNE(._(input,page,Y.label),.nameg(._(input,page,Y)))) glue("y={shQuote(._(input,page,Y.label))}"),
           labels)
   if (length(l)>0) paste0(NL,glue("gf_labs({paste(l,collapse=', ')})"))
  }
