@@ -2,6 +2,7 @@
 ### 14/06/2019 1.01.1: Ajout du libellé de variable
 ### 06/08/2019 1.04.0: dropdown buttons
 ### 11/08/2019 1.04.2: Externalisation des libellés en français
+### 11/02/2021 1.11.3: Protection contre les noms non normalisés
 
 .IGoR$page$histogram$ui <- function() .IGoR$ui(page="histogram", graphics=TRUE)
 
@@ -58,11 +59,12 @@
                   ||((input$histogram.bins.type=="bins")&&(input$histogram.bins==25))
                   ||((input$histogram.bins.type=="binwidth")&&is.na(input$histogram.bins))) ""
                 else glue(", {input$histogram.bins.type}={input$histogram.bins}") 
+        X <- .nameg(input$histogram.X)
         .IGoR$command2(
-          glue("gf_dhistogram( ~ {input$histogram.X}{bins})"),
+          glue("gf_dhistogram( ~ {X}{bins})"),
           if (.isTRUE(input$histogram.kde)) {
 			      bwm <- if (.isEQ(input$histogram.kde.bwm,1)) "" else glue(", adjust={input$histogram.kde.bwm}")
-			      paste0(" %>%\n   ",glue("gf_dens( ~ {input$histogram.X}{bwm})"))
+			      paste0(" %>%\n   ",glue("gf_dens( ~ {X}{bwm})"))
 			     },
  		       .IGoR$gTitleCmd(input,"histogram",X=TRUE,
  		         if (.isNE(input$histogram.Y.label,"density")) glue("y={shQuote(input$histogram.Y.label)}")),
