@@ -10,6 +10,8 @@
 ### 03/08/2020 1.10.0: Protection contre les noms de colonnes non normalisés
 ### 17/08/2020 1.10.1: Prise en compte des versions >= 3.6
 ### 09/09/2020 1.10.4: Libellés en clair sur les variables
+### 17/02/2021 1.11.4: Enregistrement de la commande dans le log, 
+###                    Gestion correcte des modifications de type des colonnes
 
 ### TODO Offrir la possibilité de convertir le résultat en data.frame
 ### TODO Protéger contre les modalités de facteur sous forme de chaine vide 'attempt to use zero-length variable name'
@@ -98,7 +100,8 @@
   )   ) )
   
   output$tabular.X <- renderUI(
-    selectizeInput("tabular.X", .IGoR$Z$tabular$col, 
+    if ((length(input$main.data>0))&&.IGoR$test$meta)
+      selectizeInput("tabular.X", .IGoR$Z$tabular$col, 
                    multiple = TRUE, 
                    options = list(placeholder = .IGoR$any[[if (.isTRUE(input$tabular.factor)) "cols.discrete" else "cols.fct"]]),
                    choices = .columns(input$main.data,     if (.isTRUE(input$tabular.factor)) "discrete"      else "factor")
@@ -115,7 +118,8 @@
   )
   
   output$tabular.Y <- renderUI(
-    selectizeInput("tabular.Y", .IGoR$Z$tabular$row, 
+    if ((length(input$main.data>0))&&.IGoR$test$meta)
+      selectizeInput("tabular.Y", .IGoR$Z$tabular$row, 
                    multiple = TRUE, 
                    options = list(placeholder = .IGoR$any[[if (.isTRUE(input$tabular.factor)) "cols.discrete" else "cols.fct"]]),
                    choices = .columns(input$main.data,     if (.isTRUE(input$tabular.factor)) "discrete"      else "factor")
@@ -132,7 +136,8 @@
   )
   
   output$tabular.args <- renderUI(
-    if (.isEQ(input$tabular.type,'var')&&(length(input$tabular.W)>0))
+    if ((length(input$main.data>0))&&.IGoR$test$meta
+      &&.isEQ(input$tabular.type,'var')&&(length(input$tabular.W)>0))
       tagList(
         selectizeInput("tabular.Z", .IGoR$s1(.IGoR$Z$tabular$Z), .numeric(input)),
         selectizeInput("tabular.Z.funs", .IGoR$s1(.IGoR$Z$tabular$Z.funs), 
@@ -239,7 +244,8 @@ observeEvent(input$tabular.command2,
     isolate(
       output$tabular.output <- render(
         if (nchar(input$tabular.command2)>0) {
-          x <- tryCatch(eval(parse(text=paste0(input$main.data,' %>% ',input$tabular.command2))),
+          command <- paste0(input$main.data,' %>% ',input$tabular.command2)
+          x <- tryCatch(eval(parse(text=command)),
                         error=function(e) {
                           if (e$message %in% c("node stack overflow", "pile de noeuds débordée vers le haut"))
                             e$message <- paste0(e$message,"\n",.IGoR$Z$tabular$msg.error1)
@@ -251,8 +257,9 @@ observeEvent(input$tabular.command2,
                           NULL
                 })
           if (!is.null(x)) {
-           output$tabular.comment <- renderText("")
-           toHtml(x,options=htmloptions(pad=TRUE, HTMLleftpad=TRUE))
+            eval(bquote(.IGoR$log <- add_row(.IGoR$log,time=Sys.time(),page="tabular",command=.(command))) ,envir=.GlobalEnv)
+            output$tabular.comment <- renderText("")
+            toHtml(x,options=htmloptions(pad=TRUE, HTMLleftpad=TRUE))
           }
 })))
   
