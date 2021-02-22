@@ -4,6 +4,7 @@
 ### 07/08/2019 1.04.2: toString
 ### 09/08/2019 1.04.2: Externalisation des libellés en français
 ### 10/08/2020 1.10.0: Correction de l'affichage des facteurs et des dates
+### 22/02/2021 1.11.4: Protection contre les data.table
 
 .IGoR$page$browse$ui <- function()
   .IGoR$ui(page="browse",icon="view",command=FALSE,
@@ -96,7 +97,7 @@
   }
 
   df <- reactive({
-    df    <- get(input$main.data,envir=.GlobalEnv)
+    df    <- get(input$main.data,envir=.GlobalEnv) %>% as.data.frame()
     ids   <- .IGoR$if.sync(input,"browse.ids")
     where <- .IGoR$if.sync(input,"browse.where")
     l <- names(df)

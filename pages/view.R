@@ -7,6 +7,7 @@
 ### 17/07/2019 1.02.1: Ajout d'une visualisation par groupe et améliorations diverses
 ### 07/08/2019 1.04.0: dropdown buttons
 ### 09/08/2019 1.04.2: Externalisation des libellés en français
+### 22/02/2021 1.11.4: Protection contre les data.table
 
 .IGoR$page$view$ui <- function()
   .IGoR$ui(page="view",command=FALSE,
@@ -67,7 +68,7 @@
   }  
   
   df <- reactive({
-    df <- get(input$main.data,envir=.GlobalEnv)
+    df <- get(input$main.data,envir=.GlobalEnv) %>% as.data.frame()
     where <- .IGoR$if.sync(input,"view.where")
     group <- .IGoR$if.sync(input,"view.group") 
     df1 <- df %>%
