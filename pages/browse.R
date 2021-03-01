@@ -5,6 +5,7 @@
 ### 09/08/2019 1.04.2: Externalisation des libellés en français
 ### 10/08/2020 1.10.0: Correction de l'affichage des facteurs et des dates
 ### 22/02/2021 1.11.4: Protection contre les data.table
+### 01/03/2021 1.11.5: Protection contre les colonnes à type multiple
 
 .IGoR$page$browse$ui <- function()
   .IGoR$ui(page="browse",icon="view",command=FALSE,
@@ -42,13 +43,15 @@
     f <- function(.data,.row,.n,.header=FALSE,.class=TRUE) {
     
       type <- function(.i)
-        switch(class(.data[[.i]]),
+        switch(class(.data[[.i]])[1],
                "logical"="<lgl>",
                "numeric"="<dbl>",
                "integer"="<int>",
              "character"="<chr>",
                 "factor"="<fct>",
-                  "Date"="<date>")
+               "POSIXct"=,
+                  "Date"="<date>"
+              )
       
       name <- function(.i) 
         if (.isTRUE(input$browse.label)) {
