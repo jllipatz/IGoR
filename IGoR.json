@@ -522,7 +522,7 @@
  },
  "spread":{
    "menu.title": "Transposer en format large",
-   "page.title": "Passage du format large vers le format long",
+   "page.title": "Passage du format long vers le format large",
    "info":[
      "La fonction <code>spread</code> du package <strong>tidyr</strong>", 
      "<span style='color:blue'>ventile de l'information stockée sur plusieurs lignes dans une seule colonne en de l'information stockée sur une seule ligne dans différentes colonnes</span>.",
