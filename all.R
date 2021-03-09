@@ -14,6 +14,7 @@
 ### 03/08/2020 1.10.0: Protection contre les noms de colonnes non normalisés
 ### 18/12/2020 1.11.0: .columns: Protection contre les classes multiples
 ### 11/02/2021 1.11.3: Ajout de .nameg pour les fonctions graphiques
+### 09/03/2021 1.11.6: Modification de nameg inutilisable sinon en enchaînement de graphiques
 
 .version <- paste0(version$major,".",version$minor)
 
@@ -283,7 +284,7 @@
 }
 
 .name <- function(x) ifelse(x==make.names(x),x,paste0('`',x,'`'))
-.nameg <- function(x) ifelse(x==make.names(x),x,paste0('.$`',x,'`'))
+.nameg <- function(x) ifelse(x==make.names(x),x,paste0('(`',x,'`)'))
 
 .collapse0 <- function(x) paste(x,collapse=', ')
 .collapse  <- function(x) paste(.name(x),collapse=', ')
