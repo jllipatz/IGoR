@@ -1,6 +1,8 @@
-### 2020/04/04
+### 04/04/2020
 ###   IGoR.json, init.R updated
 ### 02/07/2020 1.08.0: ajout d'un filtre sur les NA pour les lissages; color ne groupait pas sur les integer
+### 09/03/2021 1.11.6: Protection contre les noms non normalisés
+
 
 .IGoR$page$line$ui <- function() .IGoR$ui(page="line", graphics=TRUE)
 
@@ -53,20 +55,23 @@
         if (.isTRUE(input$line.loess)) {
           span <- if (.inOrNULL(input$line.loess.span,.75)) ""
                   else glue(", span={input$line.loess.span}")
-          x <- glue(".{pronoun}${input$line.X}")
+          x <- glue(".{pronoun}${.name(input$line.X)}")
+          y <- glue(".{pronoun}${.name(input$line.Y)}")
           df <- get(input$main.data,envir=.GlobalEnv)
           if (is.Date(df[[input$line.X]])) x <- glue("as.numeric({x})")
         }
+        X <- .nameg(input$line.X)
+        Y <- .nameg(input$line.Y)
         .IGoR$command2(
           if (.isFALSE(input$line.loess))
-               glue ("gf_line({input$line.Y} ~ {input$line.X}{color})")
+               glue ("gf_line({Y} ~ {X}{color})")
           else paste0(
-                 glue("filter(!is.na({input$line.Y}))"),NL,
+                 glue("filter(!is.na({.name(input$line.Y)}))"),NL,
                  .IGoR$group_by(input,"line"),
-                 glue("mutate(..y=loess(.{pronoun}${input$line.Y} ~ {x}{span})$fitted)"),
+                 glue("mutate(..y=loess({y} ~ {x}{span})$fitted)"),
                  .IGoR$ungroup(input,"line"),NL,
-                 glue("gf_point({input$line.Y} ~ {input$line.X}{color})"),NL,
-                 glue("gf_line(..y ~ {input$line.X}{color}, linetype = 'dashed')")
+                 glue("gf_point({Y} ~ {X}{color})"),NL,
+                 glue("gf_line(..y ~ {X}{color}, linetype = 'dashed')")
                ),
           .IGoR$gTitleCmd(input,"line",X=TRUE,Y=TRUE,
             c(.IGoR$gLabel.arg(input,"line","group","color")
