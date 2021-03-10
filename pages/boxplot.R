@@ -1,6 +1,8 @@
 
 ### 17/06/2019 1.01.1: Ajout des libellés de variable
 ### 11/08/2019 1.04.2: Externalisation des libellés en français
+### 09/03/2021 1.11.6: Protection contre les noms non normalisés
+
 
 .IGoR$page$boxplot$ui <- function() .IGoR$ui(page="boxplot", graphics=TRUE)
 
@@ -42,8 +44,8 @@
         .IGoR$command2(
           "gf_boxplot(",
           glue(if (.isNotEmpty(input$boxplot.X))
-                    "{input$boxplot.Y} ~ {input$boxplot.X}"
-               else " ~ {input$boxplot.Y}"),
+                    "{.nameg(input$boxplot.Y)} ~ {.nameg(input$boxplot.X)}"
+               else " ~ {.nameg(input$boxplot.Y)}"),
           ")",
           if (.isTRUE(input$boxplot.coordflip)) paste0(NL,"gf_refine(coord_flip())"),
  		       .IGoR$gTitleCmd(input,"boxplot",Y=TRUE,X=.isNotEmpty(input$boxplot.X)),
