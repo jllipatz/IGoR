@@ -1,4 +1,4 @@
-{"version": "version 1.11.6(FR)",
+{"version": "version 1.12.0(FR)",
  "any":{
    "table": "<table>",
    "all": "<toutes>",
@@ -282,6 +282,12 @@
    "xls.type.skip": "Sauter les premières lignes",
    "xls.type.insee": "En tête format insee.fr (5 lignes)",
    "xls.sheet": "Feuille",
+   "ods.type.one": "Feuille",
+   "ods.type.all": "Toutes les feuilles",
+   "ods.all.skip": "...sauf la première",
+   "ods.all.name": "Nom de la feuille dans",
+   "ods.filter.skip": "Sauter les premières lignes",
+   "ods.filter.range": "Plage de cellules (p.e. A5:G13)",
    "fst.filter": "Lire...",
    "fst.filter.all":   "toutes les lignes",
    "fst.filter.range": "une plage fixe",
