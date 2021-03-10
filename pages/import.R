@@ -11,11 +11,13 @@
 ### 24/01/2020 1.05.4: Correction d'un bug de rafraichissement avec fst
 ### 30/01/2020 1.06.0: Rétablissement du contournement pour les extractions fst d'une seule colonne
 ### 20/02/2020 1.06.2: Ajout du type 'rda'
-### 27/02/2020 1.06.3: Ajout de paramètre à la lecture de csv
-### 16/06/2020 1.07.1: Ajout de paramètres à la lecture de csv; Gestion des noms de fichiers manuels
-### 19/06/2020 1.07.2: Ajout de paramètres à la lecture de sas
+### 27/02/2020 1.06.3: Ajout de paramètre à la lecture des CSV
+### 16/06/2020 1.07.1: Ajout de paramètres à la lecture des CSV; Gestion des noms de fichiers manuels
+### 19/06/2020 1.07.2: Ajout de paramètres à la lecture des SAS7BDAT
 ### 03/08/2020 1.10.0: Protection contre les noms de colonnes non normalisés
-### 30/09/2020 1.10.5: Correction de bug dans la lecture de fichiers fst et feather
+### 30/09/2020 1.10.5: Correction de bug dans la lecture de fichiers FST et FEATHER
+### 09/03/2021 1.12.0: Ajout de paramètres à la lecture des ODS; ajout de la lecture d'un classeur entier
+###                    NB: list_ods_sheet n'existe qu'en 1.7, mais ods_sheet est marqué comme deprecated.
 
 
 .IGoR$page$import$ui <- function()
@@ -140,9 +142,11 @@
           else
           if (type=="ods")
             fluidRow(
-              column(width=6, numericInput("import.xls.sheet", .IGoR$s2(.IGoR$Z$import$xls.sheet), 1)),
-              column(width=4, checkboxInput("import.xls.names",.IGoR$s5(.IGoR$Z$import$header), TRUE)),
-              column(width=2, numericInput("import.xls.skip",  .IGoR$s3(.IGoR$Z$import$xls.type.skip), NA))
+              column(width=2, radioButtons("import.ods.type",.IGoR$Z$import$ods.type, .IGoR$Znames("import","ods.type",c("one","all")))),
+              column(width=3, uiOutput("import.ods.sheet")),
+              column(width=2, checkboxInput("import.ods.names",.IGoR$s5(.IGoR$Z$import$header), TRUE)),
+              column(width=2, radioButtons("import.ods.filter",.IGoR$Z$import$ods.filter, .IGoR$Znames("import","ods.filter",c("skip","range")))),
+              column(width=3, uiOutput("import.ods.parms"))
             )
           else
           if (type=="fst")
@@ -189,8 +193,35 @@
   output$import.xls.skip <- renderUI(
     if (.isFile(input$import.file)) {
       type <- input$import.file %>% str_extract("(?<=\\.)[^.]+$") %>% str_to_lower()
-      if ((type %in% c("xlsx","xls","ods"))&&.isEQ(input$import.xls.type,"skip"))
+      if ((type %in% c("xlsx","xls"))&&.isEQ(input$import.xls.type,"skip"))
         numericInput("import.xls.skip","",NA)
+    }
+  )
+  
+  output$import.ods.sheet <- renderUI(
+    if (.isFile(input$import.file)) {
+      type <- input$import.file %>% str_extract("(?<=\\.)[^.]+$") %>% str_to_lower()
+      if (type=="ods")
+        if (.isEQ(input$import.ods.type,"one"))
+          selectizeInput("import.ods.sheet","",readODS::list_ods_sheets(input$import.file))
+        else
+        if (.isEQ(input$import.ods.type,"all"))
+          list(
+            checkboxInput("import.ods.all.skip",.IGoR$s5(.IGoR$Z$import$ods.all.skip), FALSE),
+            textInput("import.ods.all.name",.IGoR$s5(.IGoR$Z$import$ods.all.name),"import.sheet")
+          )
+    }
+  )
+  
+  output$import.ods.parms <- renderUI(
+    if (.isFile(input$import.file)) {
+      type <- input$import.file %>% str_extract("(?<=\\.)[^.]+$") %>% str_to_lower()
+      if (type=="ods")
+        if (.isEQ(input$import.ods.filter,"skip"))
+          numericInput("import.ods.skip","",NA)
+        else
+        if (.isEQ(input$import.ods.filter,"range"))
+          textInput("import.ods.range","","")
     }
   )
 
@@ -251,6 +282,36 @@
                    if (.isNE(input$import.xls.sheet,1)) glue(", \"{input$import.xls.sheet}\""),
                    ")"
           ))
+        if (type=="ods") 
+          .IGoR$command2(
+            if (.isEQ(input$import.ods.type,"one"))
+              paste0(
+                glue("read_ods(\"{input$import.file}\""),  # 'sheet' parameter doesn't work with 'import'                
+                if (.isNE(input$import.ods.sheet,1))     glue(", sheet=\"{input$import.ods.sheet}\""),
+                if (.isFALSE(input$import.ods.names))    ", col_names=FALSE",
+                if (.isNotNA(input$import.ods.skip))     glue(", skip={input$import.ods.skip}"),
+                if (.isNotEmpty(input$import.ods.range)) glue(", range=\"{input$import.ods.range}\""),
+                ")"
+              )
+            else
+            if (.isEQ(input$import.ods.type,"all"))
+              paste0(
+                "(function (file)\n",
+                "      ods_sheets(file)",
+                if (.isTRUE(input$import.ods.all.skip)) "[-1]", 
+                " %>%\n",
+                "      Map(function(x)\n",
+                "        read_ods(file, sheet=x",
+                if (.isFALSE(input$import.ods.names))    ", col_names=FALSE",
+                if (.isNotNA(input$import.ods.skip))     glue(", skip={input$import.ods.skip}"),
+                if (.isNotEmpty(input$import.ods.range)) glue(", range=\"{input$import.ods.range}\""),
+                ") %>%\n",
+                "        mutate(",.name(input$import.ods.all.name),"=x) %>%\n",
+                "        select(",.name(input$import.ods.all.name),",everything()), .) %>%\n",
+                "      Reduce(bind_rows, .)\n",
+                "   )(\"",input$import.file,"\")"
+              )
+          )
         else # --- Calls to 'rio::import' --------------------------------------------------------------------------
           .IGoR$command2(
             glue("import(\"{input$import.file}\""),
@@ -275,12 +336,6 @@
                 paste0(
                   if (.isNE(input$import.xls.sheet,1)) glue(", sheet=\"{input$import.xls.sheet}\""),
                   if (.isFALSE(input$import.xls.names)) ", col_names=FALSE",
-                  if (.isNotNA(input$import.xls.skip)) glue(", skip={input$import.xls.skip}")
-                ),
-              ods      =
-                paste0(
-                  if (.isNE(input$import.xls.sheet,1)) glue(", sheet={input$import.xls.sheet}"),
-                  if (.isFALSE(input$import.xls.names)) ", header=FALSE", # PB rio 0.5.16 col_names ne marche pas
                   if (.isNotNA(input$import.xls.skip)) glue(", skip={input$import.xls.skip}")
                 ),
               fst      =
