@@ -1,5 +1,7 @@
 
 ### 11/08/2019 1.04.2: Externalisation des libellés en français
+### 09/03/2021 1.11.6: Protection contre les noms non normalisés
+
 
 .IGoR$page$lorenz$ui <- function() .IGoR$ui(page="lorenz", icon="paresseux", graphics=TRUE)
 
@@ -27,7 +29,7 @@
     .IGoR$textarea("lorenz", "gf_lorenz(~x)", 3,
       if (.isNotEmpty(input$lorenz.X)) 
         .IGoR$command2(
-          glue("gf_lorenz( ~ {input$lorenz.X})"),
+          glue("gf_lorenz( ~ {.nameg(input$lorenz.X)})"),
 			    .IGoR$gTitleCmd(input,"lorenz",X=TRUE),
           .IGoR$gSaveCmd(input,"lorenz")
   ) )   )

@@ -50,7 +50,7 @@
   output$line.command2 <- renderUI(
     .IGoR$textarea("line", "gf_line(y ~ x)", 6,
       if (.isNotEmpty(input$line.Y)&&.isNotEmpty(input$line.X)) {
-        color <- if (.isNotEmpty(input$line.group)) glue(", color=~{input$line.group}") else ""
+        color <- if (.isNotEmpty(input$line.group)) glue(", color=~{.nameg(input$line.group)}") else ""
         pronoun <- if (.isNotEmpty(input$line.group)) "data" else ""
         if (.isTRUE(input$line.loess)) {
           span <- if (.inOrNULL(input$line.loess.span,.75)) ""
