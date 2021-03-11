@@ -4,6 +4,7 @@
 ### 18/07/2019 1.02.2: Possibilité de tri des barres
 ### 06/08/2019 1.04.0: dropdown buttons
 ### 11/08/2019 1.04.2: Externalisation des libellés en français
+### 11/03/2021 1.12.0: Protection contre les noms non normalisés
 
 .IGoR$page$bar$ui <- function() .IGoR$ui(page="bar", graphics=TRUE)
 
@@ -68,7 +69,7 @@
   output$bar.command2 <- renderUI(
     .IGoR$textarea("bar", "gf_bar(~x)", 3,
       if (.isNotEmpty(input$bar.X)) {
-        x <- if (.isTRUE(input$bar.reorder)) glue("reorder({input$bar.X},`n()`)") else input$bar.X
+        x <- if (.isTRUE(input$bar.reorder)) glue("reorder({.name(input$bar.X)},`n()`)") else .nameg(input$bar.X)
         fill <- if (length(input$bar.fill.type)==0) ""
                 else
                  if (input$bar.fill.type=="var")
@@ -76,7 +77,7 @@
                    else {
                      p <- if (.inOrNULL(input$bar.fill.position,"stack")) ""  
                           else glue(", position='{input$bar.fill.position}'")
-                     glue(", fill=~{input$bar.fill.column}{p}")
+                     glue(", fill=~{.nameg(input$bar.fill.column)}{p}")
                    }
                  else
                    if (!.isNE(input$bar.fill.value,'black')) ""
@@ -86,7 +87,7 @@
           if (.isTRUE(input$bar.coordflip)) "coord_flip()"
         )
         .IGoR$command2(
-          if (.isTRUE(input$bar.reorder)) paste0(glue("group_by({input$bar.X})"),NL,"mutate(n())",NL),
+          if (.isTRUE(input$bar.reorder)) paste0(glue("group_by({.name(input$bar.X)})"),NL,"mutate(n())",NL),
           glue("gf_bar( ~ {x}{fill})"),
           if (length(r)>0) paste0(NL,glue("gf_refine({paste(r,collapse=', ')})")),
  		      .IGoR$gTitleCmd(input,"bar",X=TRUE,
