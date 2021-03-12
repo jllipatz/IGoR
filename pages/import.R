@@ -282,6 +282,7 @@
                    if (.isNE(input$import.xls.sheet,1)) glue(", \"{input$import.xls.sheet}\""),
                    ")"
           ))
+        else
         if (type=="ods") 
           .IGoR$command2(
             if (.isEQ(input$import.ods.type,"one"))

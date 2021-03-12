@@ -1,5 +1,7 @@
 
 ### 10/08/2019 1.04.2: Externalisation des libellés en français
+### 12/03/2021 1.12.0: Protection contre les noms non normalisés
+
 
 .IGoR$page$col$ui <- function() .IGoR$ui(page="col", graphics=TRUE)
 
@@ -47,18 +49,18 @@
                paste0(
                  "\n     ",
                  "scale_y_continuous(\n       labels=abs,\n       ",
-                 glue("limits=with({input$main.data},partial(max,na.rm=TRUE)(c({input$col.N},{input$col.M}))) %>% max() %>% c(-.,.)"),
+                 glue("limits=with({input$main.data},partial(max,na.rm=TRUE)(c({.name(input$col.N)},{.name(input$col.M)}))) %>% max() %>% c(-.,.)"),
                  ")"
                ),
                if (.isTRUE(input$col.coordflip)) "\n     coord_flip()"
         )
         cN <- if (.isEQ(input$col.N.color,"black")) "" else glue(", fill=\"{input$col.N.color}\"")
-		    x <- if (.isNotEmpty(input$col.reorder)) glue("reorder({input$col.X},{input$col.reorder})") else input$col.X
+		    x <- if (.isNotEmpty(input$col.reorder)) glue("reorder({.name(input$col.X)},{.name(input$col.reorder)})") else .nameg(input$col.X)
 		    .IGoR$command2(
-          glue("gf_col({input$col.N} ~ {x}{cN})"),
+          glue("gf_col({.nameg(input$col.N)} ~ {x}{cN})"),
           if (.isNotEmpty(input$col.M)) {
             cM <- if (.isEQ(input$col.M.color,"black")) "" else glue(", fill=\"{input$col.M.color}\"")
-            paste0(NL,glue("gf_col(-{input$col.M} ~ {input$col.X}{cM})"))
+            paste0(NL,glue("gf_col(-{.nameg(input$col.M)} ~ {.nameg(input$col.X)}{cM})"))
           },
           if (.isNotEmpty(input$col.M)) paste0(NL,glue("gf_labs(y=\"{input$col.M}     |     {input$col.N}\")")),
           if (length(s)>0) paste0(NL,glue("gf_refine({.collapse0(s)})")),
