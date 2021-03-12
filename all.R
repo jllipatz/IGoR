@@ -15,6 +15,7 @@
 ### 18/12/2020 1.11.0: .columns: Protection contre les classes multiples
 ### 11/02/2021 1.11.3: Ajout de .nameg pour les fonctions graphiques
 ### 09/03/2021 1.11.6: Modification de nameg inutilisable sinon en enchaînement de graphiques
+### 12/03/2021 1.12.1: .IGoR$writeLog
 
 .version <- paste0(version$major,".",version$minor)
 
@@ -332,7 +333,7 @@ as_tibble <- function(.data) if ("tbl_df" %in% class(.data)) .data else dplyr::a
     }
     else {
       if (.page=="import") eval(parse(text=glue("attr({make.names(input$import.out)},'source')<- '{input$import.file}'")),envir=.GlobalEnv)
-      eval(bquote(.IGoR$log <- add_row(.IGoR$log,time=Sys.time(),page=.(.page),command=.(.command))) ,envir=.GlobalEnv)
+      .IGoR$writeLog(.page,.command)
       shinyjs::disable(paste0(.page,".load"))
       if (t==input$main.data)
         eval(quote(.IGoR$test$meta <- .IGoR$test$meta+1), envir=.GlobalEnv)
@@ -352,7 +353,7 @@ as_tibble <- function(.data) if ("tbl_df" %in% class(.data)) .data else dplyr::a
      output[[paste0(.page,".comment")]] <- renderText(x$message)
      NULL
    } else {
-      eval(bquote(.IGoR$log <- add_row(.IGoR$log,time=Sys.time(),page=.(.page),command=.(.command))) ,envir=.GlobalEnv)
+      .IGoR$writeLog(.page,.command)
       output[[paste0(.page,".comment")]] <- renderText(if (is.null(.fn)) "" else .fn(x))
       x
    }
@@ -363,7 +364,7 @@ as_tibble <- function(.data) if ("tbl_df" %in% class(.data)) .data else dplyr::a
   a <- input[[paste0(.page,".command2")]]
   c <- glue("{t} <- {input$main.data} %>% {a}")
   d <- eval(parse(text=c),envir=.GlobalEnv)
-  eval(bquote(.IGoR$log <- add_row(.IGoR$log,time=Sys.time(),page=.(.page),command=.(c))) ,envir=.GlobalEnv)
+  .IGoR$writeLog(.page,c)
   eval(quote(.IGoR$test$list <- .IGoR$test$list+1), envir=.GlobalEnv)
   if (!.source) eval(parse(text=glue("attr({t},'source')<- NULL")),envir=.GlobalEnv)
   if ((t==input$main.data)&&.signal)
@@ -375,6 +376,14 @@ as_tibble <- function(.data) if ("tbl_df" %in% class(.data)) .data else dplyr::a
   )
   shinyjs::disable(paste0(.page,".load"))
 }
+
+.IGoR$writeLog <- function(page,command,append=TRUE) {
+  time <- Sys.time()
+  .IGoR$log <<- if (!append)
+                      data.frame(time=time,page=page,command=command,stringsAsFactors = FALSE)
+                else  add_row(.IGoR$log,time=time,page=page,command=command)
+  data.table::fwrite(file="~/IGoR-log.csv",x=list(time,page,command),append=append)               
+} 
 
 .IGoR$look <- function(text) {
   v <- tryCatch(getParseData(parse(text=text,keep.source=TRUE)) %>%
@@ -424,9 +433,10 @@ as_tibble <- function(.data) if ("tbl_df" %in% class(.data)) .data else dplyr::a
   if (input$main.data==make.names(input[[paste0(.page,".out")]]))
     eval(quote(.IGoR$test$meta <- .IGoR$test$meta+1), envir=.GlobalEnv)
 
-.IGoR$test<- reactiveValues(meta=1,list=1,join=1)
-.IGoR$log <- data.frame(time=Sys.time(),page="",command="#Yes master!",stringsAsFactors = FALSE)
+.IGoR$test <- reactiveValues(meta=1,list=1,join=1)
 .IGoR$save <- !rstudioapi::isAvailable()
+.IGoR$log  <- list()
+.IGoR$writeLog("","#Yes master!",append=FALSE)
 
 NL <- ' %>%\n   '
 
