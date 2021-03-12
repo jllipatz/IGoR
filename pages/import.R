@@ -203,7 +203,7 @@
       type <- input$import.file %>% str_extract("(?<=\\.)[^.]+$") %>% str_to_lower()
       if (type=="ods")
         if (.isEQ(input$import.ods.type,"one"))
-          selectizeInput("import.ods.sheet","",readODS::list_ods_sheets(input$import.file))
+          selectizeInput("import.ods.sheet","",readODS::ods_sheets(input$import.file))
         else
         if (.isEQ(input$import.ods.type,"all"))
           list(
