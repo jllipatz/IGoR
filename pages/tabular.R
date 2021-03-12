@@ -12,6 +12,7 @@
 ### 09/09/2020 1.10.4: Libellés en clair sur les variables
 ### 17/02/2021 1.11.4: Enregistrement de la commande dans le log, 
 ###                    Gestion correcte des modifications de type des colonnes
+### 12/03/2021 1.12.1: Intégration du log
 
 ### TODO Offrir la possibilité de convertir le résultat en data.frame
 ### TODO Protéger contre les modalités de facteur sous forme de chaine vide 'attempt to use zero-length variable name'
@@ -257,7 +258,7 @@ observeEvent(input$tabular.command2,
                           NULL
                 })
           if (!is.null(x)) {
-            eval(bquote(.IGoR$log <- add_row(.IGoR$log,time=Sys.time(),page="tabular",command=.(command))) ,envir=.GlobalEnv)
+            .IGoR$writeLog("tabular",command)
             output$tabular.comment <- renderText("")
             toHtml(x,options=htmloptions(pad=TRUE, HTMLleftpad=TRUE))
           }
